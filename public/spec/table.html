@@ -41,6 +41,9 @@
             <a href="#create">
                 <li>テーブル作成</li>
             </a>
+            <a href="#create">
+                <li>テストデータ注入</li>
+            </a>
             <a href="#admins">
                 <li>admins</li>
             </a>
@@ -77,6 +80,19 @@ SELECT * FROM テーブル名;　//テーブルの中身</code></pre>
                 <p>VS Codeのターミナルで、</p>
                 <pre><code class="language-plaintext">php artisan migrate　//新規
 php artisan migrate:fresh　//作り直し</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="create">テーブル作成</h2>
+            <section>
+                <p>VS Codeのターミナルで、</p>
+                <pre><code class="language-plaintext">php artisan db:seed</code></pre>
+            </section>
+
+            <section>
+                <h3>ログインIDやパスワード</h3>
+                <p>databases/seedersのAdminSeeder.php、TeacherSeeder.phpに書いてある</p>
             </section>
         </div>
 
