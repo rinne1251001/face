@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=keyboard_arrow_down,keyboard_arrow_up" />
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>類似製品</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="">製品</h2>
+            <section>
+                <h3><a href="https://www.toshiba-tden.co.jp/lp/tqspassport/qrcode.htm?utm_source=google&utm_medium=cpc&utm_campaign=tqs_2206&gad_source=1&gad_campaignid=15776819039&gbraid=0AAAAAoWEEWJoHpV_4IKucmSD6kTgTDaRl&gclid=CjwKCAjwifjVBhBKEiwAYx4K9HVCPMSMrezm6JNwpzHRvn6EGnfdo7CY1nYLepif-8ws5Zgtao3cuBoCj9gQAvD_BwE"
+                        target="_blank" rel="noopener noreferrer">TQSPassport Reception</a>
+                </h3>
+                <p></p>
+            </section>
+
+            <section>
+                <h3><a href="https://jpn.nec.com/manufacture/kensetsu/constcloud-genba/dedura-forgreen/index.html"
+                        target="_blank" rel="noopener noreferrer">建設現場顔認証forグリ－ンサイト</a>
+                </h3>
+                <p></p>
+            </section>
+
+            <section>
+                <h3><a href="https://www.ntt.com/business/services/easypass.html" target="_blank"
+                        rel="noopener noreferrer">EasyPass</a>
+                </h3>
+                <p></p>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

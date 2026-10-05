@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\FaceSample;
-use App\Models\Person;
+use App\Models\Student;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
@@ -26,7 +26,7 @@ class FaceMatcher
             throw ValidationException::withMessages([$field => '特徴量の形式が正しくありません。']);
         }
 
-        // 512軸の二乗和を求める
+        // すべての要素の二乗和を求める
         $sum = 0.0;
         foreach ($raw as $x) {
             if (! is_int($x) && ! is_float($x)) {
@@ -46,18 +46,36 @@ class FaceMatcher
     }
 
     /**
+     * 画面に返す生徒の情報（特徴量などは含めない）
+     * 照合テストと出席受付の両方で使う
+     */
+    public static function summary(?Student $student): ?array
+    {
+        if (! $student) {
+            return null;
+        }
+
+        return [
+            'id' => $student->id,
+            'name' => $student->name,
+            'student_number' => $student->student_number,
+            'class_name' => $student->schoolClass?->name,
+        ];
+    }
+
+    /**
      * 登録データと照合し、最も近い人物と判定結果を返す
      * 正規化済み同士なので、ドット積 = コサイン類似度
      */
     public function match(array $unitQuery, string $modelVersion): array
     {
         /**
-         * 64bitのPHPデータ(float型)と32bitのDBデータを照合するために32bitに変換する
-         * 
+         * キャッシュに保存した登録データと同じ精度（32bit）に揃えるため、照合する側も32bitに変換する
+         *
          * ①64bitのデータを32bitの圧縮されたデータに変換
          * ②unpack()でPHPの配列に復元してPHPが計算で扱える数値配列に戻す
          * ③その数値配列の要素数を取得する
-         * 
+         *
          * なお、キーは1始まりになる
          */
         $q = unpack('g*', pack('g*', ...$unitQuery));
@@ -68,7 +86,7 @@ class FaceMatcher
          * 全員分と照合してスコアを$scores配列に代入
          * indexメソッドに人物ID => 登録されたバイナリベクトル（２進数のデータの並び）の配列を取得し人物ごとにループ
          */
-        foreach ($this->index($modelVersion) as $personId => $vectors) {
+        foreach ($this->index($modelVersion) as $studentId => $vectors) {
             $best = null;
             foreach ($vectors as $packed) {
                 $v = unpack('g*', $packed);
@@ -82,7 +100,7 @@ class FaceMatcher
                 $best = max($best ?? $s, $s); // 人物ごとに最も近いサンプルを採用
             }
             if ($best !== null) {
-                $scores[$personId] = $best;
+                $scores[$studentId] = $best;
             }
         }
 
@@ -104,23 +122,23 @@ class FaceMatcher
             && ($margin === null || $margin >= config('face.margin'));
 
         // 一回のクエリで3人分取得しidをキーにしたコレクションにする
-        $people = Person::whereIn('id', $ids)->get()->keyBy('id');
+        $students = Student::with('schoolClass')->whereIn('id', $ids)->get()->keyBy('id');
 
         // 顔照合の結果を取りまとめた連想配列（レスポンスデータ）
         return [
             // 本人かどうか（true/false）
             'accepted' => $accepted,
-            // 1位のPersonオブジェクト
-            'person' => $accepted ? $people->get($bestId) : null,
+            // 1位のStudentオブジェクト
+            'student' => $accepted ? $students->get($bestId) : null,
             // 1位の人物ID
-            'best_person_id' => $bestId,
+            'best_student_id' => $bestId,
             // 1位のスコア
             'similarity' => $bestScore,
             // 1位と2位のスコア差
             'margin' => $margin,
             // 3位までの候補者情報の配列
             'candidates' => array_map(
-                fn ($id) => ['person' => $people->get($id), 'similarity' => $top[$id]],
+                fn ($id) => ['student' => $students->get($id), 'similarity' => $top[$id]],
                 $ids,
             ),
         ];
@@ -137,19 +155,19 @@ class FaceMatcher
             $index = [];
             // 人物の顔データを500件ずつ取得
             FaceSample::query()
-                ->select(['id', 'person_id', 'embedding'])
+                ->select(['id', 'student_id', 'embedding'])
                 ->where('model_version', $modelVersion)
-                ->whereHas('person', fn ($q) => $q->where('is_active', true))
+                ->whereHas('student', fn ($q) => $q->where('is_active', true))
                 ->lazyById(500)
                 ->each(function (FaceSample $sample) use (&$index) {
-                    $index[$sample->person_id][] = pack('g*', ...$sample->embedding);
+                    $index[$sample->student_id][] = pack('g*', ...$sample->embedding);
                 });
 
             return $index;
         });
     }
 
-    /** 
+    /**
      * 顔写真の追加・削除や人物の有効/無効化が更新された際、古い照合インデックスキャッシュを削除して最新状態に更新する
      * 登録・削除・人物の更新のあとに呼ぶ
      */

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=keyboard_arrow_down,keyboard_arrow_up" />
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>Laravel13の基本的な操作方法</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <a href="#serve">
+                <li>起動時</li>
+            </a>
+            <a href="#github">
+                <li>github</li>
+            </a>
+            <a href="#database">
+                <li>データベース＆テーブル</li>
+            </a>
+            <a href="#css">
+                <li>css</li>
+            </a>
+            <a href="#view">
+                <li>ビュー</li>
+            </a>
+            <a href="#routes">
+                <li>ルーティング</li>
+            </a>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="serve">起動時</h2>
+            <section>
+                <h3>サーバー起動</h3>
+                <p>ファイルを見る方法</p>
+                <pre><code class="language-plaintext">npm run dev　//css適用
+php artisan serve　//PHPのサーバー起動</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="github">github</h2>
+            <section>
+                <h3>githubの上げ方</h3>
+                <p>
+                    ①ソース管理(Ctrl+Shift+G)を開く<br>
+                    ②「コミット」の下にある変更の「＋」ボタンを押す<br>
+                    ③メッセージに好きな言葉を入力<br>
+                    ④「コミット」を押す<br>
+                    ⑤「変更を同期」or「プッシュ」を押す
+                </p>
+            </section>
+
+            <section>
+                <h3>他のメンバーが更新したgithubの内容を確認・取得する</h3>
+                <p>
+                    ① ソース管理(Ctrl+Shift+G)を開く<br>
+                    ② 「すべてのリモートからフェッチ」を押すと、最新の更新内容を確認できる<br>
+                    ③ 「プル」を押すと、最新の変更を手元の環境にダウンロードできる
+                </p>
+            </section>
+
+            <section>
+                <h3>githubのURL</h3>
+                <p><a href="https://github.com/rinne1251001/face" target="_blank" rel="noopener noreferrer">faceのURL</a>
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="database">データベース＆テーブル</h2>
+            <section>
+                <h3>データベースを作る方法</h3>
+                <p>
+                    ①XAMPP起動<br>
+                    ②MySQLをstart<br>
+                    ③Shellをタップし以下のコマンドを打つ
+                </p>
+                <pre><code class="language-plaintext">mysql -u root　//MySQLにログイン
+CREATE DATABASE face;　//faceという名前のデータベースを作成
+SHOW DATABASES;　//データベース一覧のコマンド。faceがあれば成功</code></pre>
+                <p>どのデータベースを使うかは、.envファイルに書いてあります</p>
+                <pre><code class="language-plaintext">DB_DATABASE=face</code></pre>
+            </section>
+
+            <section>
+                <h3>テーブルを作る方法</h3>
+                <p>VS Codeのターミナルを開いて以下のコマンドを打つ</p>
+                <pre><code class="language-plaintext">php artisan migrate</code></pre>
+                <p>
+                    テーブルの内容はdatabase/migrationsにあるファイルに書いてあり、１つのファイルにつき１つのテーブルが作成されます<br>
+                    （例：2026_09_28_000001_create_admins_table.php→adminsテーブル）
+                </p>
+
+                <p>
+                    ⚠️一度php artisan migrateをやったマイグレーションファイルは更新してもテーブルには反映されません<br>
+                    そのため、以下のコマンドを打つ必要があります（データベースに登録したデータは全て削除され作り直しになるので注意）
+                </p>
+                <pre><code class="language-plaintext">php artisan migrate:fresh　//テーブル作り直し
+Remove-Item -Recurse -Force storage/app/private/faces　//顔写真削除</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="css">css</h2>
+            <section>
+                <h3>ファイルの場所</h3>
+                <p>cssファイル（Tailwind）はresources/css/app.cssです</p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="view">ビュー</h2>
+            <section>
+                <h3>ファイルの場所</h3>
+                <p>resources/viewsフォルダにあるbladeファイルです</p>
+            </section>
+
+            <section>
+                <h3>レイアウト</h3>
+                <p>
+                    全てのファイルで共通するレイアウト(ヘッダーやフッターなど)はresources/views/layouts/app.blade.phpファイルで作成されています<br>
+                    このレイアウトを使いたい時は以下の形式で書きます
+                </p>
+                <pre><code class="language-php">@extends('layouts.app')
+@section('title', 'タイトル名')　//省略ok（その場合は「顔認識システム」というタイトルになる）
+@section('content')
+
+//ここに中身を書いていく
+
+@endsection</code></pre>
+                <p>なお、scriptを書きたい時は以下の形式になります</p>
+                <pre><code class="language-php">@extends('layouts.app')
+@section('title', 'タイトル名')
+@section('content')
+
+//ここに中身を書いていく
+
+@endsection
+@push('scripts')
+&lt;script>
+
+//ここにスクリプトを書いていく
+
+&lt;/script>
+@endpush</code></pre>
+
+                <p>
+                    新しいレイアウトファイル作って使いたいときは、@extends('layouts.app')を@extends('layouts.ファイル名')にすると使えます<br>
+                    例：layouts/cute.blade.phpなら@extends('layouts.cute')
+                </p>
+            </section>
+
+            <section>
+                <h3>blade</h3>
+                <p>
+                    @ifや@foreachなどbladeのディレクティブについて詳しくは
+                    <a style="color: red;" href="https://achieve-on-step.sakuraweb.com/spec/blade.html" target="_blank"
+                        rel="noopener noreferrer">こちら</a>を参照
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="routes">ルーティング</h2>
+            <section>
+                <p>
+                    Laravelではファイルを作っただけではファイルは見れません<br>
+                    そのため、resources/views/〇〇.blade.phpを作ったらroutes/web.phpに書き込む必要があります<br>
+                    ルーティングの書き方はviewのみの場合とコントローラーも使う場合の２種類あります
+                </p>
+            </section>
+
+            <section>
+                <h3>viewのみ</h3>
+                <p>ビュー（ページの表示）を返すだけのとき</p>
+                <pre><code class="language-php">Route::view('/URL名', 'ファイルの場所')->name('名前付きルート');</code></pre>
+                <p>
+                    例：Route::view('/url', 'folder/file')->name('name');なら、<br>
+                    URLはhttp://127.0.0.1:8000/url、<br>
+                    ファイルの場所はresources/views/folder/file.blade.php、<br>
+                    このファイルに遷移したい時は&lt;a href="{{ route('name') }}">になる
+                </p>
+            </section>
+
+            <section>
+                <h3>view＆controller</h3>
+                <p>ビュー（例：resources/views/articles）とコントローラー（例：app/Http/Controllers/ArticleController）を返すとき</p>
+                <pre><code class="language-php">use App\Http\Controllers\コントローラー名;
+
+Route::HTTPメソッド('/URL名', [コントローラー名::class, 'クラス名'])->name('名前付きルート');</code></pre>
+                <p>
+                    例：Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');なら、<br>
+                    HTTPメソッドはget<br>
+                    URLはhttp://127.0.0.1:8000/url、<br>
+                    コントローラーはapp\Http\Controllers\ArticleController.phpのindex()メソッド、<br>
+                    このファイルに遷移したい時は&lt;a href="{{ route('name') }}">になる
+                </p>
+
+                <p>主なHTTPメソッド</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>HTTP</th>
+                            <th>説明</th>
+                            <th>アクション</th>
+                            <th>ルーティング</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>GET①</td>
+                            <td>データの取得</td>
+                            <td>index()、create()</td>
+                            <td>Route::get('/url名', ...)</td>
+                        </tr>
+                        <tr>
+                            <td>GET②</td>
+                            <td>データの取得</td>
+                            <td>show()、edit()</td>
+                            <td>Route::delete('/url名/{id}', ...)</td>
+                        </tr>
+                        <tr>
+                            <td>POST</td>
+                            <td>データの新規作成</td>
+                            <td>store()</td>
+                            <td>Route::post('/url名', ...)</td>
+                        </tr>
+                        <tr>
+                            <td>PATCH</td>
+                            <td>データの更新</td>
+                            <td>update()</td>
+                            <td>Route::patch('/url名', ...)</td>
+                        </tr>
+                        <tr>
+                            <td>DELETE</td>
+                            <td>データの削除</td>
+                            <td>destroy()</td>
+                            <td>Route::delete('/url名/{id}', ...)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

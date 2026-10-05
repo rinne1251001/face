@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=keyboard_arrow_down,keyboard_arrow_up" />
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>顔認証</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <a href="#Human">
+                <li>Human</li>
+            </a>
+            <a href="#reason">
+                <li>導入理由</li>
+            </a>
+            <a href="#variable">
+                <li>変数</li>
+            </a>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="Human">Human</h2>
+            <section>
+                <h3>Humanとは？</h3>
+                <p>
+                    オープンソースのAIライブラリ（@vladmandic/human）で、TensorFlow.jsなどをベースにしている<br>
+                    顔検出・3D顔の向きの追跡（Face Detection & Rotation Tracking）、顔のメッシュ（特徴点）や虹彩（Iris）の検出、顔の記述・特徴量抽出（Face
+                    Description/Recognition）、身体のポーズ、手のジェスチャー、感情認識などをWebカメラから検出
+                </p>
+            </section>
+
+            <section>
+                <h3>faceresとは？</h3>
+                <p>
+                    検出された顔から個性を数値化（特徴量ベクトル化）する<br>
+                    顔の画像から、その人固有のパターンを抽出し、AIが認識・比較できるデータ（顔埋め込み：Face Embedding）に変換
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="reason">導入理由</h2>
+            <section>
+                <h3>①高精度な特徴量</h3>
+                <p>
+                    従来の軽量ライブラリ（face-api.js など）は128次元だが、Humanは1024次元の高精度なベクトルをブラウザ上でリアルタイム抽出可能<br>
+                    →次元数が多いので識別精度が非常に高く、双子や似た顔、角度や照明が変わっても誤認証が起きにくい
+                </p>
+            </section>
+
+            <section>
+                <h3>②エッジ処理</h3>
+                <p>
+                    ユーザーのPCやスマホのGPU/CPUを使ってブラウザ内で計算するため、Laravelサーバー側は軽量な数値データ（JSON）と画像を受け取って保存・検索するだけで済む<br>
+                    →サーバーに高価なGPUサーバーを用意する必要がなく、インフラコストを大幅に抑えられる
+                </p>
+            </section>
+
+            <section>
+                <h3>③通信量の小ささ</h3>
+                <p>
+                    カメラ映像の全フレーム（動画）をサーバーに送信し続けるのではなく、ブラウザ上で顔が検出された瞬間の「特徴量（数値配列）」だけを送信<br>
+                    →通信量が非常に小さく、照合処理も爆速
+                </p>
+            </section>
+
+            <section>
+                <h3>④マルチバックエンド対応</h3>
+                <p>
+                    GPUのある環境ではWebGL（GPU加速）を使って高速処理し、GPUのない環境では自動的にWASM（WebAssembly）によるCPU処理へ切り替わる<br>
+                    →動かないというトラブルを防ぐ
+                </p>
+            </section>
+
+            <section>
+                <h3>⑤アップデート</h3>
+                <p>
+                    TypeScriptベースで記述されており、TensorFlow.js の最新エコシステムに追従して更新されている<br>
+                    →常に最新の状態
+                </p>
+            </section>
+
+            <section>
+                <h3>⑥なりすまし防止</h3>
+                <p>
+                    瞬きや視線・表情の動きなど生きている人間特有の動きを検知<br>
+                    →「他人の写真」や「スマホの画面」はブロックされる
+                </p>
+            </section>
+
+            <section>
+                <h3>⑦追加拡張の容易さ</h3>
+                <p>
+                    基本機能だけでなく、開発者が自分の作りたいアプリに合わせて新しい機能や設定を簡単に追加・カスタマイズできるよう設計されている
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="variable">変数</h2>
+            <section>
+                <p>
+                    Humanを直接使っているのはresources/js/face-engine.jsのみ<br>
+                    →将来Humanのバージョンが上がったり別のライブラリに変更されたりしても、改修するのはface-engine.jsだけで済む
+                </p>
+            </section>
+
+            <section>
+                <h3>作成時に渡している設定（new Human({...})）</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>設定</th>
+                            <th>値</th>
+                            <th>意味</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>modelBasePath</td>
+                            <td>'/models/human/'</td>
+                            <td>モデルファイルを置いている場所</td>
+                        </tr>
+                        <tr>
+                            <td>backend</td>
+                            <td>'webgl'</td>
+                            <td>計算エンジン（GPUを使う）。使えないPCでは 'wasm' に切り替える</td>
+                        </tr>
+                        <tr>
+                            <td>cacheSensitivity</td>
+                            <td>0</td>
+                            <td>前のフレームの結果を使い回さず、毎回検出し直す</td>
+                        </tr>
+                        <tr>
+                            <td>face.enabled</td>
+                            <td>true</td>
+                            <td>顔の検出を行う</td>
+                        </tr>
+                        <tr>
+                            <td>face.detector.rotation</td>
+                            <td>true</td>
+                            <td>傾いた顔をまっすぐに補正してから処理する（特徴量の精度向上）</td>
+                        </tr>
+                        <tr>
+                            <td>face.detector.maxDetected</td>
+                            <td>MAX_FACES（3）</td>
+                            <td>同時に検出する顔の最大数</td>
+                        </tr>
+                        <tr>
+                            <td>face.mesh.enabled</td>
+                            <td>true</td>
+                            <td>顔の細かい形（468点）を求める。向きの判定と特徴量の精度に必要</td>
+                        </tr>
+                        <tr>
+                            <td>face.description.enabled</td>
+                            <td>true</td>
+                            <td>特徴量（embedding）を出すモデル（faceres）を使う</td>
+                        </tr>
+                        <tr>
+                            <td>face.iris.enabled</td>
+                            <td>false</td>
+                            <td>虹彩（黒目）の検出は使わない</td>
+                        </tr>
+                        <tr>
+                            <td>face.emotion.enabled</td>
+                            <td>false</td>
+                            <td>表情の推定は使わない</td>
+                        </tr>
+                        <tr>
+                            <td>face.antispoof.enabled</td>
+                            <td>false</td>
+                            <td>写真によるなりすまし判定は使わない</td>
+                        </tr>
+                        <tr>
+                            <td>face.liveness.enabled</td>
+                            <td>false</td>
+                            <td>生体判定は使わない</td>
+                        </tr>
+                        <tr>
+                            <td>body / hand / object / segmentation</td>
+                            <td>enabled: false</td>
+                            <td>体・手・物体の検出、背景分離は使わない</td>
+                        </tr>
+                        <tr>
+                            <td>gesture.enabled</td>
+                            <td>true</td>
+                            <td>「左を向いている」「右を向いている」の判定に使う</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>呼び出しているメソッド・プロパティ</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>呼び出し</th>
+                            <th>使っている場所</th>
+                            <th>用途</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>human.init()</td>
+                            <td>init()</td>
+                            <td>計算エンジンの準備</td>
+                        </tr>
+                        <tr>
+                            <td>human.load()</td>
+                            <td>init()</td>
+                            <td>AIモデルの読み込み</td>
+                        </tr>
+                        <tr>
+                            <td>human.detect(input)</td>
+                            <td>detect()</td>
+                            <td>顔の検出。同時に実行しないよう、順番待ちを経由して呼ぶ</td>
+                        </tr>
+                        <tr>
+                            <td>human.models.stats().percentageLoaded</td>
+                            <td>init()</td>
+                            <td>モデル読み込みの進み具合（0〜1）</td>
+                        </tr>
+                        <tr>
+                            <td>human.models.loaded()</td>
+                            <td>init()</td>
+                            <td>読み込めたモデル名の一覧。必要なモデルがそろったかの確認に使う</td>
+                        </tr>
+                        <tr>
+                            <td>human.tf.getBackend()</td>
+                            <td>backendName()</td>
+                            <td>実際に使われている計算エンジンの名前（webgl など）</td>
+                        </tr>
+                        <tr>
+                            <td>human.config.backend</td>
+                            <td>init()</td>
+                            <td>WebGLが使えないときに 'wasm' へ書き換える</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>検出結果から読み取っている値</h3>
+                <p>human.detect() の戻り値（result）のうち使っている値</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>値</th>
+                            <th>内容</th>
+                            <th>このアプリでの使い道</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>result.face</td>
+                            <td>検出した顔の配列</td>
+                            <td>一番大きい顔を照合の対象に選ぶ</td>
+                        </tr>
+                        <tr>
+                            <td>result.gesture</td>
+                            <td>ジェスチャーの配列（例：{ face: 0, gesture: 'facing left' }）</td>
+                            <td>横を向いていないかの判定</td>
+                        </tr>
+                        <tr>
+                            <td>result.error</td>
+                            <td>エラー内容</td>
+                            <td>エラーの表示</td>
+                        </tr>
+                        <tr>
+                            <td>face.score</td>
+                            <td>顔としての確からしさ（0〜1）</td>
+                            <td>MIN_SCORE 未満なら「不鮮明」とする</td>
+                        </tr>
+                        <tr>
+                            <td>face.box</td>
+                            <td>顔の枠 [x, y, 幅, 高さ]（ピクセル）</td>
+                            <td>大きさの判定、対象の選択（面積）、顔画像の切り出し</td>
+                        </tr>
+                        <tr>
+                            <td>face.boxRaw</td>
+                            <td>顔の枠（0〜1に正規化した値）</td>
+                            <td>カメラ映像の上に枠線を描く</td>
+                        </tr>
+                        <tr>
+                            <td>face.embedding</td>
+                            <td>特徴量（1024個の数値）</td>
+                            <td>サーバーに送って照合・登録する</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>このアプリ側で決めている値（face-engine.js の先頭）</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>定数</th>
+                            <th>値</th>
+                            <th>意味</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>MODEL_VERSION</td>
+                            <td>'human-3.3.6-faceres'</td>
+                            <td>特徴量を作ったモデルの名前。サーバー側の config/face.php と一致させる</td>
+                        </tr>
+                        <tr>
+                            <td>MIN_FACE_PX</td>
+                            <td>120</td>
+                            <td>顔の幅がこれより小さければ「近づいてください」と表示する</td>
+                        </tr>
+                        <tr>
+                            <td>MIN_SCORE</td>
+                            <td>0.6</td>
+                            <td>face.score がこれより低ければ「不鮮明」と表示する</td>
+                        </tr>
+                        <tr>
+                            <td>MAX_FACES</td>
+                            <td>3</td>
+                            <td>同時に検出する顔の数（maxDetected に渡している）</td>
+                        </tr>
+                        <tr>
+                            <td>REQUIRED_MODELS</td>
+                            <td>['blazeface', 'facemesh', 'faceres']</td>
+                            <td>必要なモデル（顔検出・顔の形・特徴量）</td>
+                        </tr>
+                        <tr>
+                            <td>GPU_BACKENDS</td>
+                            <td>['webgl', 'humangl', 'webgpu']</td>
+                            <td>GPUを使える計算エンジンの一覧。これ以外ならWASMに切り替える</td>
+                        </tr>
+                        <tr>
+                            <td>COLORS</td>
+                            <td>緑・オレンジ・赤・灰色</td>
+                            <td>枠線の色</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>analyze() は、上の検出結果をこのアプリ用にまとめ直して返します。登録・照合画面では、この戻り値を使っています。</p>
+
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>値</th>
+                            <th>内容</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ok</td>
+                            <td>照合に使える状態か（true / false）</td>
+                        </tr>
+                        <tr>
+                            <td>reason</td>
+                            <td>使えない理由（画面上部に表示する長い文）</td>
+                        </tr>
+                        <tr>
+                            <td>short</td>
+                            <td>枠線の横に表示する短い文</td>
+                        </tr>
+                        <tr>
+                            <td>face</td>
+                            <td>対象の顔（Humanの検出結果そのもの）</td>
+                        </tr>
+                        <tr>
+                            <td>embedding</td>
+                            <td>特徴量の配列（ok が true のときだけ）</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h4>取得できるが、今は使っていない値</h4>
+                <p>Humanの検出結果には、ほかにも次のような値があります。</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>値</th>
+                            <th>内容</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>face.rotation.angle</strong></td>
+                            <td>顔の向き（左右・上下・傾き）の角度</td>
+                        </tr>
+                        <tr>
+                            <td><strong>face.age、face.gender</strong></td>
+                            <td>推定年齢と性別</td>
+                        </tr>
+                        <tr>
+                            <td><strong>face.real、face.live</strong></td>
+                            <td>なりすまし判定と生体判定の結果。設定で antispoof と liveness を有効にすると得られる</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

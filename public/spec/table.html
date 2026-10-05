@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=keyboard_arrow_down,keyboard_arrow_up" />
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>テーブル一覧</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <a href="#show">
+                <li>テーブル確認方法</li>
+            </a>
+            <a href="#create">
+                <li>テーブル作成</li>
+            </a>
+            <a href="#admins">
+                <li>admins</li>
+            </a>
+            <a href="#teachers">
+                <li>teachers</li>
+            </a>
+            <a href="#face_samples">
+                <li>face_samples</li>
+            </a>
+            <a href="#match_logs">
+                <li>match_logs</li>
+            </a>
+            <a href="#Node">
+                <li>Node.js</li>
+            </a>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="show">テーブル確認方法</h2>
+            <section>
+                <p>XAMPPのShellで、</p>
+                <pre><code class="language-plaintext">mysql -u root
+use face;
+show tables;　//テーブル一覧
+SELECT * FROM テーブル名;　//テーブルの中身</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="create">テーブル作成</h2>
+            <section>
+                <p>VS Codeのターミナルで、</p>
+                <pre><code class="language-plaintext">php artisan migrate　//新規
+php artisan migrate:fresh　//作り直し</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="teachers">admins</h2>
+            <section>
+                <p>システム管理者の情報をまとめたテーブル </p>
+                <table border="1">
+                    <tr>
+                        <th>id</th>
+                        <td>ID</td>
+                    </tr>
+                    <tr>
+                        <th>login_id</th>
+                        <td>ログインID</td>
+                    </tr>
+                    <tr>
+                        <th>password</th>
+                        <td>パスワード</td>
+                    </tr>
+                    <tr>
+                        <th>remember_token</th>
+                        <td>ログインし続けるか</td>
+                    </tr>
+                    <tr>
+                        <th>created_at</th>
+                        <td>作成日</td>
+                    </tr>
+                    <tr>
+                        <th>updated_at</th>
+                        <td>更新日</td>
+                    </tr>
+                </table>
+
+                <p>登録するときはVS Codeのターミナルで、</p>
+                <pre><code class="language-plaintext">php artisan tinker
+> use App\Models\Admin;
+> Admin::all()
+> $a1 = new Admin()
+> $a1->login_id = 1
+> $a1->password = 12345678
+> $a1->save()</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="teachers">teachers</h2>
+            <section>
+                <p>先生の情報をまとめたテーブル </p>
+                <table border="1">
+                    <tr>
+                        <th>id</th>
+                        <td>ID</td>
+                    </tr>
+                    <tr>
+                        <th>login_id</th>
+                        <td>ログインID</td>
+                    </tr>
+                    <tr>
+                        <th>password</th>
+                        <td>パスワード</td>
+                    </tr>
+                    <tr>
+                        <th>name</th>
+                        <td>管理者の名前</td>
+                    </tr>
+                    <tr>
+                        <th>remember_token</th>
+                        <td>ログインし続けるか</td>
+                    </tr>
+                    <tr>
+                        <th>created_at</th>
+                        <td>作成日</td>
+                    </tr>
+                    <tr>
+                        <th>updated_at</th>
+                        <td>更新日</td>
+                    </tr>
+                </table>
+
+                <p>登録するときはVS Codeのターミナルで、</p>
+                <pre><code class="language-plaintext">php artisan tinker
+> use App\Models\Teacher;
+> Teacher::all()
+> $a1 = new Teacher()
+> $a1->login_id = 1
+> $a1->password = 12345678
+> $a1->name = "testteacher"
+> $a1->save()</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="face_samples">face_samples</h2>
+            <section>
+                <p>顔認証用の顔写真テーブル</p>
+                <table border="1">
+                    <tr>
+                        <th>id</th>
+                        <td>ID</td>
+                    </tr>
+                    <tr>
+                        <th>student_id</th>
+                        <td>studentsテーブル紐付けられている人物のID</td>
+                    </tr>
+                    <tr>
+                        <th>image_path</th>
+                        <td>保存先（faces/(student_id)/～.jpg）</td>
+                    </tr>
+                    <tr>
+                        <th>embedding</th>
+                        <td>
+                            顔の特徴量の数値の配列<br>
+                            AIが顔写真から抽出した「顔の形や各パーツの位置関係」を数値化したもの
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>dimension</th>
+                        <td>
+                            特徴量データ（embedding）の次元数<br>
+                            Humanなので1024のチェック項目で確認
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>model_version</th>
+                        <td>Humanのバージョン情報（human-3.3.6-faceres）</td>
+                    </tr>
+                    <tr>
+                        <th>created_at</th>
+                        <td>作成日</td>
+                    </tr>
+                    <tr>
+                        <th>updated_at</th>
+                        <td>更新日</td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="match_logs">match_logs</h2>
+            <section>
+                <p>「誰が・いつ・どのような判定結果で顔認証を行ったか」という監査履歴（ログ）を保存</p>
+                <table border="1">
+                    <tr>
+                        <th>id</th>
+                        <td>ID</td>
+                    </tr>
+                    <tr>
+                        <th>student_id</th>
+                        <td>studentsテーブル紐付けられている人物のID</td>
+                    </tr>
+                    <tr>
+                        <th>similarity</th>
+                        <td>どれだけ似ているか（0~1）</td>
+                    </tr>
+                    <tr>
+                        <th>margin</th>
+                        <td>２番目に似ていた人との差</td>
+                    </tr>
+                    <tr>
+                        <th>accepted</th>
+                        <td>成功したか（0 or 1）</td>
+                    </tr>
+                    <tr>
+                        <th>model_version</th>
+                        <td>Humanのバージョン情報（human-3.3.6-faceres）</td>
+                    </tr>
+                    <tr>
+                        <th>created_at</th>
+                        <td>作成日</td>
+                    </tr>
+                    <tr>
+                        <th>updated_at</th>
+                        <td>更新日</td>
+                    </tr>
+                </table>
+
+                <p>
+                    データベースに照合結果を保存する理由<br>
+                    ①不正アクセスやなりすましを追跡しやすい<br>
+                    ②システムの運用基準を最適化するデータとして活用できる<br>
+                    ③モデルバージョン変更時の互換性チェック
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="students">students</h2>
+            <section>
+                <p>登録者（学生）の情報をまとめたテーブル</p>
+                <table border="1">
+                    <tr>
+                        <th>id</th>
+                        <td>ID</td>
+                    </tr>
+                    <tr>
+                        <th>name</th>
+                        <td>名前</td>
+                    </tr>
+                    <tr>
+                        <th>student_number</th>
+                        <td>学籍番号</td>
+                    </tr>
+                    <tr>
+                        <th>class_name</th>
+                        <td>クラス名</td>
+                    </tr>
+                    <tr>
+                        <th>is_active</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>created_at</th>
+                        <td>作成日</td>
+                    </tr>
+                    <tr>
+                        <th>updated_at</th>
+                        <td>更新日</td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

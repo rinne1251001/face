@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=keyboard_arrow_down,keyboard_arrow_up" />
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>インストール関係</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <a href="#git">
+                <li>git</li>
+            </a>
+            <a href="#php">
+                <li>php8.5</li>
+            </a>
+            <a href="#composer">
+                <li>composer</li>
+            </a>
+            <a href="#Node">
+                <li>Node.js</li>
+            </a>
+            <a href="#copy">
+                <li>リポジトリコピー後にする作業</li>
+            </a>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="git">git</h2>
+            <section>
+                <p>インストールしたらVS Codeのターミナルに、</p>
+                <pre><code class="language-plaintext">git config --global user.name "あなたのGitHubのユーザー名"
+git config --global user.email "あなたのメールアドレス"</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="php">php8.5</h2>
+            <section>
+                <p>
+                    ①<a href="https://www.php.net/downloads.php" target="_blank"
+                        rel="noopener noreferrer">PHPダウンロードページ</a>の「VS17 x64 Thread Safe」の「Zip」をクリックしてインストール→展開<br>
+                    ②C:\xamppにあるphpフォルダを「php_old」にリネーム<br>
+                    ③①をC:\xamppに移動して名前を「php」にする<br>
+                    ④③にある「php.ini-development」をコピペして「php.ini」にリネーム＆↓のコメントアウトを外す
+                </p>
+                <pre><code class="language-plaintext">extension_dir = "C:\xampp\php\ext"
+extension=fileinfo
+extension=zip
+extension=openssl
+extension=pdo_mysql</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="composer">composer</h2>
+            <section>
+                <p>
+                    ①<a href="https://getcomposer.org/download/" target="_blank"
+                        rel="noopener noreferrer">composerダウンロードページ</a>の「Composer-Setup.exe」をクリックしてインストール<br>
+                    ②インストーラーの選択は「Recommend」→あとは☑を入れない<br>
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="Node">Node.js</h2>
+            <section>
+                <a href="https://nodejs.org/en/download" target="_blank"
+                    rel="noopener noreferrer">Node.jsダウンロードページ</a>の「Windows Installer (.msi)」をクリックしてインストール<br>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="copy">リポジトリコピー後にする作業</h2>
+            <section>
+                <p>VS Codeターミナルで、</p>
+                <pre><code class="language-plaintext">composer install
+npm install</code></pre>
+                <p>faceデータベースがない場合はXAMPPのShellで、</p>
+                <pre><code class="language-plaintext">mysql -u root
+CREATE DATABASE face;</code></pre>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

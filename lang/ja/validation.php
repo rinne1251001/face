@@ -291,5 +291,11 @@ return [
         'login_id'       => 'ログインID',
         'student_number' => '学籍番号',
         'class_name'     => 'クラス',
+        'school_class_id' => 'クラス',
+        'subject_ids' => '授業',
+        'day_of_week'  => '曜日',
+        'period_start' => '開始時限',
+        'period_end'   => '終了時限',
+        'class_ids'    => '受け持ちクラス',
     ],
 ];

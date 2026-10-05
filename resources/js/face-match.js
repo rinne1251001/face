@@ -25,11 +25,11 @@ let looping = false; // 連続照合が動いているか
 
 function renderResult(r) {
     const rows = r.candidates.map((c) => `
-        <tr><td>${esc(c.person?.name)}</td><td>${esc(c.person?.student_number)}</td>
-        <td>${esc(c.person?.class_name)}</td><td>${fmt(c.similarity)}</td></tr>`).join('');
+        <tr><td>${esc(c.student?.name)}</td><td>${esc(c.student?.student_number)}</td>
+        <td>${esc(c.student?.class_name)}</td><td>${fmt(c.similarity)}</td></tr>`).join('');
     resultEl.innerHTML = `
         <h2 class="${r.accepted ? 'ok' : 'error'}">
-            ${r.accepted ? `${esc(r.person.name)} さん（${esc(r.person.class_name)}）` : '該当者なし（または判定保留）'}
+            ${r.accepted ? `${esc(r.student.name)} さん（${esc(r.student.class_name)}）` : '該当者なし（または判定保留）'}
         </h2>
         <p>類似度 ${fmt(r.similarity)} ／ 2位との差 ${fmt(r.margin)} ／ しきい値 ${fmt(r.threshold)}
            ／ 照合時刻 ${new Date().toLocaleTimeString()}</p>
@@ -45,7 +45,7 @@ async function sendEmbedding(embedding, { fromCamera = false } = {}) {
     renderResult(r);
     if (fromCamera) {
         // 照合した顔の枠に結果を表示する（fillText は HTML ではないのでエスケープ不要）
-        showLabel(r.accepted ? `${r.person.name} さん` : '該当者なし', r.accepted, COOLDOWN);
+        showLabel(r.accepted ? `${r.student.name} さん` : '該当者なし', r.accepted, COOLDOWN);
     }
 }
 

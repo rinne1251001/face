@@ -8,7 +8,7 @@ class MatchLog extends Model
 {
     public const UPDATED_AT = null;
 
-    protected $fillable = ['person_id', 'similarity', 'margin', 'accepted', 'model_version', 'admin_id'];
+    protected $fillable = ['student_id', 'similarity', 'margin', 'accepted', 'model_version', 'teacher_id'];
 
     protected function casts(): array
     {
