@@ -11,7 +11,7 @@ class AdminSeeder extends Seeder
     {
         Admin::updateOrCreate(
             ['login_id' => env('ADMIN_LOGIN_ID', 'admin')],
-            ['password' => env('ADMIN_PASSWORD', 'change-me-please')],
+            ['password' => env('ADMIN_PASSWORD', '12345678')],
         );
     }
 }

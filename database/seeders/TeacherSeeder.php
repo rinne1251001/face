@@ -15,7 +15,7 @@ class TeacherSeeder extends Seeder
         // 初回ログイン後、必ずパスワードを変更すること
         $teacher = Teacher::updateOrCreate(
             ['login_id' => env('TEACHER_LOGIN_ID', 'teacher')],
-            ['name' => 'テスト教師', 'password' => env('TEACHER_PASSWORD', 'change-me-please')],
+            ['name' => 'テスト教師', 'password' => env('TEACHER_PASSWORD', '12345678')],
         );
 
         // 教師は担当授業が1つ以上必要なので、見本の授業をすべて担当にする
