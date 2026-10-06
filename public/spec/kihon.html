@@ -117,7 +117,7 @@ SHOW DATABASES;　//データベース一覧のコマンド。faceがあれば�
                 <p>VS Codeのターミナルを開いて以下のコマンドを打つ</p>
                 <pre><code class="language-plaintext">php artisan migrate</code></pre>
                 <p>
-                    テーブルの内容はdatabase/migrationsにあるファイルに書いてあり、１つのファイルにつき１つのテーブルが作成されます<br>
+                    テーブルの内容はdatabase/migrationsにあるファイルに書いてあり、１つのファイルにつき１つ以上のテーブルが作成されます<br>
                     （例：2026_09_28_000001_create_admins_table.php→adminsテーブル）
                 </p>
 
@@ -126,7 +126,8 @@ SHOW DATABASES;　//データベース一覧のコマンド。faceがあれば�
                     そのため、以下のコマンドを打つ必要があります（データベースに登録したデータは全て削除され作り直しになるので注意）
                 </p>
                 <pre><code class="language-plaintext">php artisan migrate:fresh　//テーブル作り直し
-Remove-Item -Recurse -Force storage/app/private/faces　//顔写真削除</code></pre>
+Remove-Item -Recurse -Force storage/app/private/faces　//顔写真削除
+php artisan cache:clear　//古い特徴量キャッシュをクリア</code></pre>
             </section>
         </div>
 
@@ -221,9 +222,9 @@ Route::HTTPメソッド('/URL名', [コントローラー名::class, 'クラス�
                 <p>
                     例：Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');なら、<br>
                     HTTPメソッドはget<br>
-                    URLはhttp://127.0.0.1:8000/url、<br>
+                    URLはhttp://127.0.0.1:8000/articles、<br>
                     コントローラーはapp\Http\Controllers\ArticleController.phpのindex()メソッド、<br>
-                    このファイルに遷移したい時は&lt;a href="{{ route('name') }}">になる
+                    このファイルに遷移したい時は&lt;a href="{{ route('articles.index') }}">になる
                 </p>
 
                 <p>主なHTTPメソッド</p>
@@ -247,7 +248,7 @@ Route::HTTPメソッド('/URL名', [コントローラー名::class, 'クラス�
                             <td>GET②</td>
                             <td>データの取得</td>
                             <td>show()、edit()</td>
-                            <td>Route::delete('/url名/{id}', ...)</td>
+                            <td>Route::get('/url名/{id}', ...)<br>Route::get('/url名/{id}/edit', ...)</td>
                         </tr>
                         <tr>
                             <td>POST</td>
@@ -259,7 +260,7 @@ Route::HTTPメソッド('/URL名', [コントローラー名::class, 'クラス�
                             <td>PATCH</td>
                             <td>データの更新</td>
                             <td>update()</td>
-                            <td>Route::patch('/url名', ...)</td>
+                            <td>Route::patch('/url名/{id}', ...)</td>
                         </tr>
                         <tr>
                             <td>DELETE</td>

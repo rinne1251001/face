@@ -4,6 +4,19 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\Teacher;
 use Illuminate\Support\Facades\Route;
 
+
+/*
+|--------------------------------------------------------------------------
+| 実験用
+|--------------------------------------------------------------------------
+*/
+// http://127.0.0.1:8000/admin/tests/experiment
+if (app()->environment('local')) {
+    require __DIR__.'/experiment.php';
+}
+// http://127.0.0.1:8000/tests
+Route::view('/test', 'tests/test');
+
 // トップページは教師のホームへ（ログインしていなければ教師のログイン画面へ）
 Route::redirect('/', '/teacher');
 

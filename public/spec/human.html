@@ -41,8 +41,23 @@
             <a href="#reason">
                 <li>導入理由</li>
             </a>
+            <a href="#mechanism">
+                <li>照合の仕組み</li>
+            </a>
+            <a href="#threshold">
+                <li>閾値</li>
+            </a>
+            <a href="#folder">
+                <li>顔写真のフォルダ</li>
+            </a>
             <a href="#variable">
                 <li>変数</li>
+            </a>
+            <a href="#face-api">
+                <li>face-api.js</li>
+            </a>
+            <a href="#dimension">
+                <li>次元数</li>
             </a>
         </ol>
     </nav>
@@ -73,8 +88,8 @@
             <section>
                 <h3>①高精度な特徴量</h3>
                 <p>
-                    従来の軽量ライブラリ（face-api.js など）は128次元だが、Humanは1024次元の高精度なベクトルをブラウザ上でリアルタイム抽出可能<br>
-                    →次元数が多いので識別精度が非常に高く、双子や似た顔、角度や照明が変わっても誤認証が起きにくい
+                    Humanは特徴量を計算する前に、顔の切り出し → 傾きの補正 → 顔の細かい形（メッシュ）の検出 → もう一度傾きを補正 → 白黒に変換 → 明るさをそろえる、という処理をしている<br>
+                    →照明や顔の傾きの違いの影響を受けにくい。
                 </p>
             </section>
 
@@ -106,7 +121,8 @@
                 <h3>⑤アップデート</h3>
                 <p>
                     TypeScriptベースで記述されており、TensorFlow.js の最新エコシステムに追従して更新されている<br>
-                    →常に最新の状態
+                    →アーカイブされたface-api.jsと違い、Humanは2026年10月時点でまだ公開・保守されている。ただし作者1人の個人開発で、最新版3.3.6（2025年8月）以降は更新されておらず、更新頻度は高くない。
+                    そのため、Humanを直接使うのはface-engine.js だけにして、将来ほかのライブラリに差し替えやすくしている。
                 </p>
             </section>
 
@@ -116,12 +132,172 @@
                     瞬きや視線・表情の動きなど生きている人間特有の動きを検知<br>
                     →「他人の写真」や「スマホの画面」はブロックされる
                 </p>
+                <p>
+                    なりすましを判定するモデル（antispoof、liveness）はこのアプリでは無効にしているため、現状は写真やスマホ画面でも認証が通る可能性がある。入退室管理など厳しい用途で使う場合は、有効にして効果を検証する必要がある。
+                </p>
             </section>
 
             <section>
                 <h3>⑦追加拡張の容易さ</h3>
                 <p>
                     基本機能だけでなく、開発者が自分の作りたいアプリに合わせて新しい機能や設定を簡単に追加・カスタマイズできるよう設計されている
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="mechanism">照合の仕組み</h2>
+            <section>
+                <h3>大まかな流れ</h3>
+                <p>
+                    ①特徴量の長さを1にそろえる<br>
+                    ②生徒ごとに一番似ている登録写真の類似度を取る<br>
+                    ③1位がしきい値以上で、2位との差がmargin以上なら本人と判定する
+                </p>
+            </section>
+
+            <section>
+                <h3>①特徴量の長さを1にそろえる</h3>
+                <p>
+                    特徴量(embedding)とは顔認証に使われるデータのことで、数値の配列になっています<br>
+                    例えば数値の個数が２個(2次元)なら[3, 4]、３個(3次元)なら[3, 4, 5]という形です<br>
+                    また、これをグラフにすると、[3, 4]は原点からx=3,y=4のところにあり、[3, 4, 5]はx=3,y=4,z=5のところにあります<br>
+                    そのため、特徴量は2人の顔がどれくらい似ているかを数学的・幾何学的に比べる「矢印の向き」として扱われます<br>
+                    Humanの数値の個数(次元数:dimension)は1024なので、このアプリでは1024次元の空間の点・矢印で顔認証をしています<br>
+                </p>
+
+                <p>
+                    矢印の長さは撮影条件などでも変わるので、長さを１に揃えてから矢印の向きを比べます<br>
+                    登録時に長さを1にしてからDBに保存しておけば、照合時には送られてきた1件だけを長さ1にするだけで顔認証が簡単にできます
+                </p>
+
+                <pre><code class="php">public static function toUnitVector(mixed $raw, string $field = 'embedding'): array
+{
+    // 配列でない、連想配列（リスト形式でない）、次元数（要素数）が設定範囲外なら終了
+    $count = is_array($raw) ? count($raw) : 0;
+    if (! is_array($raw) || ! array_is_list($raw) || $count < config('face.min_dimension') || $count > config('face.max_dimension')) {
+        throw ValidationException::withMessages([$field => '特徴量の形式が正しくありません。']);
+    }
+
+    // すべての要素の二乗和を求める
+    $sum = 0.0;
+    foreach ($raw as $x) {
+        if (! is_int($x) && ! is_float($x)) {
+            throw ValidationException::withMessages([$field => '特徴量に数値以外が含まれています。']);
+        }
+        $sum += $x * $x;
+    }
+    if ($sum <= 0.0 || ! is_finite($sum)) {
+        throw ValidationException::withMessages([$field => '特徴量が不正です。']);
+    }
+
+    // ルートをかぶせて実際のベクトルの長さに戻す
+    $norm = sqrt($sum);
+
+    // 特徴ベクトルを1にする（例：[3, 4]→[0.6, 0.8]のように同じ比率で三平方の定理で計算すると1になる）
+    return array_map(fn ($x) => $x / $norm, $raw);
+}</code></pre>
+
+                <p>
+                    <span style="font-weight: bolder;">計算方法</span>（L2正規化（単位ベクトル化））<br>
+                    例えば[3, 4]の2次元配列なら、
+                </p>
+                <table border="1">
+                    <tr>
+                        <td>
+                            <span style="font-weight: bolder;">ベクトルの長さを求める</span><br>
+                            三平方の定理（ピタゴラスの定理）を使って、原点からその点までの直線距離（大きさ）を計算
+                        </td>
+                        <td>√(3² + 4²) = √25 = 5</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span style="font-weight: bolder;">各数値を長さで割る</span><br>
+                            すべての数値を求めた長さ（5）で割ることで、全体のバランスを保ったまま大きさを調整
+                        </td>
+                        <td>[3÷5, 4÷5] = [0.6, 0.8]</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span style="font-weight: bolder;">長さが1になっているか確認</span><br>
+                            新しくできた数値を二乗して足すと合計が必ず「1」になる
+                        </td>
+                        <td>0.6² + 0.8² = 0.36 + 0.64 = 1</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h3>②生徒ごとに一番似ている登録写真の類似度を取る</h3>
+                <p></p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="threshold">閾値</h2>
+            <section>
+                <h3>設定ファイル</h3>
+                <p>
+                    config/face.php<br>
+                    変更したらphp artisan config:clearを実行<br>
+                    appフォルダなどで使うときはconfig('face.threshold')と使う
+                </p>
+
+                <h3>threshold</h3>
+                <p>
+                    どのくらい似ていたかの数値（similarity：値は0～1）の合格ライン
+                </p>
+
+                <h3>margin</h3>
+                <p>
+                    １番似ていた人と２番目に似ていた人との差がこの値以上ないなら判定保留にする<br>
+                </p>
+            </section>
+
+            <section>
+                <h3>実験（帽子）</h3>
+                <p>
+                    ①ノーマル、ニット帽、キャップの同一人物三人を登録<br>
+                    marginは0.2前後になり、それぞれ識別された
+                </p>
+                <p>
+                    ②ノーマルのみを登録<br>
+                    ニット帽、キャップを被った時のsimilarityは0.75～0.8くらいになった
+                </p>
+            </section>
+
+            <section>
+                <h3>実験（マスク）</h3>
+                <p>
+                    ①マスクありのみ登録<br>
+                    マスクなしで照合したときsimilarityは0.5後半になった
+                </p>
+                <p>
+                    ①マスクなしのみ登録<br>
+                    マスクありで照合したときsimilarityは0.5前半になった
+                </p>
+                <p>
+                    ②マスクありなし両方を登録<br>
+                    marginは0.3くらいになった
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="folder">顔写真のフォルダ</h2>
+            <section>
+                <h3>フォルダの場所</h3>
+                <p>storage/app/private/faces</p>
+            </section>
+            <section>
+                <h3>顔写真を全て消すコマンド</h3>
+                <pre><code class="language-plaintext">Remove-Item -Recurse -Force storage/app/private/faces</code></pre>
+            </section>
+            <section>
+                <h3>注意点</h3>
+                <p>
+                    顔写真を消さずにGithubに上げると全世界に顔写真が公開されます<br>
+                    Githubに上げるときは必ず上のコマンドを打って写真を消してください
                 </p>
             </section>
         </div>
@@ -432,6 +608,354 @@
             </section>
         </div>
 
+        <div class="content-wrapper">
+            <h2 id="face-api">face-api.js</h2>
+            <section>
+                <h3>概要</h3>
+                <p>
+                    Humanの前の画像認識<br>
+                    詳しくは<a href="https://qiita.com/el_nakajox/items/a364cc9ce5fa2e952a96" target="_blank"
+                        rel="noopener noreferrer">こちら</a>
+                </p>
+            </section>
+
+            <section>
+                <h3>Humanとの違い</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>face-api.js</th>
+                            <th>Human</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>主な対象</strong></td>
+                            <td>顔のみ</td>
+                            <td>顔、体、手、指、虹彩、ジェスチャー</td>
+                        </tr>
+                        <tr>
+                            <td><strong>開発状況</strong></td>
+                            <td>停止（レガシー）</td>
+                            <td>保守は継続（個人開発・更新は少ない）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>次元数</strong></td>
+                            <td>128次元</td>
+                            <td>1024次元</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TensorFlow.js 依存</strong></td>
+                            <td>古いバージョン（1.x系など）</td>
+                            <td>最新バージョン（4.x系など）</td>
+                        </tr>
+                        <tr>
+                            <td><strong>対応バックエンド</strong></td>
+                            <td>主に WebGL / CPU</td>
+                            <td>WebGPU, WebGL, WASM, CPU</td>
+                        </tr>
+                        <tr>
+                            <td><strong>高度な機能</strong></td>
+                            <td>2D検出、表情・年齢など</td>
+                            <td>3Dトラッキング、滑らかな補間、パフォーマンス最適化</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>コード</h3>
+                <p>同じフォルダ内にindex.htmlとscript.jsを作成</p>
+                <pre><code class="html">&lt;!DOCTYPE html>
+&lt;html lang="ja">
+
+&lt;head>
+    &lt;meta charset="UTF-8">
+    &lt;title>顔認識カメラ実験&lt;/title>
+    &lt;style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        video,
+        canvas {
+            display: block;
+            margin: 10px auto;
+            border-radius: 8px;
+        }
+
+        #controls {
+            margin: 15px;
+        }
+
+        input,
+        button {
+            padding: 8px 12px;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        #status {
+            font-weight: bold;
+            color: #333;
+            margin: 10px;
+        }
+    &lt;/style>
+&lt;/head>
+
+&lt;body>
+
+    &lt;h1>顔認識カメラ実験&lt;/h1>
+    &lt;p id="status">モデルを読み込んでいます...&lt;/p>
+
+    &lt;div style="position: relative; display: inline-block;">
+        &lt;video id="video" width="640" height="480" autoplay muted>&lt;/video>
+        &lt;canvas id="overlay" width="640" height="480" style="position: absolute; top: 0; left: 0;">&lt;/canvas>
+    &lt;/div>
+
+    &lt;div id="controls">
+        &lt;input type="text" id="nameInput" placeholder="名前を入力">
+        &lt;button id="registerBtn" disabled>顔を登録する&lt;/button>
+    &lt;/div>
+
+    &lt;!-- face-api.js のCDN読み込み -->
+    &lt;script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js">&lt;/script>
+    &lt;script src="script.js">&lt;/script>
+&lt;/body>
+
+&lt;/html>
+</code></pre>
+
+                <pre><code class="js">const video = document.getElementById('video');
+const overlay = document.getElementById('overlay');
+const statusText = document.getElementById('status');
+const nameInput = document.getElementById('nameInput');
+const registerBtn = document.getElementById('registerBtn');
+
+// AIモデルが置かれているURL（vladmandic版の公式モデル等）
+const MODEL_URL = 'https://cdn.jsdelivr.net/gh/vladmandic/face-api/model/';
+
+let labeledDescriptors = [];
+
+// 初期化とモデルの読み込み
+async function init() {
+    statusText.innerText = 'AIモデルを読み込んでいます...';
+
+    // 必要なモデルをロード
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+
+    statusText.innerText = 'カメラを起動しています...';
+    await startVideo();
+
+    loadSavedFaces();
+    registerBtn.disabled = false;
+    statusText.innerText = '準備完了！';
+}
+
+// Webカメラの起動
+function startVideo() {
+    return new Promise((resolve, reject) => {
+        navigator.mediaDevices.getUserMedia({ video: {} }, {}, {})
+            .then(stream => {
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    resolve();
+                };
+            })
+            .catch(err => {
+                statusText.innerText = 'カメラの起動に失敗しました。';
+                reject(err);
+            });
+    });
+}
+
+// 登録された顔データを localStorage から復元
+function loadSavedFaces() {
+    const saved = localStorage.getItem('face_database');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        labeledDescriptors = parsed.map(item => {
+            return new faceapi.LabeledFaceDescriptors(
+                item.name,
+                item.descriptors.map(d => new Float32Array(d))
+            );
+        });
+    }
+}
+
+// 顔データの保存
+function saveFacesToStorage() {
+    const dataToSave = labeledDescriptors.map(ld => ({
+        name: ld.label,
+        descriptors: ld.descriptors.map(d => Array.from(d))
+    }));
+    localStorage.setItem('face_database', JSON.stringify(dataToSave));
+}
+
+// 「顔を登録する」ボタンを押したときの処理
+registerBtn.addEventListener('click', async () => {
+    const name = nameInput.value.trim();
+    if (!name) {
+        alert('名前を入力してください。');
+        return;
+    }
+
+    statusText.innerText = `${name}さんの顔を検出中...`;
+
+    // 現在の映像から顔と特徴量を抽出
+    const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true).withFaceDescriptor();
+
+    if (!detection) {
+        alert('顔が検出されませんでした。カメラにしっかり顔を向けてください。');
+        statusText.innerText = '準備完了！';
+        return;
+    }
+
+    // すでに登録されている名前があれば追加、なければ新規作成
+    const existingIndex = labeledDescriptors.findIndex(ld => ld.label === name);
+    if (existingIndex > -1) {
+        labeledDescriptors[existingIndex].descriptors.push(detection.descriptor);
+    } else {
+        labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(name, [detection.descriptor]));
+    }
+
+    saveFacesToStorage();
+    alert(`${name}さんの顔を登録しました！`);
+    nameInput.value = '';
+    statusText.innerText = '準備完了！';
+});
+
+// カメラ映像の再生が始まったらリアルタイム認識を開始
+video.addEventListener('play', () => {
+    const displaySize = { width: video.width, height: video.height };
+    faceapi.matchDimensions(overlay, displaySize);
+
+    setInterval(async () => {
+        if (labeledDescriptors.length === 0) return;
+
+        // 映像から複数の顔を検出・特徴量抽出
+        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true).withFaceDescriptors();
+        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+        const ctx = overlay.getContext('2d');
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+        // 登録データと照合するためのmatcherを作成（しきい値0.55）
+        const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+
+        resizedDetections.forEach(detection => {
+            const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+            const box = detection.detection.box;
+
+            const drawBox = new faceapi.draw.DrawBox(box, {
+                label: `${bestMatch.label} (${Math.round(bestMatch.distance * 100) / 100})`
+            });
+            drawBox.draw(overlay);
+
+            // 未知の人でなければ、ここで「出席処理」などをつなげることができます
+            if (bestMatch.label !== 'unknown') {
+                // 例：コンソールに記録
+                // console.log(`${bestMatch.label} を検出しました`);
+            }
+        });
+    }, 200);
+});
+
+// 実行開始
+init();</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="dimension">次元数</h2>
+            <section>
+                <p>
+                    次元数とは何個の数値で顔を表すか」の箱の数、そのデータが「いくつ項目を持っているか」の数<br>
+                    次元数が多いほど顔の違いの表現の幅が広がるが、＝精度が高いというわけではない<br>
+                </p>
+            </section>
+
+            <section>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>128次元</th>
+                            <th>1024次元（Human）</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1人の顔を表す数値の個数</td>
+                            <td>128個</td>
+                            <td style="padding: 8px;">1024個</td>
+                        </tr>
+                        <tr>
+                            <td>主な例</td>
+                            <td>face-api.js、dlib</td>
+                            <td>Human（faceres）</td>
+                        </tr>
+                        <tr>
+                            <td>顔の違いを表せる余地</td>
+                            <td>小さい</td>
+                            <td>大きい（128次元の8倍）</td>
+                        </tr>
+                        <tr>
+                            <td>精度</td>
+                            <td>次元数では決まらない。face-api.jsは128次元で、顔照合の標準テスト（LFW）の正解率は99.38%（公式発表）</td>
+                            <td>次元数では決まらない。このアプリでの精度は自分たちの実験で確かめる</td>
+                        </tr>
+                        <tr>
+                            <td>1枚分のデータ量（32bitの数値）</td>
+                            <td>約0.5KB</td>
+                            <td>約4KB</td>
+                        </tr>
+                        <tr>
+                            <td>DBに保存したときの大きさ（JSONの文字列）</td>
+                            <td>約2.5KB</td>
+                            <td>約20KB</td>
+                        </tr>
+                        <tr>
+                            <td>1回の照合の計算量</td>
+                            <td>1とすると</td>
+                            <td>約8倍</td>
+                        </tr>
+                        <tr>
+                            <td>照合1回でサーバーに送るデータ</td>
+                            <td>約2.5KB</td>
+                            <td>約20KB</td>
+                        </tr>
+                        <tr>
+                            <td>メリット</td>
+                            <td>
+                                ・保存・通信・計算がすべて軽い<br>
+                                ・登録人数が増えても照合が速い<br>
+                                ・DBや照合用キャッシュが小さく済む
+                            </td>
+                            <td>
+                                ・顔の細かい違いを表せる余地が大きい（モデルがうまく学習できていれば、似た顔を区別する助けになる）
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>デメリット</td>
+                            <td>
+                                ・表せる余地が小さい（ただし、よく学習されたモデルなら128次元でも十分に高精度）
+                            </td>
+                            <td>
+                                ・データ量と計算量が約8倍<br>
+                                ・DBと照合用キャッシュが大きくなる（例：1000人×5枚で、DBは約100MB、キャッシュは約20MB）<br>
+                                ・余地が大きくても、モデルがそれを使い切っているとは限らない
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
     </main>
 
     <script>

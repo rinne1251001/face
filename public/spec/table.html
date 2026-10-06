@@ -41,14 +41,23 @@
             <a href="#create">
                 <li>テーブル作成</li>
             </a>
-            <a href="#create">
+            <a href="#seeder">
                 <li>テストデータ注入</li>
+            </a>
+            <a href="#teachers">
+                <li>teachers</li>
             </a>
             <a href="#admins">
                 <li>admins</li>
             </a>
-            <a href="#teachers">
-                <li>teachers</li>
+            <a href="#school_classes">
+                <li>school_classes</li>
+            </a>
+            <a href="#students">
+                <li>students</li>
+            </a>
+            <a href="#subjects">
+                <li>subjects</li>
             </a>
             <a href="#face_samples">
                 <li>face_samples</li>
@@ -56,8 +65,11 @@
             <a href="#match_logs">
                 <li>match_logs</li>
             </a>
-            <a href="#Node">
-                <li>Node.js</li>
+            <a href="#pivot">
+                <li>pivot</li>
+            </a>
+            <a href="#attendances">
+                <li>attendances</li>
             </a>
         </ol>
     </nav>
@@ -71,6 +83,8 @@
 use face;
 show tables;　//テーブル一覧
 SELECT * FROM テーブル名;　//テーブルの中身</code></pre>
+                <p>もしくは、VS Codeのターミナルで、</p>
+                <pre><code class="language-plaintext">php artisan db:table students</code></pre>
             </section>
         </div>
 
@@ -84,10 +98,12 @@ php artisan migrate:fresh　//作り直し</code></pre>
         </div>
 
         <div class="content-wrapper">
-            <h2 id="create">テーブル作成</h2>
+            <h2 id="seeder">テストデータ注入</h2>
             <section>
                 <p>VS Codeのターミナルで、</p>
                 <pre><code class="language-plaintext">php artisan db:seed</code></pre>
+                <p>テーブルリセット＆データ注入を同時にするコマンド</p>
+                <pre><code class="language-plaintext">php artisan migrate:fresh --seed</code></pre>
             </section>
 
             <section>
@@ -97,7 +113,44 @@ php artisan migrate:fresh　//作り直し</code></pre>
         </div>
 
         <div class="content-wrapper">
-            <h2 id="teachers">admins</h2>
+            <h2 id="teachers">teachers</h2>
+            <section>
+                <p>先生の情報をまとめたテーブル </p>
+                <table border="1">
+                    <tr>
+                        <th>id</th>
+                        <td>ID</td>
+                    </tr>
+                    <tr>
+                        <th>login_id</th>
+                        <td>ログインID</td>
+                    </tr>
+                    <tr>
+                        <th>password</th>
+                        <td>パスワード</td>
+                    </tr>
+                    <tr>
+                        <th>name</th>
+                        <td>教師の名前</td>
+                    </tr>
+                    <tr>
+                        <th>remember_token</th>
+                        <td>ログインし続けるか</td>
+                    </tr>
+                    <tr>
+                        <th>created_at</th>
+                        <td>作成日</td>
+                    </tr>
+                    <tr>
+                        <th>updated_at</th>
+                        <td>更新日</td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="admins">admins</h2>
             <section>
                 <p>システム管理者の情報をまとめたテーブル </p>
                 <table border="1">
@@ -133,35 +186,23 @@ php artisan migrate:fresh　//作り直し</code></pre>
 > Admin::all()
 > $a1 = new Admin()
 > $a1->login_id = 1
-> $a1->password = 12345678
+> $a1->password = '12345678'
 > $a1->save()</code></pre>
             </section>
         </div>
 
         <div class="content-wrapper">
-            <h2 id="teachers">teachers</h2>
+            <h2 id="school_classes">school_classes</h2>
             <section>
-                <p>先生の情報をまとめたテーブル </p>
+                <p>クラスの情報をまとめたテーブル </p>
                 <table border="1">
                     <tr>
                         <th>id</th>
                         <td>ID</td>
                     </tr>
                     <tr>
-                        <th>login_id</th>
-                        <td>ログインID</td>
-                    </tr>
-                    <tr>
-                        <th>password</th>
-                        <td>パスワード</td>
-                    </tr>
-                    <tr>
                         <th>name</th>
-                        <td>管理者の名前</td>
-                    </tr>
-                    <tr>
-                        <th>remember_token</th>
-                        <td>ログインし続けるか</td>
+                        <td>クラス名</td>
                     </tr>
                     <tr>
                         <th>created_at</th>
@@ -172,16 +213,80 @@ php artisan migrate:fresh　//作り直し</code></pre>
                         <td>更新日</td>
                     </tr>
                 </table>
+            </section>
+        </div>
 
-                <p>登録するときはVS Codeのターミナルで、</p>
-                <pre><code class="language-plaintext">php artisan tinker
-> use App\Models\Teacher;
-> Teacher::all()
-> $a1 = new Teacher()
-> $a1->login_id = 1
-> $a1->password = 12345678
-> $a1->name = "testteacher"
-> $a1->save()</code></pre>
+        <div class="content-wrapper">
+            <h2 id="students">students</h2>
+            <section>
+                <p>登録者（学生）の情報をまとめたテーブル</p>
+                <table border="1">
+                    <tr>
+                        <th>id</th>
+                        <td>ID</td>
+                    </tr>
+                    <tr>
+                        <th>name</th>
+                        <td>名前</td>
+                    </tr>
+                    <tr>
+                        <th>student_number</th>
+                        <td>学籍番号</td>
+                    </tr>
+                    <tr>
+                        <th>school_class_id</th>
+                        <td>クラス名</td>
+                    </tr>
+                    <tr>
+                        <th>is_active</th>
+                        <td>照合の対象にするか（1=有効、0=停止）</td>
+                    </tr>
+                    <tr>
+                        <th>created_at</th>
+                        <td>作成日</td>
+                    </tr>
+                    <tr>
+                        <th>updated_at</th>
+                        <td>更新日</td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="subjects">subjects</h2>
+            <section>
+                <p>授業の情報をまとめたテーブル</p>
+                <table border="1">
+                    <tr>
+                        <th>id</th>
+                        <td>ID</td>
+                    </tr>
+                    <tr>
+                        <th>name</th>
+                        <td>授業名</td>
+                    </tr>
+                    <tr>
+                        <th>day_of_week</th>
+                        <td>開講曜日</td>
+                    </tr>
+                    <tr>
+                        <th>period_start</th>
+                        <td>開始時間</td>
+                    </tr>
+                    <tr>
+                        <th>period_end</th>
+                        <td>終了時間</td>
+                    </tr>
+                    <tr>
+                        <th>created_at</th>
+                        <td>作成日</td>
+                    </tr>
+                    <tr>
+                        <th>updated_at</th>
+                        <td>更新日</td>
+                    </tr>
+                </table>
             </section>
         </div>
 
@@ -205,15 +310,15 @@ php artisan migrate:fresh　//作り直し</code></pre>
                     <tr>
                         <th>embedding</th>
                         <td>
-                            顔の特徴量の数値の配列<br>
-                            AIが顔写真から抽出した「顔の形や各パーツの位置関係」を数値化したもの
+                            AIが顔の画像から作る1024個の数値の並び<br>
+                            並び全体でその人の顔を表し、矢印の向き（コサイン類似度）で似ているかを判断する
                         </td>
                     </tr>
                     <tr>
                         <th>dimension</th>
                         <td>
-                            特徴量データ（embedding）の次元数<br>
-                            Humanなので1024のチェック項目で確認
+                            特徴量の数値の個数（次元数）<br>
+                            Humanのfaceresでは1024
                         </td>
                     </tr>
                     <tr>
@@ -243,7 +348,10 @@ php artisan migrate:fresh　//作り直し</code></pre>
                     </tr>
                     <tr>
                         <th>student_id</th>
-                        <td>studentsテーブル紐付けられている人物のID</td>
+                        <td>
+                            studentsテーブル紐付けられている人物のID<br>
+                            判定に合格しなかったときも、一番似ていた生徒のIDが入る
+                        </td>
                     </tr>
                     <tr>
                         <th>similarity</th>
@@ -262,12 +370,12 @@ php artisan migrate:fresh　//作り直し</code></pre>
                         <td>Humanのバージョン情報（human-3.3.6-faceres）</td>
                     </tr>
                     <tr>
-                        <th>created_at</th>
-                        <td>作成日</td>
+                        <th>teacher_id</th>
+                        <td>出席受付をした教師<br>照合テストでは空</td>
                     </tr>
                     <tr>
-                        <th>updated_at</th>
-                        <td>更新日</td>
+                        <th>created_at</th>
+                        <td>作成日</td>
                     </tr>
                 </table>
 
@@ -281,33 +389,94 @@ php artisan migrate:fresh　//作り直し</code></pre>
         </div>
 
         <div class="content-wrapper">
-            <h2 id="students">students</h2>
+            <h2 id="pivot">pivot</h2>
+            <p>中間テーブル3つ</p>
             <section>
-                <p>登録者（学生）の情報をまとめたテーブル</p>
+                <h3>school_class_teacher</h3>
+                <p>教師が受け持つクラスの情報をまとめたテーブル</p>
+                <table border="1">
+                    <tr>
+                        <th>school_class_id</th>
+                        <td>クラスのID</td>
+                    </tr>
+                    <tr>
+                        <th>teacher_id</th>
+                        <td>教師のID</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h3>student_subject</h3>
+                <p>生徒が受講する授業の情報をまとめたテーブル</p>
+                <table border="1">
+                    <tr>
+                        <th>student_id</th>
+                        <td>学生のID</td>
+                    </tr>
+                    <tr>
+                        <th>subject_id</th>
+                        <td>授業のID</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h3>subject_teacher</h3>
+                <p>教師が担当する授業の情報をまとめたテーブル</p>
+                <table border="1">
+                    <tr>
+                        <th>subject_id</th>
+                        <td>授業のID</td>
+                    </tr>
+                    <tr>
+                        <th>teacher_id</th>
+                        <td>教師のID</td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="attendances">attendances</h2>
+            <section>
+                <p>出席情報をまとめたテーブル</p>
                 <table border="1">
                     <tr>
                         <th>id</th>
                         <td>ID</td>
                     </tr>
                     <tr>
-                        <th>name</th>
-                        <td>名前</td>
+                        <th>student_id</th>
+                        <td>学生ID</td>
                     </tr>
                     <tr>
-                        <th>student_number</th>
-                        <td>学籍番号</td>
+                        <th>subject_id</th>
+                        <td>授業のID</td>
                     </tr>
                     <tr>
-                        <th>class_name</th>
-                        <td>クラス名</td>
+                        <th>date</th>
+                        <td>授業日</td>
                     </tr>
                     <tr>
-                        <th>is_active</th>
-                        <td></td>
+                        <th>status</th>
+                        <td>present（出席）/ late（遅刻）/ absent（欠席）</td>
+                    </tr>
+                    <tr>
+                        <th>method</th>
+                        <td>face（顔認証）/ manual（教師が手動で登録）</td>
+                    </tr>
+                    <tr>
+                        <th>match_log_id</th>
+                        <td>顔認証のときの照合記録</td>
+                    </tr>
+                    <tr>
+                        <th>teacher_id</th>
+                        <td>手動で登録した教師</td>
                     </tr>
                     <tr>
                         <th>created_at</th>
-                        <td>作成日</td>
+                        <td>登録日</td>
                     </tr>
                     <tr>
                         <th>updated_at</th>
@@ -316,7 +485,6 @@ php artisan migrate:fresh　//作り直し</code></pre>
                 </table>
             </section>
         </div>
-
     </main>
 
     <script>
