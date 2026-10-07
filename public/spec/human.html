@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>顔認証</title>
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
     <link rel="stylesheet"
@@ -28,6 +30,9 @@
                     <li><a href="table.html">テーブル一覧</a></li>
                     <li><a href="human.html">顔認証</a></li>
                     <li><a href="similary.html">類似製品</a></li>
+                    <li><a href="command.html">よく使うコマンド</a></li>
+                    <li><a href="directive.html">よく使うディレクティブ</a></li>
+                    <li><a href="route.html">ルーティング</a></li>
                 </ul>
             </nav>
         </div>
@@ -58,6 +63,9 @@
             </a>
             <a href="#dimension">
                 <li>次元数</li>
+            </a>
+            <a href="#others">
+                <li>他のライブラリ</li>
             </a>
         </ol>
     </nav>
@@ -167,7 +175,7 @@
                 </p>
 
                 <p>
-                    矢印の長さは撮影条件などでも変わるので、長さを１に揃えてから矢印の向きを比べます<br>
+                    矢印の長さは撮影条件(部屋の明るさ)などでも変わるので、長さを１に揃えてから矢印の向きを比べます<br>
                     登録時に長さを1にしてからDBに保存しておけば、照合時には送られてきた1件だけを長さ1にするだけで顔認証が簡単にできます
                 </p>
 
@@ -220,7 +228,8 @@
                     <tr>
                         <td>
                             <span style="font-weight: bolder;">長さが1になっているか確認</span><br>
-                            新しくできた数値を二乗して足すと合計が必ず「1」になる
+                            新しくできた数値を二乗して足すと合計が必ず「1」になる<br>
+                            （このアプリではやっていない）
                         </td>
                         <td>0.6² + 0.8² = 0.36 + 0.64 = 1</td>
                     </tr>
@@ -229,7 +238,118 @@
 
             <section>
                 <h3>②生徒ごとに一番似ている登録写真の類似度を取る</h3>
-                <p></p>
+                <p>
+                    長さ1の矢印同士を同じ位置の数値を掛けて全部足せば2本の向きの近さが分かります（コサイン類似度）<br>
+                    計算した結果、同じ向きなら1(角度0度)、直角なら0(角度90度)、正反対なら-1(角度180度)になります
+                </p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>比べる矢印</th>
+                            <th>計算</th>
+                            <th>類似度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>[0.6, 0.8] と [0.8, 0.6]</td>
+                            <td>0.6 × 0.8 + 0.8 × 0.6</td>
+                            <td>0.96（ほぼ同じ向き）</td>
+                        </tr>
+                        <tr>
+                            <td>[0.6, 0.8] と [1, 0]</td>
+                            <td>0.6 × 1 + 0.8 × 0</td>
+                            <td>0.6</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>
+                    照合では、キャッシュと送られてきた顔写真とを比べます<br>
+                    照合のたびにDBから全員分のJSONを読むと遅くなるからです<br>
+                    キャッシュはface_index:human-3.3.6-faceresです<br>
+                    特徴量を32bitの数値に詰めてファイルキャッシュに保存しているので、pack（32ビットのバイナリデータに変換）とunpack（PHPの数値配列に復元）を使って送られてきた特徴量も32bitにそろえてから計算します<br>
+                    このアプリでは顔写真の追加・削除や生徒の情報を更新したときにキャッシュを削除（flush()）し、次の照合のときに自動で作り直しています<br>
+                    そのため、php artisan migrate:freshをした時は以下のコマンドを打ってキャッシュを消してください
+                </p>
+                <pre><code class="language-plaintext">php artisan cache:clear file</code></pre>
+
+                <p>
+                    一番似ている写真を使う理由は、顔写真の平均値では極端に低い値があったときにそれに引っ張られて認証されなくなってしまうから<br>
+                    最大値なら、写真を増やすほど、いろいろな向きや髪型に対応できます<br>
+                    ただし、最大値は1枚でも別人の写真が混ざるとその別人がこの生徒と間違えられる弱点があるので、管理者側で駄目な写真を削除する必要があります
+                </p>
+                <pre><code class="php">$q = unpack('g*', pack('g*', ...$unitQuery));
+$dim = count($q);
+$scores = [];
+        
+/**
+ * 全員分と照合してスコアを$scores配列に代入
+ * indexメソッドに人物ID => 登録されたバイナリベクトル（２進数のデータの並び）の配列を取得し人物ごとにループ
+ */
+foreach ($this->index($modelVersion) as $studentId => $vectors) {
+    $best = null;
+    foreach ($vectors as $packed) {
+        $v = unpack('g*', $packed);
+        if (count($v) !== $dim) {
+            continue;
+        }
+        $s = 0.0;
+        for ($i = 1; $i <= $dim; $i++) {
+            $s += $q[$i] * $v[$i];
+        }
+        $best = max($best ?? $s, $s); // 人物ごとに最も近いサンプルを採用
+    }
+    if ($best !== null) {
+        $scores[$studentId] = $best;
+    }
+}</code></pre>
+            </section>
+
+            <section>
+                <h3>③1位がしきい値以上で、2位との差がmargin以上なら本人と判定する</h3>
+                <p>
+                    １番似ていた人が閾値(threshold)以上かつ１番似ていた人と２番目に似ていた人との差がmarginより大きかったときに本人と判定します<br>
+                    threshold、marginはconfig/face.phpに設定してあります
+                </p>
+                <pre><code class="php">// 降順に並び替えて上位３つのスコアと人物IDを取得
+arsort($scores);
+$top = array_slice($scores, 0, 3, true);
+$ids = array_keys($top);
+
+// 1位の人物ID＆スコアを取得 or 該当者がいなければnull
+$bestId = $ids[0] ?? null;
+$bestScore = $bestId !== null ? $top[$bestId] : null;
+
+// 1位と2位のスコアの差を計算
+$margin = isset($ids[1]) ? $bestScore - $top[$ids[1]] : null;
+
+// 1位のスコアが閾値(config/face.phpに明記)以上＆1位と2位の人物の類似度の差が閾値以上、2位が存在しないならtrue
+$accepted = $bestScore !== null
+    && $bestScore >= config('face.threshold')
+    && ($margin === null || $margin >= config('face.margin'));
+
+// 一回のクエリで3人分取得しidをキーにしたコレクションにする
+$students = Student::with('schoolClass')->whereIn('id', $ids)->get()->keyBy('id');
+
+// 顔照合の結果を取りまとめた連想配列（レスポンスデータ）
+return [
+    // 本人かどうか（true/false）
+    'accepted' => $accepted,
+    // 1位のStudentオブジェクト
+    'student' => $accepted ? $students->get($bestId) : null,
+    // 1位の人物ID
+    'best_student_id' => $bestId,
+    // 1位のスコア
+    'similarity' => $bestScore,
+    // 1位と2位のスコア差
+    'margin' => $margin,
+    // 3位までの候補者情報の配列
+    'candidates' => array_map(
+        fn ($id) => ['student' => $students->get($id), 'similarity' => $top[$id]],
+        $ids,
+    ),
+];</code></pre>
             </section>
         </div>
 
@@ -251,7 +371,32 @@
                 <h3>margin</h3>
                 <p>
                     １番似ていた人と２番目に似ていた人との差がこの値以上ないなら判定保留にする<br>
+                    thresholdのみでは、双子のように似ている2人がどちらも0.6を超えたとき、間違っていてもわずかに高いほうに決まってしまうので設定しています
                 </p>
+            </section>
+
+            <section>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>変更（パラメータ）</th>
+                            <th>他人を本人と間違える</th>
+                            <th>本人なのに弾かれる</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>しきい値を上げる</td>
+                            <td>減る</td>
+                            <td>増える</td>
+                        </tr>
+                        <tr>
+                            <td>marginを上げる</td>
+                            <td>減る（似た人の取り違えが減る）</td>
+                            <td>増える（保留が増える）</td>
+                        </tr>
+                    </tbody>
+                </table>
             </section>
 
             <section>
@@ -954,6 +1099,270 @@ init();</code></pre>
                         </tr>
                     </tbody>
                 </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="others">他のライブラリ</h2>
+            <section>
+                <h3>概要</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>ツール名</th>
+                            <th>誰の顔か判定できるか</th>
+                            <th>動く場所</th>
+                            <th>自分たちが書く言語</th>
+                            <th>料金</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Human</td>
+                            <td>できる（1024次元）</td>
+                            <td>ブラウザ（Node.jsも可）</td>
+                            <td>JavaScript</td>
+                            <td>無料</td>
+                        </tr>
+                        <tr>
+                            <td>face-api.js</td>
+                            <td>できる（128次元）</td>
+                            <td>ブラウザ（Node.jsも可）</td>
+                            <td>JavaScript</td>
+                            <td>無料</td>
+                        </tr>
+                        <tr>
+                            <td>CompreFace</td>
+                            <td>できる</td>
+                            <td>自前のサーバー（Docker）</td>
+                            <td>何でもよい（HTTPで呼ぶだけなのでPHPで可）</td>
+                            <td>無料（サーバー用PCが必要）</td>
+                        </tr>
+                        <tr>
+                            <td>MediaPipe</td>
+                            <td>できない（顔の検出、478点の形、表情のみ）</td>
+                            <td>ブラウザ、スマホアプリ、Python</td>
+                            <td>JavaScriptなど</td>
+                            <td>無料</td>
+                        </tr>
+                        <tr>
+                            <td>DeepFace</td>
+                            <td>できる（ArcFaceなど複数のモデルから選べる）</td>
+                            <td>自前のサーバー</td>
+                            <td>Python</td>
+                            <td>無料（サーバー用PCが必要）</td>
+                        </tr>
+                        <tr>
+                            <td>Amazon Rekognition</td>
+                            <td>できる</td>
+                            <td>AWSのクラウド</td>
+                            <td>何でもよい（PHP用のSDKあり）</td>
+                            <td>有料（下に試算）</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>メリット・デメリット</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>ツール名</th>
+                            <th>メリット</th>
+                            <th>デメリット</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Human</td>
+                            <td>
+                                <ul>
+                                    <li>サーバーにGPUが要らない</li>
+                                    <li>npmで入れてすぐ使える</li>
+                                    <li>なりすまし判定のモデルも持っている</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul>
+                                    <li>作者1人の個人開発で、更新が少ない</li>
+                                    <li>特徴量をブラウザで作るので、改ざんした値を送られる可能性がある</li>
+                                    <li>端末の性能で速度が変わる</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>face-api.js</td>
+                            <td>
+                                <ul>
+                                    <li>情報や作例が多く、学習に向く</li>
+                                    <li>軽い</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul>
+                                    <li>2025年2月にアーカイブされ、更新されない</li>
+                                    <li>なりすまし判定がない</li>
+                                    <li>改ざんの弱点はHumanと同じ</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>CompreFace</td>
+                            <td>
+                                <ul>
+                                    <li>判定がサーバー内で完結するので、改ざんに強い</li>
+                                    <li>1人に複数枚の登録と管理画面が最初からある</li>
+                                    <li>Pythonを書かなくてよい</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul>
+                                    <li>DockerとAVX対応のx86のPCが必要（ARMは非対応）</li>
+                                    <li>更新が遅い</li>
+                                    <li>高精度版のモデルは非商用限定</li>
+                                    <li>生徒のデータがLaravelのDBと2か所に分かれる</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>MediaPipe</td>
+                            <td>
+                                <ul>
+                                    <li>Googleが保守していて安心</li>
+                                    <li>速くて軽い</li>
+                                    <li>顔の向きや表情を細かく取れる</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul>
+                                    <li>単体では顔認証を作れない（特徴量を出すモデルが別に必要）</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>DeepFace</td>
+                            <td>
+                                <ul>
+                                    <li>モデルを選べるので、精度を追求できる</li>
+                                    <li>なりすまし判定の機能がある</li>
+                                    <li>REST APIやDockerでも動かせる</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul>
+                                    <li>Pythonのサーバーを作って保守する必要がある</li>
+                                    <li>動作が重い</li>
+                                    <li>中のモデルごとにライセンスが違う</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Amazon Rekognition</td>
+                            <td>
+                                <ul>
+                                    <li>精度が高く、サーバーの保守が不要</li>
+                                    <li>人数が増えても速度が落ちにくい</li>
+                                    <li>なりすまし判定（Face Liveness）がある</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul>
+                                    <li>ずっと無料では使えない</li>
+                                    <li>顔画像を外部の会社に送ることになる</li>
+                                    <li>AWSのアカウントや権限の設定が必要</li>
+                                    <li>ネットが切れると使えない</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>保守・ライセンス・なりすまし判定</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>ツール名</th>
+                            <th>保守状況（2026年10月時点）</th>
+                            <th>ライセンス</th>
+                            <th>なりすまし判定</th>
+                            <th>顔画像の行き先</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Human</td>
+                            <td>公開中。最新版3.3.6は2025年8月</td>
+                            <td>MIT</td>
+                            <td>あり（このアプリでは無効）</td>
+                            <td>ブラウザ内で処理。自分のサーバーに特徴量と登録写真だけ送る</td>
+                        </tr>
+                        <tr>
+                            <td>face-api.js</td>
+                            <td>終了（アーカイブ済み）</td>
+                            <td>MIT</td>
+                            <td>なし</td>
+                            <td>同上</td>
+                        </tr>
+                        <tr>
+                            <td>CompreFace</td>
+                            <td>公開中だが更新は遅い（配布サイトの最終更新は2025年7月）</td>
+                            <td>Apache 2.0（InsightFace系のモデルは非商用）</td>
+                            <td>なし（顔の向きの判定はある）</td>
+                            <td>自分のサーバー</td>
+                        </tr>
+                        <tr>
+                            <td>MediaPipe</td>
+                            <td>Googleが継続（Web版の @mediapipe/tasks-vision は1.0.1）</td>
+                            <td>Apache 2.0</td>
+                            <td>なし</td>
+                            <td>ブラウザ内で処理</td>
+                        </tr>
+                        <tr>
+                            <td>DeepFace</td>
+                            <td>継続（YOLOv12など新しい検出器にも対応している）</td>
+                            <td>MIT（モデルのライセンスは別に確認が必要）</td>
+                            <td>あり</td>
+                            <td>自分のサーバー</td>
+                        </tr>
+                        <tr>
+                            <td>Amazon Rekognition</td>
+                            <td>AWSが継続</td>
+                            <td>利用規約による</td>
+                            <td>あり（別料金）</td>
+                            <td>AWSのクラウド</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>各ライブラリの位置づけ</h3>
+                <table border="1">
+                    <tr>
+                        <td>Human</td>
+                        <td>「すべて無料」「PHPとJavaScriptだけ」という条件に合う</td>
+                    </tr>
+                    <tr>
+                        <td>CompreFace</td>
+                        <td>改ざんに強くしたいときの移行先<br>サーバー用のx86のPCが必要</td>
+                    </tr>
+                    <tr>
+                        <td>DeepFace</td>
+                        <td>Pythonを書ける人がいれば、精度やなりすまし対策を強化できる選択肢</td>
+                    </tr>
+                    <tr>
+                        <td>MediaPipe</td>
+                        <td>Humanを差し替えるときに、顔の検出や品質チェックの部分で使える（Human自身も内部でMediaPipe由来の検出モデルを使っている）</td>
+                    </tr>
+                    <tr>
+                        <td>Amazon Rekognition</td>
+                        <td>「無料」の条件に合わないため対象外<br>予算が付いた場合の選択肢</td>
+                    </tr>
+                </table>
+                <p>ライブラリを差し替えても、Laravel側はapp/Services/FaceMatcher、ブラウザ側はresources/js/face-engine.jsを変えるだけで済みます</p>
             </section>
         </div>
     </main>

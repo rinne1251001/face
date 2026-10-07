@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>コマンド</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=keyboard_arrow_down,keyboard_arrow_up" />
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>よく使うコマンド</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                    <li><a href="command.html">よく使うコマンド</a></li>
+                    <li><a href="directive.html">よく使うディレクティブ</a></li>
+                    <li><a href="route.html">ルーティング</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <a href="#serve">
+                <li>サーバー起動</li>
+            </a>
+            <a href="#database">
+                <li>データベース関連</li>
+            </a>
+            <a href="#composer">
+                <li>composer関連</li>
+            </a>
+            <a href="#env">
+                <li>.env関連</li>
+            </a>
+            <a href="#image">
+                <li>storageフォルダに入れた画像を一般公開</li>
+            </a>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="serve">サーバー起動</h2>
+            <section>
+                <p>http://127.0.0.1:8000で画面を見る方法</p>
+                <pre><code class="language-plaintext">npm run dev　//css適用
+php artisan serve　//PHPのサーバー起動</code></pre>
+                <p>上２つのコマンドを１つのコマンドで打つ</p>
+                <pre><code class="language-plaintext">composer run dev</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="database">データベース関連</h2>
+            <section>
+                <p>テーブルリセット</p>
+                <pre><code class="language-plaintext">php artisan migrate:fresh　//テーブル作り直し
+Remove-Item -Recurse -Force storage/app/private/faces　//顔写真削除
+php artisan cache:clear　//古い特徴量キャッシュをクリア</code></pre>
+            </section>
+
+            <section>
+                <p>テストデータ注入</p>
+                <pre><code class="language-plaintext">php artisan migrate:fresh --seed</code></pre>
+            </section>
+
+            <section>
+                <p>テーブルリセット＆テストデータ注入</p>
+                <pre><code class="language-plaintext">php artisan migrate:fresh --seed</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="composer">composer関連</h2>
+            <section>
+                <p>
+                    ①リポジトリクローン時<br>
+                    ②ライブラリを追加変更した時<br>
+                    ③vendorフォルダを消しちゃったとき
+                </p>
+                <pre><code class="language-plaintext">composer install</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="env">.env関連</h2>
+            <section>
+                <h3>APP_KEYを変更</h3>
+                <p>
+                    APP_KEYとはLaravelの内部でさまざまなデータの暗号化・復号に使われている<br>
+                    使いまわしはセキュリティ的にまずいので変更推奨
+                </p>
+                <pre><code class="language-plaintext">php artisan key:generate</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="image">storageフォルダに入れた画像を一般公開</h2>
+            <section>
+                <p>
+                    Laravelでアップロードした画像などのファイルを、Webブラウザから一般公開してアクセスできるようにするためのコマンド<br>
+                    公開ディレクトリである public/storage から、実体の保存先である storage/app/public へのシンボリックリンク（ショートカット）を作成することで見れるようになる
+                </p>
+                <pre><code class="language-plaintext">php artisan storage:link</code></pre>
+                <p>画像を使うときは、</p>
+                <pre><code class="html">&lt;img src="{{ asset('storage/フォルダ名/ファイル名.jpg') }}"></code></pre>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

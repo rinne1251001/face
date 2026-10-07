@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>ディレクティブ</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=keyboard_arrow_down,keyboard_arrow_up" />
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>よく使うディレクティブ</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                    <li><a href="command.html">よく使うコマンド</a></li>
+                    <li><a href="directive.html">よく使うディレクティブ</a></li>
+                    <li><a href="route.html">ルーティング</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <a href="#overview">
+                <li>概要</li>
+            </a>
+            <a href="#php">
+                <li>生PHP</li>
+            </a>
+            <a href="#branch">
+                <li>分岐・繰り返し</li>
+            </a>
+            <a href="#layout">
+                <li>レイアウト</li>
+            </a>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="overview">概要</h2>
+            <section>
+                <p>ディレクティブとは、PHPの構文を簡潔に書くために使う@から始まる命令文のこと</p>
+                <p>
+                    詳しくは<a href="https://qiita.com/shimada_slj/items/1d978277d035e77911a5" target="_blank"
+                        rel="noopener noreferrer">こちら</a>を参照
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="php">生PHP</h2>
+            <section>
+                <h3>@php</h3>
+                <p>bladeファイルに普通のPHPを書きたいときに使う</p>
+                <pre><code class="php">@php
+    $name = "Taro";
+    $list = array(100, 200, 300);
+@endphp</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="branch">分岐・繰り返し</h2>
+            <section>
+                <h3>@if</h3>
+                <p>もし～なら</p>
+                <pre><code class="php">@if (isset($schoolClass))
+    &lt;p>変数$schoolClassは存在する&lt;/p>
+@elseif (empty($student))
+    &lt;p>変数$studentは存在しない（または空）&lt;/p>
+@endif
+
+@if(Route::is('admin.login'))
+    &lt;p>管理者ログインのページにこの文言を表示します&lt;/p>
+@endif
+</code></pre>
+            </section>
+
+            <section>
+                <h3>@foreach</h3>
+                <p>配列などから１つずつなくなるまで繰り返す</p>
+                <pre><code class="php">@foreach ($subjects as $subject)
+    &lt;p>{{ $loop->iteration }}．科目名は{{ $subject->name }}です&lt;/p>
+@endforeach</code></pre>
+            </section>
+
+            <section>
+                <h3>@forelse</h3>
+                <p>@foreachとほぼ同じ<br>データが空のときに@emptyが使える</p>
+                <pre><code class="php">@forelse ($subjects as $subject)
+    &lt;p>{{ $loop->iteration }}．科目名は{{ $subject->name }}です&lt;/p>
+@empty
+    &lt;p>まだデータが保存されていません&lt;/p>
+@endforelse</code></pre>
+            </section>
+
+            <section>
+                <h3>$loop</h3>
+                <p>繰り返し処理で使えるループ変数<br>{{ $loop->取り出したい値 }}のように使う</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>プロパティ</th>
+                            <th>説明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>$loop->iteration</code></td>
+                            <td>1から始まる現在の回数（1, 2, 3...）</td>
+                        </tr>
+                        <tr>
+                            <td><code>$loop->index</code></td>
+                            <td>0から始まる現在のインデックス（0, 1, 2...）</td>
+                        </tr>
+                        <tr>
+                            <td><code>$loop->first</code></td>
+                            <td>最初のループのときだけ true になる</td>
+                        </tr>
+                        <tr>
+                            <td><code>$loop->last</code></td>
+                            <td>最後のループのときだけ true になる</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>@auth</h3>
+                <p>ログイン済みかどうか</p>
+                <pre><code class="php">@auth('admin')
+    &lt;p>管理者としてログイン中（ログインID: {{ auth('admin')->user()->login_id }}）&lt;/p>
+@endauth</code></pre>
+            </section>
+
+            <section>
+                <h3>@guest</h3>
+                <p>@foreachとほぼ同じ<br>データが空のときに@emptyが使える</p>
+                <pre><code class="php">@guest('admin')
+    &lt;p>管理者ログインをしてください&lt;/p>
+@endguest</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="layout">レイアウト</h2>
+            <section>
+                <h3>レイアウト側</h3>
+                <pre><code class="php">&lt;!DOCTYPE html>
+&lt;html lang="ja">
+    &lt;head>
+        &lt;title>@yield('title', 'achieve on step')&lt;/title>
+    &lt;/head>
+    &lt;body>
+        &lt;header>ヘッダー&lt;/header>
+
+        @yield('content')
+
+        &lt;footer>フッター&lt;/footer>
+    &lt;/body>
+&lt;html></code></pre>
+            </section>
+
+            <section>
+                <h3>使う側</h3>
+                <pre><code class="php">@extends('layouts.app')
+@section('title', 'マイページ')
+@section('content')
+
+    &lt;p>ここにページ毎に違うコードを書く&lt;/p>
+
+@endsection</code></pre>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

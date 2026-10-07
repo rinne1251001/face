@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>ルーティング</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=keyboard_arrow_down,keyboard_arrow_up" />
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>ルーティング</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                    <li><a href="command.html">よく使うコマンド</a></li>
+                    <li><a href="directive.html">よく使うディレクティブ</a></li>
+                    <li><a href="route.html">ルーティング</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <a href="#overview">
+                <li>概要</li>
+            </a>
+            <a href="#prefix">
+                <li>プレフィックス</li>
+            </a>
+            <a href="#list">
+                <li>一覧</li>
+            </a>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="overview">概要</h2>
+            <section>
+                <p>
+                    routes/web.php
+                </p>
+                <p>
+                    Route::prefix('admin')->name('admin.')->group(function () {
+                    });
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="prefix">プレフィックス</h2>
+            <section>
+                <pre><code class="php">Route::prefix('admin')->name('admin.')->group(function () {
+    Route::view('/URL名', 'ファイルの場所')->name('名前付きルート');
+});</code></pre>
+                <p>URLはhttp://127.0.0.1:8000/admin/URL名、名前付きルートはhref="{{ route('admin.名前付きルート')}}"</p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="list">一覧</h2>
+            <section>
+                <h3>管理者</h3>
+                <p>認証・ホーム</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>機能・説明</th>
+                            <th>HTTPメソッド</th>
+                            <th>URLパス</th>
+                            <th>ルート名</th>
+                            <th>href / action での記述例 (Blade)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ログイン画面表示</td>
+                            <td>GET</td>
+                            <td>/admin/login</td>
+                            <td>admin.login</td>
+                            <td>&lbrace;&lbrace; route('admin.login') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>ログイン処理</td>
+                            <td>POST</td>
+                            <td>/admin/login</td>
+                            <td>admin.login</td>
+                            <td>&lbrace;&lbrace; route('admin.login') &rbrace;&rbrace; (formのaction)</td>
+                        </tr>
+                        <tr>
+                            <td>ログアウト処理</td>
+                            <td>POST</td>
+                            <td>/admin/logout</td>
+                            <td>admin.logout</td>
+                            <td>&lbrace;&lbrace; route('admin.logout') &rbrace;&rbrace; (formのaction)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>生徒管理(admin.students.*)</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>機能・説明</th>
+                            <th>HTTPメソッド</th>
+                            <th>URLパス</th>
+                            <th>ルート名</th>
+                            <th>href / action での記述例 (Blade)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>一覧表示</td>
+                            <td>GET</td>
+                            <td>/admin/students</td>
+                            <td>admin.students.index</td>
+                            <td>&lbrace;&lbrace; route('admin.students.index') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>登録画面表示</td>
+                            <td>GET</td>
+                            <td>/admin/students/create</td>
+                            <td>admin.students.create</td>
+                            <td>&lbrace;&lbrace; route('admin.students.create') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>登録処理</td>
+                            <td>POST</td>
+                            <td>/admin/students</td>
+                            <td>admin.students.store</td>
+                            <td>&lbrace;&lbrace; route('admin.students.store') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>編集画面表示</td>
+                            <td>GET</td>
+                            <td>/admin/students/&#123;student&#125;/edit</td>
+                            <td>admin.students.edit</td>
+                            <td>&lbrace;&lbrace; route('admin.students.edit', $student) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>更新処理</td>
+                            <td>PUT/PATCH</td>
+                            <td>/admin/students/&#123;student&#125;</td>
+                            <td>admin.students.update</td>
+                            <td>&lbrace;&lbrace; route('admin.students.update', $student) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>削除処理</td>
+                            <td>DELETE</td>
+                            <td>/admin/students/&#123;student&#125;</td>
+                            <td>admin.students.destroy</td>
+                            <td>&lbrace;&lbrace; route('admin.students.destroy', $student) &rbrace;&rbrace;</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>顔写真管理(admin.faces.*)</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>機能・説明</th>
+                            <th>HTTPメソッド</th>
+                            <th>URLパス</th>
+                            <th>ルート名</th>
+                            <th>href / action での記述例 (Blade)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>顔写真登録画面</td>
+                            <td>GET</td>
+                            <td>/admin/students/&#123;student&#125;/faces</td>
+                            <td>admin.faces.create</td>
+                            <td>&lbrace;&lbrace; route('admin.faces.create', $student) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>顔写真登録処理</td>
+                            <td>POST</td>
+                            <td>/admin/students/&#123;student&#125;/faces</td>
+                            <td>admin.faces.store</td>
+                            <td>&lbrace;&lbrace; route('admin.faces.store', $student) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>顔写真画像取得</td>
+                            <td>GET</td>
+                            <td>/admin/face-samples/&#123;faceSample&#125;/image</td>
+                            <td>admin.faces.image</td>
+                            <td>&lbrace;&lbrace; route('admin.faces.image', $faceSample) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>顔写真削除処理</td>
+                            <td>DELETE</td>
+                            <td>/admin/face-samples/&#123;faceSample&#125;</td>
+                            <td>admin.faces.destroy</td>
+                            <td>&lbrace;&lbrace; route('admin.faces.destroy', $faceSample) &rbrace;&rbrace;</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>クラス管理(admin.classes.*)</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>機能・説明</th>
+                            <th>HTTPメソッド</th>
+                            <th>URLパス</th>
+                            <th>ルート名</th>
+                            <th>href / action での記述例 (Blade)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>一覧表示</td>
+                            <td>GET</td>
+                            <td>/admin/classes</td>
+                            <td>admin.classes.index</td>
+                            <td>&lbrace;&lbrace; route('admin.classes.index') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>登録画面表示</td>
+                            <td>GET</td>
+                            <td>/admin/classes/create</td>
+                            <td>admin.classes.create</td>
+                            <td>&lbrace;&lbrace; route('admin.classes.create') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>登録処理</td>
+                            <td>POST</td>
+                            <td>/admin/classes</td>
+                            <td>admin.classes.store</td>
+                            <td>&lbrace;&lbrace; route('admin.classes.store') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>編集画面表示</td>
+                            <td>GET</td>
+                            <td>/admin/classes/&#123;schoolClass&#125;/edit</td>
+                            <td>admin.classes.edit</td>
+                            <td>&lbrace;&lbrace; route('admin.classes.edit', $schoolClass) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>更新処理</td>
+                            <td>PUT/PATCH</td>
+                            <td>/admin/classes/&#123;schoolClass&#125;</td>
+                            <td>admin.classes.update</td>
+                            <td>&lbrace;&lbrace; route('admin.classes.update', $schoolClass) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>削除処理</td>
+                            <td>DELETE</td>
+                            <td>/admin/classes/&#123;schoolClass&#125;</td>
+                            <td>admin.classes.destroy</td>
+                            <td>&lbrace;&lbrace; route('admin.classes.destroy', $schoolClass) &rbrace;&rbrace;</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>授業管理(admin.subjects.*)</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>機能・説明</th>
+                            <th>HTTPメソッド</th>
+                            <th>URLパス</th>
+                            <th>ルート名</th>
+                            <th>href / action での記述例 (Blade)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>一覧表示</td>
+                            <td>GET</td>
+                            <td>/admin/subjects</td>
+                            <td>admin.subjects.index</td>
+                            <td>&lbrace;&lbrace; route('admin.subjects.index') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>登録画面表示</td>
+                            <td>GET</td>
+                            <td>/admin/subjects/create</td>
+                            <td>admin.subjects.create</td>
+                            <td>&lbrace;&lbrace; route('admin.subjects.create') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>登録処理</td>
+                            <td>POST</td>
+                            <td>/admin/subjects</td>
+                            <td>admin.subjects.store</td>
+                            <td>&lbrace;&lbrace; route('admin.subjects.store') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>編集画面表示</td>
+                            <td>GET</td>
+                            <td>/admin/subjects/&#123;subject&#125;/edit</td>
+                            <td>admin.subjects.edit</td>
+                            <td>&lbrace;&lbrace; route('admin.subjects.edit', $subject) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>更新処理</td>
+                            <td>PUT/PATCH</td>
+                            <td>/admin/subjects/&#123;subject&#125;</td>
+                            <td>admin.subjects.update</td>
+                            <td>&lbrace;&lbrace; route('admin.subjects.update', $subject) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>削除処理</td>
+                            <td>DELETE</td>
+                            <td>/admin/subjects/&#123;subject&#125;</td>
+                            <td>admin.subjects.destroy</td>
+                            <td>&lbrace;&lbrace; route('admin.subjects.destroy', $subject) &rbrace;&rbrace;</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>教師管理(admin.teachers.*)</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>機能・説明</th>
+                            <th>HTTPメソッド</th>
+                            <th>URLパス</th>
+                            <th>ルート名</th>
+                            <th>href / action での記述例 (Blade)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>一覧表示</td>
+                            <td>GET</td>
+                            <td>/admin/teachers</td>
+                            <td>admin.teachers.index</td>
+                            <td>&lbrace;&lbrace; route('admin.teachers.index') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>登録画面表示</td>
+                            <td>GET</td>
+                            <td>/admin/teachers/create</td>
+                            <td>admin.teachers.create</td>
+                            <td>&lbrace;&lbrace; route('admin.teachers.create') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>登録処理</td>
+                            <td>POST</td>
+                            <td>/admin/teachers</td>
+                            <td>admin.teachers.store</td>
+                            <td>&lbrace;&lbrace; route('admin.teachers.store') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>編集画面表示</td>
+                            <td>GET</td>
+                            <td>/admin/teachers/&#123;teacher&#125;/edit</td>
+                            <td>admin.teachers.edit</td>
+                            <td>&lbrace;&lbrace; route('admin.teachers.edit', $teacher) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>更新処理</td>
+                            <td>PUT/PATCH</td>
+                            <td>/admin/teachers/&#123;teacher&#125;</td>
+                            <td>admin.teachers.update</td>
+                            <td>&lbrace;&lbrace; route('admin.teachers.update', $teacher) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>削除処理</td>
+                            <td>DELETE</td>
+                            <td>/admin/teachers/&#123;teacher&#125;</td>
+                            <td>admin.teachers.destroy</td>
+                            <td>&lbrace;&lbrace; route('admin.teachers.destroy', $teacher) &rbrace;&rbrace;</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>照合テスト(admin.match.*)</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>機能・説明</th>
+                            <th>HTTPメソッド</th>
+                            <th>URLパス</th>
+                            <th>ルート名</th>
+                            <th>href / action での記述例 (Blade)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>照合テスト画面表示</td>
+                            <td>GET</td>
+                            <td>/admin/match</td>
+                            <td>admin.match.show</td>
+                            <td>&lbrace;&lbrace; route('admin.match.show') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>照合テスト実行</td>
+                            <td>POST</td>
+                            <td>/admin/match</td>
+                            <td>admin.match.run</td>
+                            <td>&lbrace;&lbrace; route('admin.match.run') &rbrace;&rbrace;</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>教師</h3>
+                <p>認証・ホーム</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>機能・説明</th>
+                            <th>HTTPメソッド</th>
+                            <th>URLパス</th>
+                            <th>ルート名</th>
+                            <th>href / action での記述例 (Blade)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ログイン画面表示</td>
+                            <td>GET</td>
+                            <td>/teacher/login</td>
+                            <td>teacher.login</td>
+                            <td>&lbrace;&lbrace; route('teacher.login') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>ログイン処理</td>
+                            <td>POST</td>
+                            <td>/teacher/login</td>
+                            <td>teacher.login</td>
+                            <td>&lbrace;&lbrace; route('teacher.login') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>教師ダッシュボード (ホーム)</td>
+                            <td>GET</td>
+                            <td>/teacher</td>
+                            <td>teacher.dashboard</td>
+                            <td>&lbrace;&lbrace; route('teacher.dashboard') &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>ログアウト処理</td>
+                            <td>POST</td>
+                            <td>/teacher/logout</td>
+                            <td>teacher.logout</td>
+                            <td>&lbrace;&lbrace; route('teacher.logout') &rbrace;&rbrace;</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>出席・授業関連</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>機能・説明</th>
+                            <th>HTTPメソッド</th>
+                            <th>URLパス</th>
+                            <th>ルート名</th>
+                            <th>href / action での記述例 (Blade)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>担当授業の出席一覧</td>
+                            <td>GET</td>
+                            <td>/teacher/subjects/&#123;subject&#125;</td>
+                            <td>teacher.subjects.show</td>
+                            <td>&lbrace;&lbrace; route('teacher.subjects.show', $subject) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>出席の手動登録 (更新)</td>
+                            <td>PUT</td>
+                            <td>/teacher/subjects/&#123;subject&#125;/students/&#123;student&#125;/attendance</td>
+                            <td>teacher.attendances.update</td>
+                            <td>&lbrace;&lbrace; route('teacher.attendances.update', [$subject, $student])
+                                &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>顔認証受付画面表示</td>
+                            <td>GET</td>
+                            <td>/teacher/subjects/&#123;subject&#125;/checkin</td>
+                            <td>teacher.checkin.show</td>
+                            <td>&lbrace;&lbrace; route('teacher.checkin.show', $subject) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>顔認証受付処理</td>
+                            <td>POST</td>
+                            <td>/teacher/subjects/&#123;subject&#125;/checkin</td>
+                            <td>teacher.checkin.store</td>
+                            <td>&lbrace;&lbrace; route('teacher.checkin.store', $subject) &rbrace;&rbrace;</td>
+                        </tr>
+                        <tr>
+                            <td>クラスの出席状況</td>
+                            <td>GET</td>
+                            <td>/teacher/classes/&#123;schoolClass&#125;</td>
+                            <td>teacher.classes.show</td>
+                            <td>&lbrace;&lbrace; route('teacher.classes.show', $schoolClass) &rbrace;&rbrace;</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>
