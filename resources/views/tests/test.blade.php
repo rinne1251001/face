@@ -26,7 +26,12 @@
             --color-main: #FDBA2E;
             --color-accent: #F77251;
         }
-
+[data-theme="in"] {
+            --color-bg: #92c5ef;
+            --color-font: #c257dc;
+            --color-main: #c8ef52;
+            --color-accent: #9a157b;
+        }
         body {
             background-color: var(--color-main);
             color: var(--color-font);
@@ -65,7 +70,7 @@
 
 @php
     // テーマカラーを変更
-    $themeColor = 'yellow';
+    $themeColor = 'gyuj';
 @endphp
 <body data-theme="{{ $themeColor }}">
 

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.test')
 @section('title', 'デザインテスト')
 
 @section('content')
@@ -9,7 +9,10 @@
 @endpush
 
 @section('content')
-
+こんにちは
+<div style="background-color: var(--color-main); width: 120px; height: 120px;"></div>
+<div style="background-color: var(--color-sub); width: 120px; height: 120px;"></div>
+<div style="background-color: var(--color-accent); width: 120px; height: 120px;"></div>
 
 
 @endsection

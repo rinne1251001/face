@@ -16,6 +16,11 @@ if (app()->environment('local')) {
 }
 // http://127.0.0.1:8000/tests
 Route::view('/test', 'tests/test');
+Route::view('/toduka', 'tests/toduka');
+Route::view('/design1', 'tests/design1');
+Route::view('/design2', 'tests/design2');
+Route::view('/design3', 'tests/design3');
+Route::view('/design4', 'tests/design4');
 
 // トップページは教師のホームへ（ログインしていなければ教師のログイン画面へ）
 Route::redirect('/', '/teacher');

@@ -4,9 +4,13 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --color-font: #333333;
+    --color-font: #28263E;
+    --color-font-light: coclor-mix(in srgb, var(--color-font) 30%, #FFFFFF 70%);
     --color-bg: #FFFFFF;
-    --color-main: blue;
+    --color-main: 	#8090C1;
+    --color-sub: #F7F2EC;
+    --color-accent: #F29C8F;
+    
 }
 
 body {
