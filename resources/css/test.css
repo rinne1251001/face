@@ -1,0 +1,32 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --color-font: #333333;
+    --color-bg: #FFFFFF;
+    --color-main: blue;
+}
+
+body {
+    font-family: sans-serif;
+    color: var(--color-font);
+    background-color: var(--color-bg);
+}
+
+a {
+    color: var(--color-main);
+}
+
+input {
+    min-width: 0;
+    border: var(--color-font) 1px solid;
+    outline: none;
+}
+
+
+/* 画面の横幅が768px以上のとき */
+@media (min-width: 768px) {
+
+}

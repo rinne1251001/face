@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 
 <head>
     <meta charset="utf-8">
@@ -8,8 +8,6 @@
     <title>顔認証</title>
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=keyboard_arrow_down,keyboard_arrow_up" />
     <link rel="stylesheet" href="spec.css" />
 </head>
 
@@ -27,12 +25,14 @@
                 <ul>
                     <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
                     <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="folder.html">フォルダー</a></li>
                     <li><a href="table.html">テーブル一覧</a></li>
                     <li><a href="human.html">顔認証</a></li>
                     <li><a href="similary.html">類似製品</a></li>
                     <li><a href="command.html">よく使うコマンド</a></li>
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
                     <li><a href="route.html">ルーティング</a></li>
+                    <li><a href="css.html">css</a></li>
                 </ul>
             </nav>
         </div>
@@ -40,33 +40,15 @@
 
     <nav>
         <ol>
-            <a href="#Human">
-                <li>Human</li>
-            </a>
-            <a href="#reason">
-                <li>導入理由</li>
-            </a>
-            <a href="#mechanism">
-                <li>照合の仕組み</li>
-            </a>
-            <a href="#threshold">
-                <li>閾値</li>
-            </a>
-            <a href="#folder">
-                <li>顔写真のフォルダ</li>
-            </a>
-            <a href="#variable">
-                <li>変数</li>
-            </a>
-            <a href="#face-api">
-                <li>face-api.js</li>
-            </a>
-            <a href="#dimension">
-                <li>次元数</li>
-            </a>
-            <a href="#others">
-                <li>他のライブラリ</li>
-            </a>
+            <li><a href="#Human">Human</a></li>
+            <li><a href="#reason">導入理由</a></li>
+            <li><a href="#mechanism">照合の仕組み</a></li>
+            <li><a href="#threshold">閾値</a></li>
+            <li><a href="#folder">顔写真のフォルダ</a></li>
+            <li><a href="#variable">変数</a></li>
+            <li><a href="#face-api">face-api.js</a></li>
+            <li><a href="#dimension">次元数</a></li>
+            <li><a href="#others">他のライブラリ</a></li>
         </ol>
     </nav>
 
@@ -110,32 +92,16 @@
             </section>
 
             <section>
-                <h3>③通信量の小ささ</h3>
+                <h3>③アップデート</h3>
                 <p>
-                    カメラ映像の全フレーム（動画）をサーバーに送信し続けるのではなく、ブラウザ上で顔が検出された瞬間の「特徴量（数値配列）」だけを送信<br>
-                    →通信量が非常に小さく、照合処理も爆速
+                    アーカイブされたface-api.jsと違い、Humanは2026年10月時点でまだ公開・保守されている<br>
+                    ただし作者1人の個人開発で、最新版3.3.6（2025年8月）以降は更新されておらず、更新頻度は高くない<br>
+                    そのため、Humanを直接使うのはface-engine.js だけにして、将来ほかのライブラリに差し替えやすくしている
                 </p>
             </section>
 
             <section>
-                <h3>④マルチバックエンド対応</h3>
-                <p>
-                    GPUのある環境ではWebGL（GPU加速）を使って高速処理し、GPUのない環境では自動的にWASM（WebAssembly）によるCPU処理へ切り替わる<br>
-                    →動かないというトラブルを防ぐ
-                </p>
-            </section>
-
-            <section>
-                <h3>⑤アップデート</h3>
-                <p>
-                    TypeScriptベースで記述されており、TensorFlow.js の最新エコシステムに追従して更新されている<br>
-                    →アーカイブされたface-api.jsと違い、Humanは2026年10月時点でまだ公開・保守されている。ただし作者1人の個人開発で、最新版3.3.6（2025年8月）以降は更新されておらず、更新頻度は高くない。
-                    そのため、Humanを直接使うのはface-engine.js だけにして、将来ほかのライブラリに差し替えやすくしている。
-                </p>
-            </section>
-
-            <section>
-                <h3>⑥なりすまし防止</h3>
+                <h3>④なりすまし防止（未使用）</h3>
                 <p>
                     瞬きや視線・表情の動きなど生きている人間特有の動きを検知<br>
                     →「他人の写真」や「スマホの画面」はブロックされる
@@ -146,7 +112,7 @@
             </section>
 
             <section>
-                <h3>⑦追加拡張の容易さ</h3>
+                <h3>⑤追加拡張の容易さ</h3>
                 <p>
                     基本機能だけでなく、開発者が自分の作りたいアプリに合わせて新しい機能や設定を簡単に追加・カスタマイズできるよう設計されている
                 </p>
@@ -175,7 +141,7 @@
                 </p>
 
                 <p>
-                    矢印の長さは撮影条件(部屋の明るさ)などでも変わるので、長さを１に揃えてから矢印の向きを比べます<br>
+                    矢印の長さは撮影条件(画質や写り方で変わる)などでも変わるので、長さを１に揃えてから矢印の向きを比べます<br>
                     登録時に長さを1にしてからDBに保存しておけば、照合時には送られてきた1件だけを長さ1にするだけで顔認証が簡単にできます
                 </p>
 
@@ -265,7 +231,7 @@
                 </table>
 
                 <p>
-                    照合では、キャッシュと送られてきた顔写真とを比べます<br>
+                    照合では、キャッシュと送られてきた顔写真の特徴量とを比べます<br>
                     照合のたびにDBから全員分のJSONを読むと遅くなるからです<br>
                     キャッシュはface_index:human-3.3.6-faceresです<br>
                     特徴量を32bitの数値に詰めてファイルキャッシュに保存しているので、pack（32ビットのバイナリデータに変換）とunpack（PHPの数値配列に復元）を使って送られてきた特徴量も32bitにそろえてから計算します<br>
@@ -309,7 +275,7 @@ foreach ($this->index($modelVersion) as $studentId => $vectors) {
             <section>
                 <h3>③1位がしきい値以上で、2位との差がmargin以上なら本人と判定する</h3>
                 <p>
-                    １番似ていた人が閾値(threshold)以上かつ１番似ていた人と２番目に似ていた人との差がmarginより大きかったときに本人と判定します<br>
+                    １番似ていた人が閾値(threshold)以上かつ１番似ていた人と２番目に似ていた人との差がmargin以上のときに本人と判定します<br>
                     threshold、marginはconfig/face.phpに設定してあります
                 </p>
                 <pre><code class="php">// 降順に並び替えて上位３つのスコアと人物IDを取得
@@ -365,7 +331,8 @@ return [
 
                 <h3>threshold</h3>
                 <p>
-                    どのくらい似ていたかの数値（similarity：値は0～1）の合格ライン
+                    どのくらい似ていたかの数値（similarity：値は0～1）の合格ライン<br>
+                    ※理論上は−1〜1だけど実際は0〜1
                 </p>
 
                 <h3>margin</h3>
@@ -402,7 +369,7 @@ return [
             <section>
                 <h3>実験（帽子）</h3>
                 <p>
-                    ①ノーマル、ニット帽、キャップの同一人物三人を登録<br>
+                    ①ノーマル、ニット帽、キャップの同一人物三人分を登録<br>
                     marginは0.2前後になり、それぞれ識別された
                 </p>
                 <p>
@@ -439,10 +406,12 @@ return [
                 <pre><code class="language-plaintext">Remove-Item -Recurse -Force storage/app/private/faces</code></pre>
             </section>
             <section>
-                <h3>注意点</h3>
+                <p>storage/app/private/.gitignoreに、</p>
+                <pre><code class="language-plaintext">*
+!.gitignore</code></pre>
                 <p>
-                    顔写真を消さずにGithubに上げると全世界に顔写真が公開されます<br>
-                    Githubに上げるときは必ず上のコマンドを打って写真を消してください
+                    とあるので、privateフォルダにある写真は全てGithubにアップロードされないようです<br>
+                    このコマンドはphp artisan migrate:freshをした時に打ってください
                 </p>
             </section>
         </div>
@@ -792,7 +761,7 @@ return [
                         </tr>
                         <tr>
                             <td><strong>TensorFlow.js 依存</strong></td>
-                            <td>古いバージョン（1.x系など）</td>
+                            <td>@vladmandic/face-api は4.x系<br>元のface-api.jsは古いバージョン（1.x系など）</td>
                             <td>最新バージョン（4.x系など）</td>
                         </tr>
                         <tr>
@@ -1020,7 +989,7 @@ init();</code></pre>
             <h2 id="dimension">次元数</h2>
             <section>
                 <p>
-                    次元数とは何個の数値で顔を表すか」の箱の数、そのデータが「いくつ項目を持っているか」の数<br>
+                    次元数とは何個の数値で顔を表すかの箱の数、そのデータが「いくつ項目を持っているか」の数<br>
                     次元数が多いほど顔の違いの表現の幅が広がるが、＝精度が高いというわけではない<br>
                 </p>
             </section>
@@ -1157,7 +1126,7 @@ init();</code></pre>
                             <td>できる</td>
                             <td>AWSのクラウド</td>
                             <td>何でもよい（PHP用のSDKあり）</td>
-                            <td>有料（下に試算）</td>
+                            <td>有料</td>
                         </tr>
                     </tbody>
                 </table>

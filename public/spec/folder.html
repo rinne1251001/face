@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>フォルダー</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>フォルダー</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="folder.html">フォルダー</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                    <li><a href="command.html">よく使うコマンド</a></li>
+                    <li><a href="directive.html">よく使うディレクティブ</a></li>
+                    <li><a href="route.html">ルーティング</a></li>
+                    <li><a href="css.html">css</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <li><a href="#app">app</a></li>
+            <li><a href="#bootstrap">bootstrap</a></li>
+            <li><a href="#config">config</a></li>
+            <li><a href="#database">database</a></li>
+            <li><a href="#lang">lang</a></li>
+            <li><a href="#node_modules"></a>node_modules</li>
+            <li><a href="#public"></a>public</li>
+            <li><a href="#resources"></a>resources</li>
+            <li><a href="routes"></a>routes</li>
+            <li><a href="#storage"></a>storage</li>
+            <li><a href="#tests"></a>tests</li>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="app">app</h2>
+            <p>アプリケーションのビジネスロジックを格納するフォルダ</p>
+            <section>
+                <h3>Http/Controllers</h3>
+                <p>
+                    コントローラーを置くフォルダ<br>
+                    ルート（URL）からのリクエストを受け取り、モデルを使ってデータを取得・加工し、レスポンス（画面やJSON）を返す
+                </p>
+            </section>
+
+            <section>
+                <h3>Models</h3>
+                <p>
+                    モデルを置くフォルダ<br>
+                    データベースのテーブルと1対1で対応するクラスを配置<br>
+                    データベースからのデータ取得、保存、更新、テーブル間のリレーションなどをする
+                </p>
+            </section>
+
+            <section>
+                <h3>Providers</h3>
+                <p>
+                    アプリケーションの起動時に、サービスの初期化や結合（サービスコンテナへの登録）を行う設定フォルダ
+                </p>
+            </section>
+
+            <section>
+                <h3>Services</h3>
+                <p>
+                    コントローラーに書ききれない複雑なビジネスロジックや、外部APIとの通信処理などを切り出して整理するためのフォルダ<br>
+                    肥大化したコントローラーをスッキリさせるために使われる
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="bootstrap">bootstrap</h2>
+            <p>フレームワークの起動やオートローディング設定をするフォルダ</p>
+            <section>
+                <h3>cache</h3>
+                <p>
+                    フレームワークが高速に起動するために生成される設定やサービスのキャッシュファイルが保存されるフォルダ
+                </p>
+            </section>
+
+            <section>
+                <h3>app.php</h3>
+                <p>
+                    アプリケーションの基本設定・インスタンス化ファイル<br>
+                    Laravelのアプリケーション本体を生成し、ルーティングやミドルウェアなどのコアな設定を組み上げる
+                </p>
+            </section>
+
+            <section>
+                <h3>providers.php</h3>
+                <p>
+                    アプリケーションが起動する際に、どのサービスプロバイダーを読み込むかを定義・管理しているファイル
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="config">config</h2>
+            <p>アプリケーション全体の設定ファイルをまとめたフォルダ</p>
+            <section>
+                <h3>app.php</h3>
+                <p>アプリケーション全体の設定</p>
+            </section>
+
+            <section>
+                <h3>auth.php</h3>
+                <p>認証（ログイン・権限）の設定</p>
+            </section>
+
+            <section>
+                <h3>face.php</h3>
+                <p>顔認証の設定</p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="database">database</h2>
+            <p>データベース関連のファイルを管理するフォルダ</p>
+            <section>
+                <h3>migrations</h3>
+                <p>
+                    マイグレーションファイルを置くフォルダ<br>
+                    テーブルの設計書を書いていく
+                </p>
+            </section>
+
+            <section>
+                <h3>seeders</h3>
+                <p>データベースに「初期データ」や「テスト用のダミーデータ」を自動で投入するためのフォルダ</p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="lang">lang</h2>
+            <p>翻訳ファイルを配置するフォルダ</p>
+            <section>
+                <h3>ja</h3>
+                <p>日本語フォルダ<br>lang/ja/validation.phpのattributesに追加したい日本語翻訳を入れていく</p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="node_modules">node_modules</h2>
+            <p>フロントエンドのパッケージマネージャーが依存関係をインストールするフォルダ</p>
+            <section>
+                <h3>@vladmandic/human</h3>
+                <p>
+                    Humanのプログラム本体（ソースコード、設定ファイル、モデルデータなど）が保管されているフォルダ<br>
+                    npm install によって外部からダウンロードしてきたHumanのパッケージ一式が収まっている
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="public">public</h2>
+            <p>外部から直接アクセスできる公開フォルダ</p>
+            <section>
+                <h3>models/human</h3>
+                <p>
+                    ブラウザが実行時にHTTPでダウンロードする学習済みAIモデル（顔認証）の置き場<br>
+                    巨大なデータなのでビルドツールには含めないことでビルド作業が数秒で終わる＆アプリの画面が開いて必要になった瞬間に初めてそのデータだけを個別にダウンロードできる
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="resources">resources</h2>
+            <p>コンパイル前のjavasciptやcss、ビューなどを置くファイル</p>
+            <section>
+                <h3>css</h3>
+                <p>
+                    cssを置くフォルダ
+                </p>
+            </section>
+
+            <section>
+                <h3>js</h3>
+                <p>
+                    javascriptを置くフォルダ
+                </p>
+            </section>
+
+            <section>
+                <h3>views</h3>
+                <p>
+                    ビューを置くフォルダ
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="routes">routes</h2>
+            <p>アプリケーションのURLルーティングを定義するフォルダ</p>
+            <section>
+                <h3>web.php</h3>
+                <p>
+                    ルーティングを書くファイル
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="storage">storage</h2>
+            <p>ログやキャッシュ、ファイルアップロードなど、アプリケーションが動作する中で一時的・動的に生成するデータを保存するフォルダ</p>
+            <section>
+                <h3>app/private</h3>
+                <p>
+                    一般ユーザーから直接アクセスされたくない、機密性の高いファイルを保存<br>
+                    顔写真はここに保存されている
+                </p>
+            </section>
+
+            <section>
+                <h3>app/public</h3>
+                <p>
+                    ユーザーがブラウザから閲覧しても問題ないアップロードファイルを保存
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="tests">tests</h2>
+            <p>自動テストコードを記述・保存するためのフォルダ</p>
+            <section>
+                <h3>Feature</h3>
+                <p>
+                    ユーザー視点での大きな機能のまとまりをテストするファイルを置く
+                </p>
+            </section>
+
+            <section>
+                <h3>Unit</h3>
+                <p>
+                    アプリケーションの最小単位（個別のメソッドやクラス、サービスクラスの特定の計算処理など）を単体でテストするファイルを置く
+                </p>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>
