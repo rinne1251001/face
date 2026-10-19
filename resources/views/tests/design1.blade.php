@@ -1,20 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#fcf8e9">
     <title>レスポンシブヘッダー</title>
-
     @vite(['resources/css/test.css', 'resources/js/app.js'])
 
     <style>
-        :root {
-            --header-height: 150px;
-        }
-
         * {
             box-sizing: border-box;
         }
@@ -24,32 +17,12 @@
         }
 
         body {
-            margin: 0;
             background: var(--color-bg);
             color: var(--color-font);
-            font-family:
-                "Noto Sans JP",
-                "Yu Gothic",
-                "Meiryo",
-                sans-serif;
         }
 
         body.menu-open {
             overflow: hidden;
-        }
-
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
-
-        button,
-        input {
-            font: inherit;
-        }
-
-        button {
-            color: inherit;
         }
 
         button:focus-visible,
@@ -64,85 +37,61 @@
         ========================= */
 
         .pc-header {
-    min-height: 150px;
-    padding: 20px 4.5%;
-    display: grid;
-    grid-template-columns: 1fr 150px 1fr;
-    align-items: center;
-    gap: 20px;
-    background: var(--color-bg);
-    box-shadow: 0 3px 12px rgb(90 60 30 / 7%);
-    position: relative;
-    z-index: 10;
-}
+            min-height: 150px;
+            padding: 20px 4.5%;
+            display: grid;
+            grid-template-columns: 1fr 150px 1fr;
+            align-items: center;
+            gap: 20px;
+            background: var(--color-bg);
+            box-shadow: 0 3px 12px rgb(90 60 30 / 7%);
+            position: relative;
+            z-index: 10;
+        }
 
         .pc-nav ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    gap: clamp(16px, 2vw, 36px);
-}
-
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: clamp(16px, 2vw, 36px);
+        }
 
         .pc-nav a {
-    display: inline-block;
-    font-size: clamp(14px, 1.15vw, 21px);
-    font-weight: 700;
-    white-space: nowrap;
-}
+            display: inline-block;
+            font-weight: 700;
+            white-space: nowrap;
+        }
 
-        .pc-nav a:hover,
-        .utility-nav a:hover {
+        .pc-nav a:hover {
             opacity: 0.65;
         }
 
         .pc-nav-left {
-    justify-self: start;
-}
+            justify-self: start;
+        }
 
-.pc-nav-left ul {
-    gap: clamp(18px, 2.5vw, 45px);
-}
+        .pc-nav-left ul {
+            gap: clamp(18px, 2.5vw, 45px);
+        }
 
-.pc-header > .logo {
-    justify-self: center;
-}
-
-
-        .pc-logo {
+        .pc-header > .logo {
             justify-self: center;
         }
 
-        .pc-right {
-            justify-self: end;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 22px;
-        }
-
-        .utility-nav {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
         .main-nav-right {
-    justify-self: end;
-}
+            justify-self: end;
+        }
 
         .main-nav-right ul {
-    justify-content: flex-end;
-    gap: clamp(15px, 2vw, 35px);
-}
+            justify-content: flex-end;
+            gap: clamp(15px, 2vw, 35px);
+        }
 
         .main-nav-right a {
-    font-size: clamp(14px, 1.1vw, 20px);
-}
+            font-size: clamp(14px, 1.1vw, 20px);
+        }
 
         /* ロゴ：画像がない場合の仮ロゴ */
 
@@ -214,46 +163,22 @@
             font-size: 27px;
         }
 
-        /* カート・検索・Instagram */
+        /* ログアウトボタン */
 
-        .icon-link {
-            width: 32px;
-            height: 32px;
+        .company-banner {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
+            padding: 12px 14px;
+            border: 1px solid var(--color-font-light);
+            background: #fffdf5;
+            white-space: nowrap;
         }
-
-        .icon-link svg {
-            width: 100%;
-            height: 100%;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .instagram-icon {
-            color: #e6004f;
-        }
-
-        .company-banner {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 12px 14px;
-    border: 1px solid var(--color-font-light);
-    background: #fffdf5;
-    white-space: nowrap;
-}
 
         .company-banner span {
-    color: var(--color-main);
-    margin-left: 12px;
-    font-size: 20px;
-}
+            color: var(--color-main);
+            margin-left: 12px;
+        }
 
         /* =========================
            スマホヘッダー
@@ -358,13 +283,6 @@
             grid-column: 2;
         }
 
-        .mobile-menu-actions {
-            justify-self: end;
-            display: flex;
-            align-items: center;
-            gap: 22px;
-        }
-
         .mobile-menu-links {
             list-style: none;
             margin: 0;
@@ -380,103 +298,12 @@
         .mobile-menu-links a {
             display: block;
             padding: 19px 10px;
-            font-size: 23px;
             font-weight: 700;
             transition: background 0.2s;
         }
 
         .mobile-menu-links a:hover {
             background: rgb(135 74 44 / 7%);
-        }
-
-        .mobile-menu-subnav {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 14px 30px;
-            margin: 12px 10px 0;
-        }
-
-        .mobile-menu-subnav a {
-            font-size: 19px;
-            padding: 8px 0;
-        }
-
-        .mobile-menu-extra {
-            margin: 38px auto 0;
-            padding: 0 28px 30px;
-            max-width: 760px;
-            text-align: center;
-        }
-
-        .mobile-banner-wrap {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 22px;
-            margin: 32px 0;
-        }
-
-        .mobile-search {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            min-height: 62px;
-            padding: 0 22px;
-            background: #fff;
-            border-radius: 40px;
-        }
-
-        .mobile-search input {
-            min-width: 0;
-            width: 100%;
-            border: none;
-            outline: none;
-            background: transparent;
-            color: var(--color-font);
-            font-size: 19px;
-        }
-
-        .mobile-search input::placeholder {
-            color: #b9b9b9;
-        }
-
-        .mobile-search button {
-            border: none;
-            background: transparent;
-            width: 30px;
-            height: 30px;
-            padding: 3px;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .mobile-search button svg {
-            width: 100%;
-            height: 100%;
-            fill: none;
-            stroke: #cba67e;
-            stroke-width: 2;
-        }
-
-        .follow-us {
-            margin: 25px 0 12px;
-            font-size: 22px;
-            font-weight: 500;
-            letter-spacing: 1px;
-        }
-
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 15px 0;
-        }
-
-        .social-links .icon-link {
-            width: 35px;
-            height: 35px;
         }
 
         /* =========================
@@ -496,11 +323,6 @@
 
             .pc-nav a {
                 font-size: 14px;
-            }
-
-            .utility-nav {
-                gap: 12px;
-                font-size: 12px;
             }
 
             .main-nav-right a {
@@ -544,21 +366,12 @@
                 gap: 22px;
             }
 
-            .mobile-header .icon-link {
-                width: 32px;
-                height: 32px;
-            }
-
             .mobile-menu-top {
                 padding-inline: 25px;
             }
 
             .mobile-menu-links a {
                 font-size: 21px;
-            }
-
-            .mobile-menu-subnav a {
-                font-size: 17px;
             }
         }
 
@@ -579,12 +392,9 @@
                 font-size: 19px;
                 padding-block: 16px;
             }
-
-            .mobile-menu-extra {
-                padding-inline: 18px;
-            }
         }
 
+        /* 激しいアニメーションや画面がグニャグニャ動く演出が、前庭障害や乗り物酔いのような体調不良（めまいや吐き気など）を引き起こす人への配慮 */
         @media (prefers-reduced-motion: reduce) {
             *,
             *::before,
@@ -597,47 +407,84 @@
 </head>
 
 <body>
+    @php
+        // ログインしていないときの初期値（未定義エラー防止）
+        $mainMenu = [];
+        $subMenu  = [];
+        $userMenu = [];
+    @endphp
+
+    @auth('admin')
+        @php
+            // =========================
+            // メニュー定義（ここを編集すれば全ヘッダーに反映されます）
+            // =========================
+
+            // メインメニュー（PC左側・スマホメニュー）
+            $mainMenu = [
+                ['label' => '生徒一覧',   'url' => '#'],
+                ['label' => '生徒を追加', 'url' => '#'],
+                ['label' => 'クラス',     'url' => '#'],
+                ['label' => '授業',       'url' => '#'],
+            ];
+
+            // サブメニュー（PC右側・スマホメニュー）
+            $subMenu = [
+                ['label' => '教師',       'url' => '#company'],
+                ['label' => '照合テスト', 'url' => '#sustainability'],
+            ];
+
+            // ユーザーメニュー（PC右側・スマホヘッダー）
+            // banner => true のものはボタン風（.company-banner）で表示
+            $userMenu = [
+                ['label' => 'ユーザー名', 'url' => '#ir'],
+                ['label' => 'ログアウト', 'url' => '#corporate', 'banner' => true],
+            ];
+        @endphp
+    @elseauth('teacher')
+    @endauth
+
 
     <!-- =========================
          PCヘッダー
     ========================== -->
 
-    
-<header class="pc-header">
+    <header class="pc-header">
 
-    <!-- 左側のメニュー -->
-    <nav class="pc-nav pc-nav-left" aria-label="メインメニュー">
-        <ul>
-            <li><a href="#products">生徒一覧</a></li>
-            <li><a href="#commitment">生徒を追加</a></li>
-            <li><a href="#enjoy">クラス</a></li>
-            <li><a href="#recipe">授業</a></li>
-        </ul>
-    </nav>
+        <!-- 左側のメニュー -->
+        <nav class="pc-nav pc-nav-left" aria-label="メインメニュー">
+            <ul>
+                @foreach ($mainMenu as $item)
+                    <li><a href="{{ $item['url'] }}">{{ $item['label'] }}</a></li>
+                @endforeach
+            </ul>
+        </nav>
 
-    <!-- 中央のロゴ -->
-    <a href="#" class="logo" aria-label="トップページ">
-        <span class="logo-roof"></span>
-        <span class="logo-text">角</span>
-    </a>
+        <!-- 中央のロゴ -->
+        <a href="#" class="logo" aria-label="トップページ">
+            <span class="logo-roof"></span>
+            <span class="logo-text">角</span>
+        </a>
 
-    <!-- 右側のメニュー（横並び） -->
-    <nav class="pc-nav main-nav-right" aria-label="企業情報">
-        <ul>
-            <li><a href="#company">教師</a></li>
-            <li><a href="#sustainability">照合テスト</a></li>
-            <li><a href="#ir">ユーザー名</a></li>
-            <li>
-                <a href="#corporate" class="company-banner">
-                    ログアウト
-                    <span>›</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
+        <!-- 右側のメニュー（横並び） -->
+        <nav class="pc-nav main-nav-right" aria-label="企業情報">
+            <ul>
+                @foreach (array_merge($subMenu, $userMenu) as $item)
+                    <li>
+                        @if ($item['banner'] ?? false)
+                            <a href="{{ $item['url'] }}" class="company-banner">
+                                {{ $item['label'] }}
+                                <span>›</span>
+                            </a>
+                        @else
+                            <a href="{{ $item['url'] }}">{{ $item['label'] }}</a>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </nav>
 
-</header>
-
+    </header>
 
 
     <!-- =========================
@@ -664,29 +511,21 @@
             <span class="logo-text">角</span>
         </a>
 
-        <div class="mobile-header-actions">
-
-            <a href="#search" class="icon-link" aria-label="検索">
-                <svg viewBox="0 0 32 32">
-                    <circle cx="13.5" cy="13.5" r="9"></circle>
-                    <path d="m20 20 8 8"></path>
-                </svg>
-            </a>
-
-            <a
-                href="https://www.instagram.com/"
-                class="icon-link instagram-icon"
-                aria-label="Instagram"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                <svg viewBox="0 0 32 32">
-                    <rect x="4" y="4" width="24" height="24" rx="7"></rect>
-                    <circle cx="16" cy="16" r="6"></circle>
-                    <circle cx="23.5" cy="8.8" r="1" fill="currentColor"></circle>
-                </svg>
-            </a>
-
+        <div class="mobile-header-actions pc-nav main-nav-right">
+            <ul>
+                @foreach ($userMenu as $item)
+                    <li>
+                        @if ($item['banner'] ?? false)
+                            <a href="{{ $item['url'] }}" class="company-banner">
+                                {{ $item['label'] }}
+                                <span>›</span>
+                            </a>
+                        @else
+                            <a href="{{ $item['url'] }}">{{ $item['label'] }}</a>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
         </div>
     </header>
 
@@ -719,105 +558,15 @@
                 <span class="logo-roof"></span>
                 <span class="logo-text">角</span>
             </a>
-
-            <div class="mobile-menu-actions">
-
-                <a href="#search" class="icon-link" aria-label="検索">
-                    <svg viewBox="0 0 32 32">
-                        <circle cx="13.5" cy="13.5" r="9"></circle>
-                        <path d="m20 20 8 8"></path>
-                    </svg>
-                </a>
-
-                <a
-                    href="https://www.instagram.com/"
-                    class="icon-link instagram-icon"
-                    aria-label="Instagram"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <svg viewBox="0 0 32 32">
-                        <rect x="4" y="4" width="24" height="24" rx="7"></rect>
-                        <circle cx="16" cy="16" r="6"></circle>
-                        <circle cx="23.5" cy="8.8" r="1" fill="currentColor"></circle>
-                    </svg>
-                </a>
-
-            </div>
         </div>
 
         <nav aria-label="スマホメニュー">
             <ul class="mobile-menu-links">
-                <li><a href="#products">商品一覧</a></li>
-                <li><a href="#commitment">こだわり</a></li>
-                <li><a href="#enjoy">Enjoyかどや</a></li>
-                <li><a href="#recipe">かどやレシピ</a></li>
-                <li><a href="#sustainability">サステナビリティ</a></li>
-                <li><a href="#company">会社概要</a></li>
-                <li><a href="#ir">IR情報</a></li>
+                @foreach (array_merge($mainMenu, $subMenu) as $item)
+                    <li><a href="{{ $item['url'] }}">{{ $item['label'] }}</a></li>
+                @endforeach
             </ul>
         </nav>
-
-        <nav class="mobile-menu-subnav" aria-label="その他のメニュー">
-            <a href="#recruit">採用情報</a>
-            <a href="#contact">お問い合わせ</a>
-            <a href="#english">English</a>
-        </nav>
-
-        <div class="mobile-menu-extra">
-
-            <div class="mobile-banner-wrap">
-
-                <a href="#cart" class="icon-link" aria-label="カート">
-                    <svg viewBox="0 0 32 32">
-                        <path d="M3 5h4l4 16h14l4-12H9"></path>
-                        <circle cx="13" cy="26" r="1.5"></circle>
-                        <circle cx="24" cy="26" r="1.5"></circle>
-                    </svg>
-                </a>
-
-                <a href="#corporate" class="company-banner">
-                    カドヤ食品株式会社
-                    <span>›</span>
-                </a>
-
-            </div>
-
-            <form class="mobile-search" id="site-search" role="search">
-                <input
-                    type="search"
-                    name="q"
-                    placeholder="サイト内検索"
-                    aria-label="サイト内検索"
-                >
-
-                <button type="submit" aria-label="検索する">
-                    <svg viewBox="0 0 32 32">
-                        <circle cx="13.5" cy="13.5" r="9"></circle>
-                        <path d="m20 20 8 8"></path>
-                    </svg>
-                </button>
-            </form>
-
-            <p class="follow-us">FOLLOW US</p>
-
-            <div class="social-links">
-                <a
-                    href="https://www.instagram.com/"
-                    class="icon-link instagram-icon"
-                    aria-label="Instagram"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <svg viewBox="0 0 32 32">
-                        <rect x="4" y="4" width="24" height="24" rx="7"></rect>
-                        <circle cx="16" cy="16" r="6"></circle>
-                        <circle cx="23.5" cy="8.8" r="1" fill="currentColor"></circle>
-                    </svg>
-                </a>
-            </div>
-
-        </div>
 
     </div>
 
@@ -934,23 +683,25 @@
                 }
             });
 
-            // 検索フォーム
+            // 検索フォーム（フォームがあるページだけ動作）
             // 実際の検索URLに合わせて変更してください
-            searchForm.addEventListener('submit', event => {
-                event.preventDefault();
+            if (searchForm) {
+                searchForm.addEventListener('submit', event => {
+                    event.preventDefault();
 
-                const keyword = searchForm.elements.q.value.trim();
+                    const keyword = searchForm.elements.q.value.trim();
 
-                if (!keyword) {
-                    searchForm.elements.q.focus();
-                    return;
-                }
+                    if (!keyword) {
+                        searchForm.elements.q.focus();
+                        return;
+                    }
 
-                const searchUrl = new URL('/search', window.location.origin);
-                searchUrl.searchParams.set('q', keyword);
+                    const searchUrl = new URL('/search', window.location.origin);
+                    searchUrl.searchParams.set('q', keyword);
 
-                window.location.href = searchUrl.toString();
-            });
+                    window.location.href = searchUrl.toString();
+                });
+            }
         });
     </script>
 
