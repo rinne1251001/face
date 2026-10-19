@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>コマンド</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>よく使うコマンド</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="folder.html">フォルダー</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                    <li><a href="command.html">よく使うコマンド</a></li>
+                    <li><a href="directive.html">よく使うディレクティブ</a></li>
+                    <li><a href="route.html">ルーティング</a></li>
+                    <li><a href="css.html">css</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <li><a href="#serve">サーバー起動</a></li>
+            <li><a href="#database">データベース関連</a></li>
+            <li><a href="#cache">キャッシュクリア</a></li>
+            <li><a href="#composer">composer関連</a></li>
+            <li><a href="#env">.env関連</a></li>
+            <li><a href="#create">プロジェクト作成</a></li>
+            <li><a href="#human">Humanをインストール</a></li>
+            <li><a href="#japanese">日本語ファイル追加</a></li>
+            <li><a href="#image">storageフォルダに入れた画像を一般公開</a></li>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="serve">サーバー起動</h2>
+            <section>
+                <p>http://127.0.0.1:8000で画面を見る方法</p>
+                <pre><code class="language-plaintext">npm run dev　//css適用＆カメラも
+php artisan serve　//PHPのサーバー起動</code></pre>
+                <p>上２つのコマンドを１つのコマンドで打つ</p>
+                <pre><code class="language-plaintext">composer run dev</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="database">データベース関連</h2>
+            <section>
+                <p>テーブルリセット</p>
+                <pre><code class="language-plaintext">php artisan migrate:fresh　//テーブル作り直し
+php artisan cache:clear file　//古い特徴量キャッシュをクリア
+Remove-Item -Recurse -Force storage/app/private/faces　//顔写真削除</code></pre>
+            </section>
+
+            <section>
+                <p>テストデータ注入</p>
+                <pre><code class="language-plaintext">php artisan db:seed</code></pre>
+            </section>
+
+            <section>
+                <p>テーブルリセット＆テストデータ注入</p>
+                <pre><code class="language-plaintext">php artisan migrate:fresh --seed</code></pre>
+            </section>
+
+            <section>
+                <p>
+                    マイグレーションファイルの適用状況確認
+                    データベースに反映されていないマイグレーションが見つかる
+                </p>
+                <pre><code class="language-plaintext">php artisan migrate:status</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="cache">キャッシュ</h2>
+            <section>
+                <p>
+                    各種キャッシュを一括で削除するコマンド<br>
+                    config(設定ファイルのキャッシュ)、route(ルートのキャッシュ)、viewのコンパイル済みファイル、アプリケーションのコンテナ最適化ファイル
+                </p>
+                <pre><code class="language-plaintext">php artisan optimize:clear</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="composer">composer関連</h2>
+            <section>
+                <p>
+                    ①リポジトリクローン時<br>
+                    ②チームメンバーがライブラリを追加・変更した時<br>
+                    ③vendorフォルダを消しちゃったとき
+                </p>
+                <pre><code class="language-plaintext">composer install</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="env">.env関連</h2>
+            <section>
+                <h3>APP_KEYを変更</h3>
+                <p>
+                    APP_KEYとはLaravelの内部でさまざまなデータの暗号化・復号に使われている<br>
+                    使いまわしはセキュリティ的にまずいので変更推奨
+                </p>
+                <pre><code class="language-plaintext">php artisan key:generate</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <p>↓↓ここから先は基本的に１回のみ使用</p>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="create">プロジェクト作成</h2>
+            <p>faceという名前のLaravelプロジェクトを作成</p>
+            <pre><code class="language-plaintext">composer create-project laravel/laravel face "13.*" --prefer-dist</code></pre>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="human">Humanをインストール</h2>
+            <section>
+                <p>node_modules/@vladmandicにHuman本体とTensorFlow.jsを入れる</p>
+                <pre><code class="language-plaintext">npm install --save-exact @vladmandic/human@3.3.6</code></pre>
+
+                <p>public/modelsに学習済みの重み(.bin)とネットワーク構造(.json)を入れる（blazeface、facemesh、faceresのインターフェース３つ）</p>
+                <pre><code class="language-plaintext">New-Item -ItemType Directory -Force public/models/human
+Copy-Item node_modules/@vladmandic/human/models/blazeface.*, node_modules/@vladmandic/human/models/facemesh.*, node_modules/@vladmandic/human/models/faceres.* public/models/human/
+</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="japanese">日本語ファイル追加</h2>
+            <section>
+                <p>追加項目はlang/ja/validation.phpのattributesに書く</p>
+                <pre><code class="language-plaintext">composer require laravel-lang/common --dev
+php artisan lang:add ja
+php artisan lang:update</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="image">storageフォルダに入れた画像を一般公開</h2>
+            <section>
+                <p>
+                    Laravelでアップロードした画像などのファイルを、Webブラウザから一般公開してアクセスできるようにするためのコマンド<br>
+                    公開ディレクトリである public/storage から、実体の保存先である storage/app/public へのシンボリックリンク（ショートカット）を作成することで見れるようになる
+                </p>
+                <pre><code class="language-plaintext">php artisan storage:link</code></pre>
+                <p>storage/publicに置いた画像を使うときは、</p>
+                <pre><code class="html">&lt;img src="{{ asset('storage/フォルダ名/ファイル名.jpg') }}"></code></pre>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

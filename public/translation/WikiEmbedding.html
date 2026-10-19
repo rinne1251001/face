@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>HumanのWikiページ（Embedding）</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <style>
+        body {
+            padding: 20px;
+            color: #333;
+        }
+
+        article {
+            display: grid;
+            gap: 50px;
+
+        }
+
+        section {
+            min-width: 0;
+        }
+
+        pre {
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        table {
+            border-collapse: collapse;
+            overflow-x: auto;
+        }
+
+        table th,
+        table td {
+            padding: 10px;
+        }
+
+        footer {
+            border-top: 2px #DDD solid;
+            margin-top: 100px;
+            display: grid;
+            gap: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1><a href="https://github.com/vladmandic/human/wiki/Embedding" target="_blank"
+                rel="noopener noreferrer">HumanのWikiページ（Embedding）の翻訳</a></h1>
+        <p>Embedding（顔の特徴量）についての説明</p>
+    </header>
+    <main>
+        <article>
+            <section>
+                <h2>顔の特徴量(Embedding) と類似度比較</h2>
+                <p>すべての顔埋め込み（Face Embedding）機能のデモは、/demo/facematch で確認できます。</p>
+                <p>このデモでは以下のような機能を紹介しています：</p>
+                <ul>
+                    <li>画像の読み込み</li>
+                    <li>画像からの顔の抽出</li>
+                    <li>顔埋め込み記述子（Face Embedding Descriptor）の計算</li>
+                    <li>顔の類似度の検出と類似度順でのソート</li>
+                    <li>既知の顔リストに基づく最適な顔照合の検出と結果の出力</li>
+                </ul>
+            </section>
+
+            <section>
+                <p>
+                    顔の類似度比較機能を使用するには、比較したいすべての画像に対して埋め込みベクトル（別名：顔記述子）を計算するために、face.description
+                    モジュールが有効（デフォルト）になっていることを確認してください。<br>
+                    正確な結果を得るためには、face.mesh と
+                    face.detector.rotationも有効にすることを強く推奨します。低品質な入力データで特徴ベクトルを計算すると誤った結果につながる可能性があるためです。<br>
+                    類似度が 50% 以上 であれば、一致（同一人物）とみなすことができます。
+                </p>
+
+                <p>コード例:</p>
+                <pre><code>const myConfig = {
+  face: {
+    enabled: true,
+    detector: { rotation: true, return: true },
+    mesh: { enabled: true },
+    description: { enabled: true },
+  },
+};
+
+const human = new Human(myConfig);
+const firstResult = await human.detect(firstImage);
+const secondResult = await human.detect(secondImage);
+const similarity = human.match.similarity(firstResult.face[0].embedding, secondResult.face[0].embedding);
+console.log(`顔の類似度: ${100 * similarity}%`);</code></pre>
+
+                <p>画像または動画フレーム内に複数の顔が存在し、そのすべてを照合したい場合は、results.face をループ処理します：</p>
+                <pre><code>for (let i = 0; i < currentResult.face.length; i++) {
+  const currentEmbedding = currentResult.face[i].embedding;
+  const similarity = human.match.similarity(referenceEmbedding, currentEmbedding);
+  console.log(`顔 ${i} の類似度: ${100 * similarity}%`);
+}</code></pre>
+
+                <p>ただし、デフォルト設定ではフレーム内の最初の1つ目の顔のみを検出するため、検出する最大人数を増やしてください：</p>
+                <pre><code>const myConfig = {
+  face: {
+    detector: { maxDetected: 100 },
+  },
+};</code></pre>
+            </section>
+
+            <section>
+                <h2>顔記述子 (Face Descriptor)</h2>
+                <p>
+                    顔記述子（Face Descriptor）または埋め込みベクトル（Embedding
+                    Vector）とは、特定の顔を意図的に一意に識別するために計算された特徴ベクトルの値であり、浮動小数点数の配列として表現されます。<br>
+                    これらは通常の配列として保存し、必要に応じて再利用することができます。
+                </p>
+            </section>
+
+            <section>
+                <h2>顔の類似度 (Face Similarity)</h2>
+                <p>
+                    類似度関数は、ベクトル内のすべての点における一般的なミンコフスキー距離に基づいています。<br>
+                    ミンコフスキー距離とは、各点間の距離のn乗の和のn根です（各記述子は1024個の要素を持つ配列です）。<br>
+                    デフォルトはユークリッド距離であり、これは次数が2の場合のミンコフスキー距離の特例です。<br>
+                    次数を変更することで、類似度マッチングの感度を高くしたり低くしたりできます（デフォルトの次数は2次です）。
+                </p>
+
+                <p>例えば、以下はわずかに異なる結果を生成します：</p>
+                <pre><code>const similarity2ndOrder = human.match.similarity(firstEmbedding, secondEmbedding, { order: 2 });
+const similarity3rdOrder = human.match.similarity(firstEmbedding, secondEmbedding, { order: 3 });</code></pre>
+            </section>
+
+            <section>
+                <h2>顔認識 (Face Recognition)</h2>
+                <p>顔の埋め込み分析を実行した後は、注釈付きの形式で結果を保存しておき、後で任意の顔に対する最適なマッチングを見つけるために使用できます。</p>
+                <p>例:</p>
+                <pre><code>const db = [];
+const res = await human.detect(input);
+db.push({ label: 'this-is-me', embedding: res.face[0].embedding });</code></pre>
+                <p>
+                    同一人物に対して複数のエントリを保持でき、最も一致する結果が使用されます。<br>
+                    最適な照合結果を見つけるには、比較する埋め込み記述子と事前に用意した記述子リストを渡して match.find メソッドを使用します：
+                </p>
+                <pre><code>const embeddingArray = db.map((record) => record.embedding); // 埋め込みデータのみの配列を作成
+const best = human.match.find(embedding, embeddingArray); // 返り値オブジェクト: { index: number, similarity: number, distance: number }
+const label = db[best.index].label;
+console.log({ name: label, similarity: best.similarity });</code></pre>
+
+                <p>
+                    データベースは JS や JSON ファイルに保存し、必要な時に呼び出すことで、任意の数の既知の顔に対応できるように拡張可能な「永久的な顔データベース」として運用できます。<br>
+                    例として、/demo/facematch/facematch.js およびサンプルデータベースの /demo/facematch/faces.json を参照してください：<br>
+                    http/https を使って既知の顔のDBをダウンロードする場合:
+                </p>
+                <pre><code>const res = await fetch('/demo/facematch/faces.json');
+db = (res && res.ok) ? await res.json() : [];</code></pre>
+
+                <p>ローカルファイルから既知の顔のDBをロードする場合 (Node.js):</p>
+                <pre><code>const fs = require('fs');
+const buffer = fs.readFileSync('/demo/facematch/faces.json');
+db = JSON.parse(buffer);</code></pre>
+            </section>
+
+            <section>
+                <h2>顔画像の前処理 (Face Image Pre-processing)</h2>
+                <p>
+                    最適な結果を得るために、Human は特徴ベクトル（Embedding）を計算する前に画像に対して以下の操作を実行します：
+                </p>
+                <ul>
+                    <li>顔領域の切り抜き (Crop)</li>
+                    <li>おおよその顔の角度を検出し、顔を正位置に補正</li>
+                    <li>メッシュ（Mesh）の検出</li>
+                    <li>正確な顔の角度を検出し、再度顔を正位置に補正</li>
+                    <li>より狭いマージンで再度切り抜き</li>
+                    <li>配色の違いによる影響を排除するため、画像をグレースケールに変換</li>
+                    <li>すべての画像について明暗（明るさ）を全領域へ正規化</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>デモ (Demo)</h2>
+                <p>
+                    Human には多数の画像を一覧表示し、それらからすべての顔を抽出・処理した上で、任意の顔を選択して類似度順に並べ替えるデモが含まれています。
+                    このデモは JavaScript モジュールとして facematch.js を使用しており、demo/facematch で利用可能です。
+                </p>
+            </section>
+        </article>
+    </main>
+
+    <footer>
+        <section>
+            <h4>注</h4>
+            <p>
+                顔の特徴量（Embedding）の抽出と、顔同士の類似度比較・個人識別（顔認証）の解説ページ
+            </p>
+        </section>
+
+        <section>
+            <p>このアプリとの違い</p>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Wiki の内容</th>
+                        <th>このアプリ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ブラウザで human.match が計算する</td>
+                        <td>サーバーの FaceMatcher（PHP）が計算する</td>
+                    </tr>
+                    <tr>
+                        <td>ユークリッド距離を 0〜1 に換算した値</td>
+                        <td>長さを1にそろえたベクトルの、コサイン類似度</td>
+                    </tr>
+                    <tr>
+                        <td>50%以上なら同一人物</td>
+                        <td>0.6以上、かつ2位との差（margin）が 0.05以上</td>
+                    </tr>
+                    <tr>
+                        <td>1人に複数のデータを持ち、一番近いものを使う</td>
+                        <td>1人に複数の顔写真を持ち、生徒ごとに一番高い類似度を使う</td>
+                    </tr>
+                    <tr>
+                        <td>JS や JSON ファイルに保存する</td>
+                        <td>MySQL の face_samples テーブル（JSON の列）に保存する</td>
+                    </tr>
+                    <tr>
+                        <td>face.mesh と rotation を有効にする</td>
+                        <td>両方とも有効にしている</td>
+                    </tr>
+                    <tr>
+                        <td>複数の顔なら maxDetected を増やす</td>
+                        <td>3にしている</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <p>human.matchではなく、FaceMatcherで計算する理由</p>
+
+            <p>↓サーバー照合を採用した理由</p>
+            <ol>
+                <li>
+                    個人情報保護（セキュリティ）
+                    <p>
+                        ブラウザで計算すると個人情報である特徴量をブラウザにダウンロードする必要があるから<br>
+                        サーバー側で計算することでブラウザに届くのは判定結果だけに制限される
+                    </p>
+                </li>
+                <li>
+                    不正申請の防止（耐改ざん性）
+                    <p>
+                        出席確認の「学生IDが一致しました」のリクエストは開発者ツールから誰でも同じものを作れるので偽装される恐れがある<br>
+                        特徴量（数値の並び）のみをブラウザに送れば誰なのかはサーバーが決めて記録する
+                    </p>
+                </li>
+                <li>
+                    設定管理とログの一元化
+                    <p>
+                        閾値を.envで管理すれば再ビルド不要<br>
+                        管理者の照合テストも教師の出席受付も同じFaceMatcherを通るから画面によって判定が食い違わない<br>
+                        すべての照合がmatch_logsに残るからあとで閾値を見直せる
+                    </p>
+                </li>
+                <li>
+                    高度な判定ロジック（誤認証対策）
+                    <p>
+                        human.match.findは一番近い1件（index、distance、similarity）しか返さないので1位と2位の差も求めるには不適<br>
+                        また、human.match.findはmodel_versionを確かめて違うモデルの特徴量どうしを比べないようにする計算ではない
+                    </p>
+                </li>
+            </ol>
+
+            <p>
+                ↓計算方法をコサイン類似度にした理由<br>
+                human.match.similarity は、距離を調整用の数（multiplier 25、min 0.2、max 0.8）で 0〜1
+                に引き伸ばした値のため「0.6がどのくらい似ているのか」を説明しにくい<br>
+                一方、コサイン類似度は「2つのベクトルの向きがどれだけそろっているか」を表す一般的な尺度であり、長さを1にそろえれば似ている順番はユークリッド距離と同じになる
+            </p>
+
+            <p>↓ブラウザで計算する方法との比較</p>
+            <table border="1" style="border-collapse: collapse; width: 100%;">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>ブラウザで human.match</th>
+                        <th>サーバーで FaceMatcher（このアプリ）</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>全生徒の特徴量の扱い</th>
+                        <td>ブラウザに配る必要がある</td>
+                        <td>サーバーから出ない</td>
+                    </tr>
+                    <tr>
+                        <th>出席を決める場所</th>
+                        <td>ブラウザ（書き換えられる）</td>
+                        <td>サーバー</td>
+                    </tr>
+                    <tr>
+                        <th>しきい値の変更</th>
+                        <td>JSのビルドし直し</td>
+                        <td>.envを変えるだけ</td>
+                    </tr>
+                    <tr>
+                        <th>照合の記録（ログ）</th>
+                        <td>別に送る仕組みが要る</td>
+                        <td>照合と同時にmatch_logsに残る</td>
+                    </tr>
+                    <tr>
+                        <th>ネットが切れたとき</th>
+                        <td>照合できる</td>
+                        <td>照合できない</td>
+                    </tr>
+                    <tr>
+                        <th>1回の照合</th>
+                        <td>通信なし</td>
+                        <td>毎回サーバーと通信する</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

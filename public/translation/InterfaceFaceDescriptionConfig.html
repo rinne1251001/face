@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>HumanのInterface FaceDescriptionConfig</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <style>
+        body {
+            padding: 20px;
+            color: #333;
+        }
+
+        article {
+            display: grid;
+            gap: 50px;
+
+        }
+
+        section {
+            min-width: 0;
+        }
+
+        pre {
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        table {
+            border-collapse: collapse;
+            overflow-x: auto;
+        }
+
+        table th,
+        table td {
+            padding: 10px;
+        }
+
+        footer {
+            border-top: 2px #DDD solid;
+            margin-top: 100px;
+            display: grid;
+            gap: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1><a href="https://vladmandic.github.io/human/typedoc/interfaces/FaceDescriptionConfig.html" target="_blank"
+                rel="noopener noreferrer">Interface FaceDescriptionConfigの翻訳</a></h1>
+        <p>HumanのTypeDocドキュメントのInterface FaceDescriptionConfigの日本語訳</p>
+    </header>
+    <main>
+        <article>
+            <section>
+                <h2>インターフェース: FaceDescriptionConfig</h2>
+                <p>
+                    顔設定（Face Configuration）における記述（Face Description）および顔埋め込み（Face Embedding）部分の設定用インターフェースです。<br>
+                    年齢（Age）や性別（Gender）の検出にも使用されます。
+                </p>
+                <pre><code>interface FaceDescriptionConfig {
+    enabled: boolean;
+    minConfidence: number;
+    modelPath: string;
+    skipFrames: number;
+    skipTime: number;
+}</code></pre>
+            </section>
+
+            <section>
+                <h2>階層構造 (継承関係)</h2>
+                <ul>
+                    <li><a href="https://vladmandic.github.io/human/typedoc/interfaces/GenericConfig.html"
+                            target="_blank" rel="noopener noreferrer">GenericConfig</a>
+                        <ul>
+                            <li>FaceDescriptionConfig</li>
+                        </ul>
+                    </li>
+                </ul>
+                <a href="https://github.com/vladmandic/human/blob/main/src/config.ts#69">Defined in
+                    Defined in src/config.ts:69</a>
+            </section>
+
+            <section>
+                <h2>プロパティ詳細</h2>
+
+                <h3>enabled</h3>
+                <pre><code>enabled: boolean</code></pre>
+                <p>
+                    モジュールが有効化されているかどうかを指定します。<br>
+                    GenericConfig.enabledから継承<br>
+                    Defined in src/config.ts:15
+                </p>
+
+                <h3>minConfidence</h3>
+                <pre><code>minConfidence: number</code></pre>
+                <p>
+                    検出結果が破棄される前段階としての、検出された顔の最小信頼度スコア。<br>
+                    Defined in src/config.ts:71
+                </p>
+
+                <h3>modelPath</h3>
+                <pre><code>modelPath: string</code></pre>
+                <p>
+                    モデル JSON ファイルへのパス（modelBasePath からの相対パス）。<br>
+                    GenericConfig.modelPathから継承<br>
+                    Defined in src/config.ts:17
+                </p>
+
+                <h3>skipFrames</h3>
+                <pre><code>skipFrames: number</code></pre>
+                <p>
+                    キャッシュされた結果が許容可能である場合に、モデルを再実行せずにスキップする最大フレーム数を指定します。<br>
+                    ※顔や手のような2段階処理を行うモデルの場合、キャッシュはバウンディングボックスの検出のみに適用されます。<br>
+                    GenericConfig.skipFramesから継承<br>
+                    Defined in src/config.ts:20
+                </p>
+
+                <h3>skipTime</h3>
+                <pre><code>skipTime: number</code></pre>
+                <p>
+                    キャッシュされた結果が許容可能である場合に、モデルを再実行せずにスキップする最大ミリ秒数を指定します。<br>
+                    ※顔や手のような2段階処理を行うモデルの場合、キャッシュはバウンディングボックスの検出のみに適用されます。<br>
+                    GenericConfig.skipTime から継承<br>
+                    Defined in src/config.ts:23
+                </p>
+            </section>
+        </article>
+    </main>
+
+    <footer>
+        <section>
+            <h4>注</h4>
+            <p>
+                顔から「個人識別用の特徴量（embedding）」や「年齢・性別」を抽出し出力するための設定インターフェース FaceDescriptionConfig の仕様書
+            </p>
+        </section>
+
+        <section>
+            <p>
+                このアプリで使っているFaceMeshConfig<br>
+            </p>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>既定値</th>
+                        <th>このアプリ</th>
+                        <th>この値の理由</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>enabled</td>
+                        <td>true</td>
+                        <td>true</td>
+                        <td>照合に使う特徴量（face.embedding、1024個）はこのモデルが出す。止めると照合できない</td>
+                    </tr>
+                    <tr>
+                        <td>modelPath</td>
+                        <td>faceres.json</td>
+                        <td>同じ</td>
+                        <td>MODEL_VERSION（human-3.3.6-faceres）と対応している。変えたら全員の登録をやり直す</td>
+                    </tr>
+                    <tr>
+                        <td>minConfidence</td>
+                        <td>0.1</td>
+                        <td>同じ</td>
+                        <td>実際には性別の判定にしか使われず、照合には影響しない（下の3を参照）</td>
+                    </tr>
+                    <tr>
+                        <td>skipFrames</td>
+                        <td>99</td>
+                        <td>同じ</td>
+                        <td>cacheSensitivity: 0 のため使われない</td>
+                    </tr>
+                    <tr>
+                        <td>skipTime</td>
+                        <td>3000</td>
+                        <td>同じ</td>
+                        <td>cacheSensitivity: 0 のため使われない</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

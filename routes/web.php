@@ -16,11 +16,18 @@ if (app()->environment('local')) {
 }
 // http://127.0.0.1:8000/tests
 Route::view('/test', 'tests/test');
+Route::view('/toduka', 'tests/toduka');
+Route::view('/design1', 'tests/design1');
+Route::view('/design2', 'tests/design2');
+Route::view('/design3', 'tests/design3');
+Route::view('/design4', 'tests/design4');
+Route::view('/design5', 'tests/design5');
 Route::view('/aaabbbccc', 'tests/aaa');
 // ドボンゲームのページ
 Route::get('/dobon', function () {
     return view('tests.dobon');
 });
+
 // トップページは教師のホームへ（ログインしていなければ教師のログイン画面へ）
 Route::redirect('/', '/teacher');
 

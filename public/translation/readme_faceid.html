@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>HumanのREADME</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <style>
+        body {
+            padding: 20px;
+            color: #333;
+        }
+
+        article {
+            display: grid;
+            gap: 50px;
+
+        }
+
+        section {
+            min-width: 0;
+        }
+
+        pre {
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        table {
+            border-collapse: collapse;
+            overflow-x: auto;
+        }
+
+        table th,
+        table td {
+            padding: 10px;
+        }
+
+        footer {
+            border-top: 2px #DDD solid;
+            margin-top: 100px;
+            display: grid;
+            gap: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1><a href="https://github.com/vladmandic/human/blob/main/demo/faceid/README.md" target="_blank"
+                rel="noopener noreferrer">Face IDデモのREADMEの翻訳</a></h1>
+        <p>GitHubのリポジトリ（vladmandic/human）のFaceIDデモに関するREADMEドキュメントの日本語訳</p>
+    </header>
+    <main>
+        <article>
+            <section>
+                <h2>Human 顔認識: FaceID</h2>
+                <p>
+                    FaceID は、顔の照合を実行する前に複数のチェックを行い、Webカメラ入力を検証します。<br>
+                    検出された顔画像および記述子（descriptor）は、クライアント側の IndexedDB に保存されます。
+                </p>
+            </section>
+
+            <section>
+                <h2>ワークフロー</h2>
+                <ol>
+                    <li>Webカメラを起動します。</li>
+                    <li>
+                        入力動画に検証済みの顔が含まれるか、タイムアウトに達するまで待機します：
+                        <ul>
+                            <li>人数</li>
+                            <li>顔のサイズ</li>
+                            <li>顔および視線の方向</li>
+                            <li>検出スコア</li>
+                            <li>ライブ入力であることを確認するための「まばたき検出」（まばたきの速度の時系列チェックを含む）</li>
+                            <li>オプションの「なりすまし防止（Anti-spoofing）」モジュールを実行します。</li>
+                            <li>オプションの「生体検知（Liveness）」モジュールを実行します。</li>
+                        </ul>
+                    </li>
+                    <li>登録済みの顔データベースに対して照合を実行し、スコアとともに最適な照合結果を表示します。</li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>補足</h2>
+                <p>なりすまし防止モデルと生体検知モデルはどちらも非常に軽量であり、他の指標と組み合わせて迅速なチェックを行うよう設計されています：</p>
+                <ul>
+                    <li>モデルサイズは 1MB 未満</li>
+                    <li>非常にシンプルなため推論時間が極めて高速（なりすまし防止は11演算、生体検知は23演算）</li>
+                    <li>低解像度入力で学習済み</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>なりすまし防止モジュール (Anti-spoofing Module)</h2>
+                <ul>
+                    <li>入力が本物の顔であるか（例：コンピュータ生成された顔ではないか）をチェックします</li>
+                    <li>設定: human.config.face.antispoof.enabled</li>
+                    <li>結果: human.result.face[0].real（スコアとして取得）</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>生体検知モジュール (Liveness Module)</h2>
+                <ul>
+                    <li>録画による明らかなアーティファクト（例：スマートフォンの画面で再生された顔の動画など）が入力に含まれていないかをチェックします</li>
+                    <li>設定: human.config.face.liveness.enabled</li>
+                    <li>結果: human.result.face[0].live（スコアとして取得）</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>モデル (Models)</h2>
+                <p>
+                    FaceID は以下のモデルと互換性があります：
+                </p>
+                <ul>
+                    <li>faceres.json（デフォルト）: 年齢 / 性別 / 記述子の複合解析を行います。</li>
+                    <li>faceres-deep.json: faceres の高解像度バリエーションです。</li>
+                    <li>insightface: 顔記述子解析用の代替モデルです。</li>
+                    <li>mobilefacenet: 顔記述子解析用の代替モデルです。</li>
+                </ul>
+            </section>
+        </article>
+    </main>
+
+    <footer>
+        <section>
+            <h4>注</h4>
+            <p>
+                FaceIDとはHumanライブラリの顔認証機能を搭載したでもアプリです
+            </p>
+        </section>
+
+        <section>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Face IDデモ</th>
+                        <th>このアプリ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>特徴量・顔写真の保存先</td>
+                        <td>ブラウザの IndexedDB（その端末だけ）</td>
+                        <td>サーバーの MySQL と storage/app/private</td>
+                    </tr>
+                    <tr>
+                        <td>照合する場所</td>
+                        <td>ブラウザ（human.match.find）</td>
+                        <td>サーバー（FaceMatcher）</td>
+                    </tr>
+                    <tr>
+                        <td>似ている度合い</td>
+                        <td>距離をもとにした類似度、しきい値 0.5</td>
+                        <td>コサイン類似度、しきい値 0.6 ＋ margin 0.05</td>
+                    </tr>
+                    <tr>
+                        <td>まばたきチェック</td>
+                        <td>あり</td>
+                        <td>なし</td>
+                    </tr>
+                    <tr>
+                        <td>antispoof / liveness</td>
+                        <td>オン</td>
+                        <td>オフ</td>
+                    </tr>
+                    <tr>
+                        <td>iris（視線の向き）</td>
+                        <td>オン</td>
+                        <td>オフ</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <p>照合に使われる顔の特徴データ（記述子）を抽出して顔分析するモデルを選択可能
+            </p>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>モデルファイル名</th>
+                        <th>説明・特徴</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>faceres.json<br>（デフォルト）</td>
+                        <td>年齢・性別の判定と顔の照合をバランスよく同時に行います。</td>
+                    </tr>
+                    <tr>
+                        <td>faceres-deep.json</td>
+                        <td>より高解像度で精度の高い解析を行うバージョン。</td>
+                    </tr>
+                    <tr>
+                        <td>insightface / mobilefacenet</td>
+                        <td>業界で広く使われている別の高度な顔照合AIモデルへ切り替えることも可能です。</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

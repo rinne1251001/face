@@ -8,10 +8,11 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
+                'resources/css/test.css',
                 'resources/js/app.js',
                 'resources/js/face-register.js',
                 'resources/js/face-match.js',
-                'resources/js/face-checkin.js', // 追加：教師の出席受付画面
+                'resources/js/face-checkin.js',
             ],
             refresh: true,
             fonts: [

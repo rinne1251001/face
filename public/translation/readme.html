@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>HumanのREADME</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <style>
+        body {
+            padding: 20px;
+            color: #333;
+        }
+
+        article {
+            display: grid;
+            gap: 50px;
+
+        }
+
+        section {
+            min-width: 0;
+        }
+
+        pre {
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        table {
+            border-collapse: collapse;
+            overflow-x: auto;
+        }
+
+        table th,
+        table td {
+            padding: 10px;
+        }
+
+        footer {
+            border-top: 2px #DDD solid;
+            margin-top: 100px;
+            display: grid;
+            gap: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1><a href="https://github.com/vladmandic/human/blob/main/README.md" target="_blank"
+                rel="noopener noreferrer">HumanのREADMEの翻訳</a></h1>
+        <p>GitHubのリポジトリ（vladmandic/human）のREADMEドキュメントの日本語訳</p>
+    </header>
+    <main>
+        <article>
+            <section>
+                <h2>Human ライブラリ</h2>
+                <p>
+                    AIを活用した3D顔検出＆回転トラッキング、顔の特徴記述＆認識、身体ポーズトラッキング、3D手＆指トラッキング、虹彩分析、年齢・性別・感情予測、視線トラッキング、ジェスチャー認識、身体セグメンテーション
+                </p>
+            </section>
+
+            <section>
+                <h2>ハイライト</h2>
+                <ul>
+                    <li>ほとんどのサーバーサイドおよびクライアントサイドの環境・フレームワークと互換性あり</li>
+                    <li>ユースケースに応じてオンデマンドで切り替え可能な複数の機械学習モデルを統合</li>
+                    <li>関連するモデルはアテンションパイプライン内で実行され、必要な時に詳細情報を提供</li>
+                    <li>あらゆるタイプの入力画像の品質を向上できる、最適化された入力前処理</li>
+                    <li>フレームの変化を検出し、必要なモデルのみをトリガーしてパフォーマンスを向上</li>
+                    <li>処理パフォーマンスに関わらずスムーズな結果を提供する、インテリジェントな時間補間（Temporal Interpolation）</li>
+                    <li>シンプルで統一されたAPI</li>
+                    <li>画像、動画、Webカメラの組み込み処理に対応</li>
+                </ul>
+                <a href="#quick-start">クイックスタートへジャンプ</a>
+            </section>
+
+            <section>
+                <h2>互換性</h2>
+                <h3>ブラウザ:</h3>
+                <ul>
+                    <li>デスクトップおよびモバイルプラットフォームの両方に対応</li>
+                    <li>WebGPU、WebGL、WASM、CPU バックエンドに対応</li>
+                    <li>WebWorker 上での実行に対応</li>
+                    <li>WebView に対応</li>
+                    <li>プライマリプラットフォーム: Chromium系ブラウザ</li>
+                    <li>セカンダリプラットフォーム: Firefox、Safari</li>
+                </ul>
+
+                <h3>NodeJS:</h3>
+                <ul>
+                    <li>TensorFlowのバイナリが利用できないアーキテクチャでの実行用に WASM バックエンドに対応</li>
+                    <li>TensorFlow共有ライブラリを介したソフトウェア実行による tfjs-node に対応</li>
+                    <li>TensorFlow共有ライブラリおよびnVidia CUDAを介したGPUアクセラレーション実行による tfjs-node に対応</li>
+                    <li>サポート対象バージョン: 14.x 〜 22.x</li>
+                    <li>※NodeJS バージョン 23.x は、破壊的変更および @tensorflow/tfjs との問題のためサポート対象外です。</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>リリース</h2>
+                <ul>
+                    <li><a href="https://github.com/vladmandic/human/releases" target="_blank"
+                            rel="noopener noreferrer">リリースノート</a></li>
+                    <li><a href="https://www.npmjs.com/package/@vladmandic/human" target="_blank"
+                            rel="noopener noreferrer">NPM リンク</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>デモ</h2>
+                <p>
+                    <a href="https://vladmandic.github.io/human/demo/typescript/index.html" target="_blank"
+                        rel="noopener noreferrer">シンプルライブデモ</a>:
+                    導入として最適な、完全注釈付きのアプリです
+                    (<a href="https://github.com/vladmandic/human/blob/main/demo/typescript/index.html" target="_blank"
+                        rel="noopener noreferrer">html</a>)
+                    (<a href="https://github.com/vladmandic/human/blob/main/demo/typescript/index.ts" target="_blank"
+                        rel="noopener noreferrer">code</a>)
+                </p>
+
+                <p>
+                    <a href="https://vladmandic.github.io/human/demo/index.html" target="_blank"
+                        rel="noopener noreferrer">メインライブデモ</a>:
+                    Webカメラ、動画ストリーム、または静止画像を、調整可能なすべてのオプションを使用して高度に処理するアプリです。
+                </p>
+                <ul>
+                    <li>動画検出を開始するには、単に Play を押してください。</li>
+                    <li>画像を処理するには、ブラウザウィンドウにドラッグ＆ドロップしてください。</li>
+                    <li>注: 最適なパフォーマンスを得るため、使用したいモデルのみを選択してください。</li>
+                    <li>注: 現代的なGPUをお持ちの場合は WebGL（デフォルト）バックエンドが推奨されます。それ以外の場合は WASM バックエンドを選択してください。</li>
+                </ul>
+
+                <ul>
+                    <li><a href="https://github.com/vladmandic/human/wiki/Demos" target="_blank"
+                            rel="noopener noreferrer">すべてのデモアプリケーションのリスト</a></li>
+                    <li><a href="https://vladmandic.github.io/human/samples/index.html" target="_blank"
+                            rel="noopener noreferrer">ライブサンプルギャラリー</a></li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>ブラウザデモ</h2>
+                <p>
+                    すべてのブラウザデモは外部依存関係を持たず、自己完結しています。
+                </p>
+                <ul>
+                    <li>Full
+                        [<a href="https://vladmandic.github.io/human/demo/index.html" target="_blank"
+                            rel="noopener noreferrer">Live</a>]
+                        [<a href="https://github.com/vladmandic/human/tree/main/demo" target="_blank"
+                            rel="noopener noreferrer">Details</a>]: Humanの全機能を網羅したメインのブラウザデモアプリ</li>
+                    <li>Simple
+                        [<a href="https://vladmandic.github.io/human/demo/typescript/index.html" target="_blank"
+                            rel="noopener noreferrer">Live</a>]
+                        [<a href="https://github.com/vladmandic/human/tree/main/demo/typescript" target="_blank"
+                            rel="noopener noreferrer">Details</a>]: TypeScriptによるシンプルなWebカメラ処理デモ</li>
+                    <li>Embedded [Live] [Details]: HTMLファイル内に極小コードを埋め込んだ、さらにシンプルなデモ</li>
+                    <li>Face Detect [Live] [Details]: 画像から顔を抽出し、詳細を処理</li>
+                    <li>Face Match [Live] [Details]: 画像から顔を抽出し、顔記述子と類似度を計算して既知のデータベースと照合</li>
+                    <li>Face ID [Live] [Details]: IndexedDB内の顔と照合する前に複数の検証チェックを実行してWebカメラ入力を確認</li>
+                    <li>Multi-thread [Live] [Details]: 最高のパフォーマンスを得るため、各Humanモジュールを別々のWeb Workerで実行</li>
+                    <li>NextJS [Live] [Details]: TypeScript、NextJS、ReactJSでHumanを使用</li>
+                    <li>ElectronJS [Details]: TypeScriptとElectronJSを使用してスタンドアロンのクロスプラットフォームアプリを作成</li>
+                    <li>3D Analysis with BabylonJS [Live] [Details]: 頭部、顔、目、身体、手の3Dトラッキングと視覚化</li>
+                    <li>VRM Virtual Model Tracking with Three.JS [Live] [Details]: 頭部、顔、目、身体、手のトラッキングを備えたVRモデル</li>
+                    <li>VRM Virtual Model Tracking with BabylonJS [Live] [Details]: 頭部、顔、目、身体、手のトラッキングを備えたVRモデル</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>NodeJSデモ</h2>
+                <p>
+                    NodeJSデモには、入力をデコードするために追加の依存関係が必要な場合があります。<br>
+                    自動的にはインストールされないため、各デモのヘッダーを参照して依存関係を確認してください。
+                </p>
+                <ul>
+                    <li>Main [Details]: ネイティブメソッドを使用してファイル、フォルダ、またはURLから画像を処理</li>
+                    <li>Canvas [Details]: node-canvas を使用してファイルまたはURLから画像を処理し、結果を新しい画像ファイルに描画</li>
+                    <li>Video [Details]: ffmpeg を使用した動画入力の処理</li>
+                    <li>WebCam [Details]: fswebcam を使用したWebカメラショットの処理</li>
+                    <li>Events [Details]: 処理の通知を受け取るための Human イベント処理の使用例</li>
+                    <li>Similarity [Details]: 検出された顔の類似性について2つの入力画像を比較</li>
+                    <li>Face Match [Details]: 複数の子Workerスレッドでの顔照合の並列処理</li>
+                    <li>Multiple Workers [Details]: 事前に作成されたWorkerプロセスのプールに割り振ることで、複数の並行Humanを実行</li>
+                    <li>Dynamic Load [Details]: 希望する複数の異なるバックエンドでHumanを動的にロード</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>プロジェクトページ</h2>
+                <ul>
+                    <li>コードリポジトリ</li>
+                    <li>NPM パッケージ</li>
+                    <li>イシュー（課題）トラッカー</li>
+                    <li>TypeDoc API仕様 - メインクラス</li>
+                    <li>TypeDoc API仕様 - フル</li>
+                    <li>変更履歴 (Change Log)</li>
+                    <li>現在のTo-doリスト</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Wikiページ</h2>
+                <ul>
+                    <li>ホーム</li>
+                    <li>インストール</li>
+                    <li>使用方法と関数</li>
+                    <li>設定の詳細</li>
+                    <li>結果の詳細</li>
+                    <li>描画メソッドのカスタマイズ</li>
+                    <li>キャッシュとスムージング</li>
+                    <li>入力処理</li>
+                    <li>顔認識と顔の記述</li>
+                    <li>ジェスチャー認識</li>
+                    <li>よくある問題</li>
+                    <li>背景とベンチマーク</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>補足説明</h2>
+                <ul>
+                    <li>バックエンドの比較</li>
+                    <li>開発サーバー</li>
+                    <li>ビルドプロセス</li>
+                    <li>カスタムモジュールの追加</li>
+                    <li>パフォーマンスに関する注意点</li>
+                    <li>パフォーマンスプロファイリング</li>
+                    <li>プラットフォームのサポート</li>
+                    <li>診断およびパフォーマンスのトレース情報</li>
+                    <li>HumanアプリケーションのDocker化</li>
+                    <li>モデル一覧とクレジット</li>
+                    <li>モデルダウンロードリポジトリ</li>
+                    <li>セキュリティおよびプライバシーポリシー</li>
+                    <li>ライセンスおよび使用制限</li>
+                </ul>
+                <p>
+                    既知の制限事項や計画されている機能拡張のリストについては、Issues や Discussions をご覧ください。<br>
+                    ご提案・ご意見は大歓迎です！
+                </p>
+            </section>
+
+            <section>
+                <h2>アプリケーション例</h2>
+                <p>
+                    その他の例についてはサンプルギャラリーをご覧ください。
+                </p>
+            </section>
+
+            <section>
+                <h2>オプション</h2>
+                <p>
+                    デモアプリ（demo/index.html）に提示されている全オプション...
+                </p>
+
+                <p>
+                    ブラウザでの結果表示:<br>
+                    [ Demo -> Display -> Show Results ]
+                </p>
+            </section>
+
+            <section>
+                <h2>高度な例</h2>
+                <ol>
+                    <li>顔の類似度照合
+                        <a
+                            href="https://github.com/vladmandic/human/blob/main/demo/facematch/index.html">(demo/facematch)</a>
+                        <br>提供された入力画像からすべての顔を抽出し、選択した顔との類似度でソートし、必要に応じて検出された顔を既知の人物のデータベースと照合して名前を推測します。
+                    </li>
+                    <li>顔検出 <a
+                            href="https://github.com/vladmandic/human/blob/main/demo/facedetect/index.html">(demo/facedetect)</a>
+                        :<br>読み込まれた画像から検出されたすべての顔をオンデマンドで抽出し、選択された顔の詳細を強調表示します。
+                    </li>
+                    <li>顔ID <a
+                            href="https://github.com/vladmandic/human/blob/main/demo/faceid/index.html">(demo/faceid)</a>
+                        :<br>Webカメラ入力に対して検証チェックを行って本物の顔を検出し、データベースに保存されている既知の顔と照合します。</li>
+                    <li>3Dレンダリング: human-motion</li>
+                    <li>VRモデルトラッキング: human-three-vrm / human-bjs-vrm</li>
+                    <li>OSネイティブアプリとしてのHuman: human-electron</li>
+                </ol>
+                <p>468ポイントのフェイスメッシュ詳細: （キーポイントを見るにはフル解像度で表示してください）</p>
+            </section>
+
+            <section>
+                <h2 id="quick-start">クイックスタート</h2>
+                <p>
+                    HTMLファイル内で、クラウドCDNから直接Human（IIFEバージョン）を読み込みます：<br>
+                    （jsdelivr、unpkg、cdnjs のいずれかを選択）<br>
+                    （※訳注：cdnjs の URL に含まれている 3.0.0 はドキュメント作成時の古いバージョン固定値です。最新バージョン（v3.3.6など）を利用する場合は、URL
+                    のバージョン部分を書き換えるか、jsDelivr / unpkg などの利用を検討してください）
+                </p>
+                <pre><code>&lt;!DOCTYPE HTML>
+&lt;script src="https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/human.js">&lt;/script>
+&lt;script src="https://unpkg.dev/@vladmandic/human/dist/human.js">&lt;/script>
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/human/3.0.0/human.js">&lt;/script></code></pre>
+                <p>※ブラウザ向けESMバージョンやNodeJSバージョンのHumanの使用方法など、詳細については「インストール」を参照してください。</p>
+            </section>
+
+            <section>
+                <h2>コード例</h2>
+                <p>
+                    Humanを使用して動画入力を処理し、内部の描画ヘルパー関数を使用して画面に結果を描画するシンプルなアプリです。
+                </p>
+
+                <p>Promiseを使用する場合:</p>
+                <pre><code>// デフォルト値を使用したシンプルな設定でHumanのインスタンスを作成
+const config = { backend: 'webgl' };
+const human = new Human.Human(config);
+// ページから入力用 HTMLVideoElement と出力用 HTMLCanvasElement を取得
+const inputVideo = document.getElementById('video-id');
+const outputCanvas = document.getElementById('canvas-id');
+
+function detectVideo() {
+  // デフォルト設定で処理を実行
+  human.detect(inputVideo).then((result) => {
+    // resultオブジェクトには検出された詳細情報と
+    // 処理されたキャンバス自体が含まれています
+    // 最初に処理されたフレームをキャンバスに描画します
+    human.draw.canvas(result.canvas, outputCanvas);
+    // 次に同じキャンバス上に検出結果を描画します
+    human.draw.face(outputCanvas, result.face);
+    human.draw.body(outputCanvas, result.body);
+    human.draw.hand(outputCanvas, result.hand);
+    human.draw.gesture(outputCanvas, result.gesture);
+    // 即座に次のフレームへとループします
+    requestAnimationFrame(detectVideo);
+    return result;
+  });
+}
+
+detectVideo();</code></pre>
+
+                <p>async/awaitを使用する場合:</p>
+                <pre><code>// デフォルト値を使用したシンプルな設定でHumanのインスタンスを作成
+const config = { backend: 'webgl' };
+const human = new Human(config); // Humanのインスタンスを作成
+const inputVideo = document.getElementById('video-id');
+const outputCanvas = document.getElementById('canvas-id');
+
+async function detectVideo() {
+  const result = await human.detect(inputVideo); // 検出を実行
+  human.draw.all(outputCanvas, result); // すべての結果を描画
+  requestAnimationFrame(detectVideo); // ループを実行
+}
+
+detectVideo(); // ループを開始</code></pre>
+
+                <p>イベントを使用する場合:</p>
+                <pre><code>// デフォルト値を使用したシンプルな設定でHumanのインスタンスを作成
+const config = { backend: 'webgl' };
+const human = new Human(config); // Humanのインスタンスを作成
+const inputVideo = document.getElementById('video-id');
+const outputCanvas = document.getElementById('canvas-id');
+
+human.events.addEventListener('detect', () => { // 検出が完了した時にイベントがトリガーされる
+  human.draw.all(outputCanvas, human.result); // すべての結果を描画
+});
+
+function detectVideo() {
+  human.detect(inputVideo) // 検出を実行
+    .then(() => requestAnimationFrame(detectVideo)); // 検出完了後に次のフレームの処理を開始
+}
+
+detectVideo(); // ループを開始</code></pre>
+
+                <p>検出ループと描画ループを分離し、補間された結果を使用してスムーズな動画処理を行う場合:</p>
+                <pre><code>const human = new Human(); // Humanのインスタンスを作成
+const inputVideo = document.getElementById('video-id');
+const outputCanvas = document.getElementById('canvas-id');
+let result;
+
+async function detectVideo() {
+  result = await human.detect(inputVideo); // 検出を実行
+  requestAnimationFrame(detectVideo); // 検出ループを実行
+}
+
+async function drawVideo() {
+  if (result) { // 結果が利用可能かチェック
+    const interpolated = human.next(result); // 直近の既知結果を使用して平滑化された結果を取得
+    human.draw.all(outputCanvas, interpolated); // フレームを描画
+  }
+  requestAnimationFrame(drawVideo); // 描画ループを実行
+}
+
+detectVideo(); // 検出ループを開始
+drawVideo(); // 描画ループを開始</code></pre>
+
+                <p>手動のフレームごとループの代わりに、組み込みの完全動画処理を使用する場合:</p>
+                <pre><code>const human = new Human(); // Humanのインスタンスを作成
+const inputVideo = document.getElementById('video-id');
+const outputCanvas = document.getElementById('canvas-id');
+
+async function drawResults() {
+  const interpolated = human.next(); // 直近の既知結果を使用して平滑化された結果を取得
+  human.draw.all(outputCanvas, interpolated); // フレームを描画
+  requestAnimationFrame(drawResults); // 描画ループを実行
+}
+
+human.video(inputVideo); // 結果を継続的に更新する検出ループを開始
+drawResults(); // 描画ループを開始</code></pre>
+
+                <p>動画処理を完全に管理してくれる組み込みWebカメラヘルパーメソッドを使用する場合:</p>
+                <pre><code>const human = new Human(); // Humanのインスタンスを作成
+const outputCanvas = document.getElementById('canvas-id');
+
+async function drawResults() {
+  const interpolated = human.next(); // 直近の既知結果を使用して平滑化された結果を取得
+  human.draw.canvas(outputCanvas, human.webcam.element); // 現在のWebカメラフレームを描画
+  human.draw.all(outputCanvas, interpolated); // フレームの検出結果を描画
+  requestAnimationFrame(drawResults); // 描画ループを実行
+}
+
+await human.webcam.start({ crop: true });
+human.video(human.webcam.element); // 結果を継続的に更新する検出ループを開始
+drawResults(); // 描画ループを開始</code></pre>
+
+                <p>さらにパフォーマンスを向上させるため、別々の Web Worker スレッドで検出を実行することも可能です。</p>
+            </section>
+
+            <section>
+                <h2>入力形式</h2>
+                <p>
+                    Human ライブラリは知られているすべての入力形式を処理できます：
+                    Image, ImageData, ImageBitmap, Canvas, OffscreenCanvas, Tensor, HTMLImageElement, HTMLCanvasElement,
+                    HTMLVideoElement, HTMLMediaElement
+                </p>
+
+                <p>さらに、HTMLVideoElement および HTMLMediaElement は、以下にリンクする標準の &lt;video> タグにすることが可能です：</p>
+                <ul>
+                    <li>ユーザーシステムの WebCam（Webカメラ）</li>
+                    <li>サポートされている任意の動画タイプ（例: .mp4, .avi など）</li>
+                    <li>HTML5 Media Source Extensions 経由でサポートされる追加の動画タイプ（例: hls.js を使用した HLS、dash.js を使用した DASH）</li>
+                    <li>組み込みサポートを使用した WebRTC メディアトラック</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>詳細な使い方</h2>
+                <ul>
+                    <li>Wiki ホーム</li>
+                    <li>利用可能なすべてのメソッド、プロパティ、ネームスペースの一覧</li>
+                    <li>TypeDoc API仕様 - メインクラス</li>
+                    <li>TypeDoc API仕様 - フル</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>型定義 (TypeDefs)</h2>
+                <p>
+                    HumanはTypeScriptの強力な型付けで記述されており、ライブラリで定義されているすべてのクラスの完全な型定義が types/human.d.ts
+                    にバンドルされ、デフォルトで有効になっています。
+                </p>
+
+                <p>
+                    注: これには埋め込まれた tfjs は含まれません。
+                    Human内部の埋め込み tfjs（human.tf ネームスペース）を使用しつつ完全な型定義も保持したい場合は、以下のコードを追加してください：
+                </p>
+                <pre><code>import type * as tfjs from '@vladmandic/human/dist/tfjs.esm';
+const tf = human.tf as typeof tfjs;</code></pre>
+
+                <p>
+                    サイズの考慮からHumanには完全な TFJS 型定義が同梱されていないため、これはデフォルトでは有効になっていません。上記のように tfjs
+                    型定義を有効にすると、@vladmandic/human/dist/tfjs.esm.d.ts で定義されている以下のプロジェクト依存関係（型定義のみが必要なため dev-only
+                    依存）が追加されます：
+                </p>
+                <ul>
+                    <li>@tensorflow/tfjs-core</li>
+                    <li>@tensorflow/tfjs-converter</li>
+                    <li>@tensorflow/tfjs-backend-wasm</li>
+                    <li>@tensorflow/tfjs-backend-webgl</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>デフォルトモデル</h2>
+                <p>
+                    Human ライブラリのデフォルトモデル：
+                </p>
+                <ul>
+                    <li>顔検出 (Face Detection): MediaPipe BlazeFace（Backバリエーション）</li>
+                    <li>フェイスメッシュ (Face Mesh): MediaPipe FaceMesh</li>
+                    <li>顔の虹彩分析 (Face Iris Analysis): MediaPipe Iris</li>
+                    <li>顔の記述 (Face Description): HSE FaceRes</li>
+                    <li>感情検出 (Emotion Detection): Oarriaga Emotion</li>
+                    <li>身体分析 (Body Analysis): MoveNet（Lightningバリエーション）</li>
+                    <li>手の分析 (Hand Analysis): HandTrack &amp; MediaPipe HandLandmarks</li>
+                    <li>身体セグメンテーション (Body Segmentation): Google Selfie</li>
+                    <li>物体検出 (Object Detection): CenterNet with MobileNet v3</li>
+                </ul>
+
+                <p>
+                    オルタナティブモデル（代替モデル）も用意されており、設定変更によって有効化できます。
+                    例えば、身体ポーズ検出はデフォルトで MoveNet Lightning を使用しますが、ユースケースに応じて、より高精度なMoveNet、複数人検出用の Multinet
+                    MultiPose、または PoseNet、BlazePose、EfficientPose に切り替えることが可能です。
+                </p>
+
+                <p>
+                    詳細については、「設定の詳細」および「モデル一覧」を参照してください。
+                </p>
+            </section>
+
+            <section>
+                <h2>診断</h2>
+                <p>
+                    診断情報やパフォーマンスのトレース情報を取得する方法についてのドキュメントをご参照ください。
+                </p>
+            </section>
+
+            <section>
+                <p>
+                    Human ライブラリは TypeScript 5.1 および TensorFlow/JS 4.10 を使用して書かれており、最新の JavaScript ECMAScript 2022
+                    標準に準拠しています。（※訳注：実際の v3.3.6 時点では TypeScript 5.9.2 / TensorFlow.js 4.22.0 などにアップデートされています）<br>
+                    配布用のビルドターゲットは JavaScript ECMAScript 2018 です。<br>
+                    詳細は Wiki ページ および [API仕様] をご覧ください。
+                </p>
+            </section>
+        </article>
+    </main>
+
+    <footer>
+        <section>
+            <h4>注</h4>
+            <p>
+                Humanとは、画像やWebカメラ映像から「顔・身体・手・視線・ジェスチャー・感情」などをAIでまとめて検出・分析できるJavaScript / TypeScript用のライブラリのこと<br>
+                人間の状態や動きをWebブラウザやNode.js上で簡単に読み取るためのAIツールボックス
+            </p>
+        </section>
+
+        <section>
+            <p>
+                このアプリでは顔の検出・メッシュ・特徴量と、顔の向きの判定だけを使用していますが、それ以外も分析できるようです
+            </p>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>分析対象</th>
+                        <th>詳細・機能</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>顔（Face）</td>
+                        <td>3D顔検出、468ポイントの顔メッシュ抽出、顔の特徴量の抽出と照合、年齢・性別・感情の予測</td>
+                    </tr>
+                    <tr>
+                        <td>目・視線（Iris/Gaze）</td>
+                        <td>虹彩の分析、どこを見ているかの視線トラッキング</td>
+                    </tr>
+                    <tr>
+                        <td>身体（Body）</td>
+                        <td>ポーズ（骨格）トラッキング、人物と背景の切り分け（セグメンテーション）</td>
+                    </tr>
+                    <tr>
+                        <td>手・指（Hand）</td>
+                        <td>3Dでの手のひら・指関節のトラッキング、ジェスチャー認識</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <p>
+                Humanは顔認証以外にも機能があるようです
+            </p>
+            <table border="1">
+                <tr>
+                    <td>Webカメラを使った顔認証（Face ID）</td>
+                    <td>ブラウザ上で本人確認を行い、ログインや本人認証に活用する。</td>
+                </tr>
+                <tr>
+                    <td>バーチャルYouTuber（VTuber） / 3Dモデル操作</td>
+                    <td>Three.jsやBabylon.jsと組み合わせて、Webカメラの映像からVRMモデル（3Dキャラ）の顔やポーズをリアルタイム動かす。</td>
+                </tr>
+                <tr>
+                    <td>AR（拡張現実）フィルター・試着アプリ</td>
+                    <td>顔のメッシュ情報を利用してメガネやメイクの試着、顔エフェクトを適用する。</td>
+                </tr>
+                <tr>
+                    <td>ジェスチャー操作</td>
+                    <td>手の動きやサインを認識して、画面の操作やゲームの操作を行う。</td>
+                </tr>
+            </table>
+        </section>
+
+        <section>
+            <h4>シンプルライブデモ</h4>
+            <p>
+                AIが自分の顔や表情、視線などをリアルタイムで追跡・分析する様子を体験・確認<br>
+                コードはpublic/demo/SimpleLiveDemoにも置いています
+            </p>
+
+            <p>humanConfigの設定</p>
+            <table border="1">
+                <caption>filter：画像の前処理・フィルター</caption>
+                <tr>
+                    <td>enabled</td>
+                    <td>フィルター機能を使うか</td>
+                </tr>
+                <tr>
+                    <td>equalization</td>
+                    <td>ヒストグラム均等化（暗い場所でも見やすくする画像補正）</td>
+                </tr>
+                <tr>
+                    <td>flip</td>
+                    <td>映像の左右反転（鏡表示）</td>
+                </tr>
+            </table>
+
+            <table border="1">
+                <caption>face：顔の検出と分析</caption>
+                <tr>
+                    <td>enabled</td>
+                    <td>顔解析全体を使うか</td>
+                </tr>
+                <tr>
+                    <td>detector</td>
+                    <td>顔検出の設定全体。傾き補正はその中の rotation</td>
+                </tr>
+                <tr>
+                    <td>mesh</td>
+                    <td>顔の立体構造（468箇所の網目状キーポイント）を追跡</td>
+                </tr>
+                <tr>
+                    <td>attention</td>
+                    <td>目・唇まわりの点を細かくする別モデル（facemesh-attention）に切り替えるか</td>
+                </tr>
+                <tr>
+                    <td>iris</td>
+                    <td>黒目（虹彩）の位置や大きさをピンポイントで分析</td>
+                </tr>
+                <tr>
+                    <td>description</td>
+                    <td>年齢や性別の判定、顔の特徴量抽出</td>
+                </tr>
+                <tr>
+                    <td>emotion</td>
+                    <td>感情の予測（喜怒哀楽など）</td>
+                </tr>
+                <tr>
+                    <td>antispoof</td>
+                    <td>作り物の顔（CGなど）でないかをrealという点数で返す</td>
+                </tr>
+                <tr>
+                    <td>liveness</td>
+                    <td>録画の再生（スマホ画面に映した顔など）でないかをliveという点数で返す</td>
+                </tr>
+            </table>
+
+            <table border="1">
+                <caption>その他の検出モジュール</caption>
+                <tr>
+                    <td>body</td>
+                    <td>姿勢・骨格トラッキング</td>
+                </tr>
+                <tr>
+                    <td>hand</td>
+                    <td>手・指のトラッキング</td>
+                </tr>
+                <tr>
+                    <td>object</td>
+                    <td>日常品などの物体検出</td>
+                </tr>
+                <tr>
+                    <td>segmentation</td>
+                    <td>人物と背景の切り分け・背景透過</td>
+                </tr>
+                <tr>
+                    <td>gesture</td>
+                    <td>ジェスチャーを認識</td>
+                </tr>
+            </table>
+        </section>
+
+        <section>
+            <h4>高度な例・上３つ比較</h4>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>機能 / デモ目的</th>
+                        <th>入力</th>
+                        <th>主な処理内容</th>
+                        <th>なりすまし対策</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>顔の類似度照合<br>Face Similarity Matching</td>
+                        <td>画像 / データベース</td>
+                        <td>「似ている顔」を探す / 大元データの高速検索。顔の特徴量（数値データ）化、類似度の計算・ソート、選んだ顔に似ている順に並べて登録済みの人物から名前を推定する。</td>
+                        <td>なし</td>
+                    </tr>
+                    <tr>
+                        <td>顔検出<br>Face Detect</td>
+                        <td>静止画像</td>
+                        <td>「顔がどこにあるか」を見つける。顔の位置（枠）、目・鼻の位置、感情・年齢などを抽出。識別はしない。</td>
+                        <td>なし</td>
+                    </tr>
+                    <tr>
+                        <td>顔ID<br>Face ID</td>
+                        <td>リアルタイムWebカメラ</td>
+                        <td>「本人確認・認証」を行う。生体検知（瞬き、ディープフェイク検出、再録画検出）＋顔照合（IndexedDB）。</td>
+                        <td>あり</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                このアプリはHumanの「顔の特徴量を取り出す機能」だけを使っていまい、残りは独自に作っています<br>
+                <a href="readme_faceid.html">Face IDデモにあるREADMEの日本語訳</a>
+            </p>
+        </section>
+
+        <section>
+            <h4>コード例</h4>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>パターン / 方式</th>
+                        <th>特徴</th>
+                        <th>ポイント</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1. Promise<br>（非同期処理の古典的な書き方）</td>
+                        <td>.then() を使って「検出が終わったら描画する」を順番に実行する最も基礎的な書き方です。</td>
+                        <td>human.draw.face や human.draw.hand のように、描画したいパーツを1つずつ個別に指定して描画しています。</td>
+                    </tr>
+                    <tr>
+                        <td>2. async / await<br>（モダンでシンプルな書き方）</td>
+                        <td>初心者におすすめの基本形です。</td>
+                        <td>async/await を使うことでコードがすっきり読みやすくなります。また、human.draw.all() を使うことで顔・手・体などの全検出結果を1行でまとめて描画しています。
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>3. イベント<br>（処理完了の通知を受け取る書き方）</td>
+                        <td>検出処理と描画処理のタイミングを完全に切り離す書き方です。</td>
+                        <td>human.events.addEventListener('detect', ...)
+                            を設定しておくことで、AIの検出が完了した瞬間に自動で描画処理が呼ばれます。<br><em>※ここから下は、映像をよりヌルヌル（滑らか）に動かすための発展パターンです。</em>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>4. 検出ループと描画ループの分離<br>（滑らかさUP）</td>
+                        <td>「AIの計算」と「画面の描画」を別々に同じスレッドで交互に動きます。</td>
+                        <td>AIの検出結果は少し遅れて届くため、そのまま描画すると線がカクつきます。human.next(result)
+                            を使うことで、検出結果のコマとコマの間を前回の結果と新しい結果を経過時間に応じて混ぜる計算（スムージング）をし、ヌルヌルと滑らかに描画させます。</td>
+                    </tr>
+                    <tr>
+                        <td>5. human.video()<br>（手動ループの省略）</td>
+                        <td>パターン4の「検出ループ」をライブラリ内部に任せて、より短く書く方法です。</td>
+                        <td>自分で detect() を何度も呼び出すコードを書かなくても、human.video(inputVideo) を1行呼ぶだけで内部で自動的にカメラ検出を回し続けてくれます。</td>
+                    </tr>
+                    <tr>
+                        <td>6. human.webcam ヘルパー<br>（カメラ起動も全自動）</td>
+                        <td>Webカメラの起動から映像取得まで全自動で行う最もラクな書き方です。</td>
+                        <td>HTML側に &lt;video&gt; タグを用意する必要すらありません。await human.webcam.start()
+                            を呼ぶだけでカメラを起動し、そのまま検出・描画まで繋いでくれます。</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h4>デフォルトモデル</h4>
+            <p>このアプリが使うのは BlazeFace・FaceMesh・FaceRes の3つ</p>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>デフォルトモデル</th>
+                        <th>機能</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>顔の検出<br>MediaPipe BlazeFace</td>
+                        <td>画面内から顔の位置（四角い枠）を高速で見つける</td>
+                    </tr>
+                    <tr>
+                        <td>顔の立体メッシュ<br>MediaPipe FaceMesh</td>
+                        <td>顔の表面に 468 箇所のキーポイントを割り当て、立体形状を把握する</td>
+                    </tr>
+                    <tr>
+                        <td>目の虹彩分析<br>MediaPipe Iris</td>
+                        <td>黒目の位置や瞳孔の動き、視線を精度高く捉える</td>
+                    </tr>
+                    <tr>
+                        <td>顔の属性推定<br>HSE FaceRes</td>
+                        <td>年齢や性別、顔の特徴量（照合用データ）を抽出する</td>
+                    </tr>
+                    <tr>
+                        <td>感情の検出<br>Oarriaga Emotion</td>
+                        <td>表情から喜怒哀楽（Happy, Sad, Angry など）を判定する</td>
+                    </tr>
+                    <tr>
+                        <td>身体ポーズ追跡<br>MoveNet (Lightning)</td>
+                        <td>人物の骨格（頭、肩、肘、膝など）を高速に追跡する</td>
+                    </tr>
+                    <tr>
+                        <td>手・指の追跡<br>HandTrack / MediaPipe</td>
+                        <td>手のひらや指先（21箇所の関節）の動きを立体的に分析する</td>
+                    </tr>
+                    <tr>
+                        <td>背景切り抜き<br>Google Selfie</td>
+                        <td>人物と背景を自動で切り分け、背景ボカシなどに使う</td>
+                    </tr>
+                    <tr>
+                        <td>物体検出<br>CenterNet</td>
+                        <td>日常の物体（スマホ、コップ、椅子など）を見つける</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>代替モデルのファイルは npm に入っておらず、human-models リポジトリから別に入手する必要があります</p>
+        </section>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

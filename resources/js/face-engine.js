@@ -81,7 +81,7 @@ export async function init(onStatus = () => { }) {
         clearInterval(timer);
     }
 
-    const loaded = human.models.loaded();
+    const loaded = human.models.stats().modelStats.filter((m) => m.loaded).map((m) => m.name);
     const missing = REQUIRED_MODELS.filter((m) => !loaded.includes(m));
     if (missing.length > 0) {
         throw new Error(`モデルを読み込めませんでした：${missing.join(', ')}`);
