@@ -16,7 +16,11 @@ if (app()->environment('local')) {
 }
 // http://127.0.0.1:8000/tests
 Route::view('/test', 'tests/test');
-
+Route::view('/aaabbbccc', 'tests/aaa');
+// ドボンゲームのページ
+Route::get('/dobon', function () {
+    return view('tests.dobon');
+});
 // トップページは教師のホームへ（ログインしていなければ教師のログイン画面へ）
 Route::redirect('/', '/teacher');
 
