@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta property="og:site_name" content="Rollin">
     <title>@yield('title', 'Rollin')</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/favicon.ico?v=3') }}">
     @vite(['resources/css/test.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
@@ -85,8 +86,7 @@
 
         <!-- 中央のロゴ -->
         <a href="#" class="logo" aria-label="トップページ">
-            <span class="logo-roof"></span>
-            <span class="logo-text">角</span>
+            <img src="{{ asset('images/logo.png') }}" alt="Rollin">
         </a>
 
         <!-- 右側のメニュー（横並び） -->
@@ -130,8 +130,7 @@
         </button>
 
         <a href="#" class="logo logo-small" aria-label="トップページ">
-            <span class="logo-roof"></span>
-            <span class="logo-text">角</span>
+           <img src="{{ asset('images/logo.png') }}" alt="Rollin">
         </a>
 
         <div class="mobile-header-actions pc-nav main-nav-right">
