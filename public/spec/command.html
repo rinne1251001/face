@@ -33,6 +33,7 @@
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
                     <li><a href="route.html">ルーティング</a></li>
                     <li><a href="css.html">css</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
                 </ul>
             </nav>
         </div>
@@ -45,6 +46,9 @@
             <li><a href="#cache">キャッシュクリア</a></li>
             <li><a href="#composer">composer関連</a></li>
             <li><a href="#env">.env関連</a></li>
+            <li><a href="#create">プロジェクト作成</a></li>
+            <li><a href="#human">Humanをインストール</a></li>
+            <li><a href="#japanese">日本語ファイル追加</a></li>
             <li><a href="#image">storageフォルダに入れた画像を一般公開</a></li>
         </ol>
     </nav>
@@ -121,6 +125,39 @@ Remove-Item -Recurse -Force storage/app/private/faces　//顔写真削除</code>
                     使いまわしはセキュリティ的にまずいので変更推奨
                 </p>
                 <pre><code class="language-plaintext">php artisan key:generate</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <p>↓↓ここから先は基本的に１回のみ使用</p>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="create">プロジェクト作成</h2>
+            <p>faceという名前のLaravelプロジェクトを作成</p>
+            <pre><code class="language-plaintext">composer create-project laravel/laravel face "13.*" --prefer-dist</code></pre>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="human">Humanをインストール</h2>
+            <section>
+                <p>node_modules/@vladmandicにHuman本体とTensorFlow.jsを入れる</p>
+                <pre><code class="language-plaintext">npm install --save-exact @vladmandic/human@3.3.6</code></pre>
+
+                <p>public/modelsに学習済みの重み(.bin)とネットワーク構造(.json)を入れる（blazeface、facemesh、faceresのインターフェース３つ）</p>
+                <pre><code class="language-plaintext">New-Item -ItemType Directory -Force public/models/human
+Copy-Item node_modules/@vladmandic/human/models/blazeface.*, node_modules/@vladmandic/human/models/facemesh.*, node_modules/@vladmandic/human/models/faceres.* public/models/human/
+</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="japanese">日本語ファイル追加</h2>
+            <section>
+                <p>追加項目はlang/ja/validation.phpのattributesに書く</p>
+                <pre><code class="language-plaintext">composer require laravel-lang/common --dev
+php artisan lang:add ja
+php artisan lang:update</code></pre>
             </section>
         </div>
 

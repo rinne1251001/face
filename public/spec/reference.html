@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>参考文献</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>参考文献</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="folder.html">フォルダー</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                    <li><a href="command.html">よく使うコマンド</a></li>
+                    <li><a href="directive.html">よく使うディレクティブ</a></li>
+                    <li><a href="route.html">ルーティング</a></li>
+                    <li><a href="css.html">css</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <li><a href="#face">顔認証</a></li>
+            <li><a href="#felica">フェリカリーダー</a></li>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="face">顔認証</h2>
+            <section>
+                <h3><a href="https://qiita.com/AxrossRecipe_SB/items/c021a23691b09986a7ce">顔認識AI技術を活用したレシピの紹介</a></h3>
+            </section>
+
+            <section>
+                <h3><a href="https://zenn.dev/ykesamaru/articles/a90f2f204e187b">顔認証に使う学習モデルを作ろう！⭐️</a></h3>
+                <p>
+                    顔認証のライブラリを使う方法ではなく、学習モデルを作り学習させる方法
+                </p>
+            </section>
+
+            <section>
+                <h3><a href="https://github.com/yKesamaru/FACE01_trained_models/blob/master/README.md">日本人顔認識のための新たな学習モデル
+                        JAPANESE FACE v1</a></h3>
+            </section>
+
+            <section>
+                <h3><a href="https://github.com/vladmandic/human/blob/main/README.md">HumanのREADME</a></h3>
+                <p>
+                    <a href="../translation/readme.html">日本語訳</a><br>
+                    Humanライブラリの概要、機能、デモ、使い方など基本的なことが書かれている
+                </p>
+            </section>
+
+            <section>
+                <h3><a href="https://github.com/vladmandic/human/wiki/Config">HumanのWiki Config</a>
+                </h3>
+                <p>
+                    new Human({...}) に渡す設定の説明
+                </p>
+                <p>
+                    <a
+                        href="https://vladmandic.github.io/human/typedoc/interfaces/GenericConfig.html">FaceDetectorConfig</a>(<a
+                        href="../translation/InterfaceGenericConfig.html">日本語訳</a>)：Humanライブラリの共通設定インターフェースの概要<br>
+
+                    <a
+                        href="https://vladmandic.github.io/human/typedoc/interfaces/FaceDetectorConfig.html">FaceDetectorConfig</a>(<a
+                        href="../translation/InterfaceFaceDetectorConfig.html">日本語訳</a>)：顔の領域を検出するインターフェース<br>
+                    <a
+                        href="https://vladmandic.github.io/human/typedoc/interfaces/FaceMeshConfig.html">FaceMeshConfig</a>(<a
+                        href="../translation/InterfaceFaceMeshConfig.html">日本語訳</a>)：3Dメッシュを取得する<br>
+                    <a
+                        href="https://vladmandic.github.io/human/typedoc/interfaces/FaceDescriptionConfig.html">FaceDescriptionConfig</a>(<a
+                        href="../translation/InterfaceFaceDescriptionConfig.html">日本語訳</a>)：特徴量や年齢、性別を取得するインターフェース
+                </p>
+            </section>
+
+            <section>
+                <h3><a href="https://github.com/vladmandic/human/wiki/Embedding">HumanのWiki Embedding</a></h3>
+                <p>
+                    <a href="../translation/WikiEmbedding.html">日本語訳</a><br>
+                    特徴量（embedding）の説明
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="felica">フェリカリーダー</h2>
+            <section>
+                <h3><a href="https://sakura-system.com/archives/3023">USBDeviceでFeliCaリーダーを操作する その4：RC-S300コマンド</a></h3>
+                <p>
+                    フェリカリーダーの使い方<br>
+                    コード（JavaScript）付き
+                </p>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

@@ -33,6 +33,7 @@
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
                     <li><a href="route.html">ルーティング</a></li>
                     <li><a href="css.html">css</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
                 </ul>
             </nav>
         </div>
@@ -56,6 +57,7 @@
         <div class="content-wrapper">
             <h2 id="kihon">基本のcss</h2>
             <section>
+                <h3>絶対使うcss</h3>
                 <pre><code class="css">div {
     color: black;               \* 文字色 *\
     background-color: white;    \* 背景色 *\
@@ -100,11 +102,6 @@
     &lt;title>カメラの映像を画面に映す&lt;/title>
     @vite(['resources/css/test.css', 'resources/js/app.js'])
     &lt;style>
-        :root {
-            --color-font: #333;
-            --color-bg: #FFFFFF;
-        }
-
         .camera {
             position: relative;
             /* 横幅はここで調整 */
@@ -223,11 +220,6 @@
     &lt;title>基本のハンバーガーメニュー&lt;/title>
     @vite(['resources/css/test.css', 'resources/js/app.js'])
     &lt;style>
-        :root {
-            --color-font: #333;
-            --color-bg: #FFFFFF;
-        }
-
         header {
             display: flex;
             align-items: center;

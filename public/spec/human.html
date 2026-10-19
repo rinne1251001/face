@@ -33,6 +33,7 @@
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
                     <li><a href="route.html">ルーティング</a></li>
                     <li><a href="css.html">css</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
                 </ul>
             </nav>
         </div>
@@ -42,7 +43,8 @@
         <ol>
             <li><a href="#Human">Human</a></li>
             <li><a href="#reason">導入理由</a></li>
-            <li><a href="#mechanism">照合の仕組み</a></li>
+            <li><a href="#process">顔認証の流れ</a></li>
+            <li><a href="#FaceMatcher">FaceMatcherの仕組み</a></li>
             <li><a href="#threshold">閾値</a></li>
             <li><a href="#folder">顔写真のフォルダ</a></li>
             <li><a href="#variable">変数</a></li>
@@ -120,7 +122,46 @@
         </div>
 
         <div class="content-wrapper">
-            <h2 id="mechanism">照合の仕組み</h2>
+            <h2 id="process">顔認証の流れ</h2>
+            <section>
+                <h3>大まかな流れ</h3>
+                <p>
+                    ①CheckinController::show<br>
+                    ②face-checkin.js<br>
+                    ③CheckinController::store<br>
+                    ④Attendance::createOrFirst()
+                </p>
+            </section>
+
+            <section>
+                <h3>①CheckinController::show</h3>
+                <p>
+                    １．TeacherモデルのteachesSubjectで教師が授業の担当かを調べる<br>
+                    ２．subject(授業)、today(今日の日付)、wrongDay(曜日違いか)、studentCount(受講者人数)、recordedCount(今日の出席済み人数)を返す
+                </p>
+            </section>
+
+            <section>
+                <h3>②face-checkin.jsのmain()</h3>
+                <p>
+                </p>
+            </section>
+
+            <section>
+                <h3>③CheckinController::store</h3>
+                <p>
+                </p>
+            </section>
+
+            <section>
+                <h3>④Attendance::createOrFirst()</h3>
+                <p>
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="FaceMatcher">Services/FaceMatcherの仕組み</h2>
             <section>
                 <h3>大まかな流れ</h3>
                 <p>
@@ -411,7 +452,7 @@ return [
 !.gitignore</code></pre>
                 <p>
                     とあるので、privateフォルダにある写真は全てGithubにアップロードされないようです<br>
-                    このコマンドはphp artisan migrate:freshをした時に打ってください
+                    顔写真を全て消すコマンドはphp artisan migrate:freshをした時に打ってください
                 </p>
             </section>
         </div>

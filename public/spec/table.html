@@ -33,6 +33,7 @@
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
                     <li><a href="route.html">ルーティング</a></li>
                     <li><a href="css.html">css</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
                 </ul>
             </nav>
         </div>
@@ -43,7 +44,11 @@
             <li><a href="#show">テーブル確認方法</a></li>
             <li><a href="#create">テーブル作成</a></li>
             <li><a href="#seeder">テストデータ注入</a></li>
+            <li><a href="#model">モデルファイル</a></li>
+            <li><a href="#Eloquent">Eloquentモデル</a></li>
             <li><a href="#sessions">sessions</a></li>
+            <li><a href="#cache">cache</a></li>
+            <li><a href="#jobs">jobs</a></li>
             <li><a href="#teachers">teachers</a></li>
             <li><a href="#admins">admins</a></li>
             <li><a href="#school_classes">school_classes</a></li>
@@ -99,11 +104,196 @@ php artisan cache:clear file　//古い特徴量キャッシュをクリア</cod
         </div>
 
         <div class="content-wrapper">
-            <h2 id="teachers">sessions</h2>
-            <p>セッション関係のテーブル２つ</p>
+            <h2 id="model">モデルファイル</h2>
+            <section>
+                <p>１つのテーブルにつき、１つのモデルファイルを作成します</p>
+            </section>
+
+            <section>
+                <h3>クラス宣言</h3>
+                <p>クラス名は大文字単数形になります（テーブルは小文字複数形）</p>
+
+                <p>↓主な継承</p>
+                <table border="1">
+                    <tr>
+                        <th>Model</th>
+                        <td>標準のEloquentモデル</td>
+                    </tr>
+                    <tr>
+                        <th>Authenticatable</th>
+                        <td>ログイン認証機能を持つユーザーモデル</td>
+                    </tr>
+                    <tr>
+                        <th>Pivot</th>
+                        <td>多対多の中間テーブル用モデル</td>
+                    </tr>
+                </table>
+
+                <pre><code class="php">class Admin extends Authenticatable</code></pre>
+            </section>
+
+            <section>
+                <h3>$fillable</h3>
+                <p>
+                    一括代入を許可するカラムのリスト<br>
+                    フォームなどのデータを一気にデータベースに登録する際にここで指定したカラム名しか変更・登録できないようブロックされる
+                </p>
+                <pre><code class="php">protected $fillable = ['login_id', 'password'];</code></pre>
+            </section>
+
+            <section>
+                <h3>$hidden</h3>
+                <p>パスワードなど配列やJSONに変換したときに隠したいカラムのリスト</p>
+                <pre><code class="php">protected $hidden = ['password', 'remember_token'];</code></pre>
+            </section>
+
+            <section>
+                <h3>casts()</h3>
+                <p>
+                    データベースから取得・保存する際に、データの型を自動変換する仕組み<br>
+                    パスワードのハッシュ化、日付の変換などに使われる
+                </p>
+                <pre><code class="php">protected function casts(): array
+{
+    return ['password' => 'hashed'];
+}</code></pre>
+            </section>
+
+            <section>
+                <h3>リレーション定義のメソッド</h3>
+                <p>テーブル同士の関係性を定義する</p>
+                <table border="1">
+                    <tr>
+                        <th>BelongsTo</th>
+                        <td>多対1の関係<br>「〜に属している」</td>
+                    </tr>
+                    <tr>
+                        <th>BelongsToMany</th>
+                        <td>多対多の関係</td>
+                    </tr>
+                    <tr>
+                        <th>HasMany</th>
+                        <td>1対多の関係<br>「〜を複数持っている」</td>
+                    </tr>
+                </table>
+                <pre><code class="php">// 受け持ちクラス（0個以上）
+public function schoolClasses(): BelongsToMany
+{
+    return $this->belongsToMany(SchoolClass::class);
+}
+</code></pre>
+            </section>
+
+            <section>
+                <h3>Attribute</h3>
+                <p>
+                    アクセサ・ミューテタ/属性<br>
+                    データベースの値を加工して見せる・保存するときに使う
+                </p>
+                <pre><code class="php">// 画面表示用：「月曜 1限」「水曜 3〜5限」（$subject->schedule_label で使える）
+protected function scheduleLabel(): Attribute
+{
+    return Attribute::get(function () {
+        $day = self::DAYS[$this->day_of_week] ?? '?';
+        $period = $this->period_start === $this->period_end
+            ? "{$this->period_start}限"
+            : "{$this->period_start}〜{$this->period_end}限";
+
+        return "{$day}曜 {$period}";
+    });
+}</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="Eloquent">Eloquentモデル</h2>
+            <section>
+                <p>
+                    LaravelでSQLをPHPのシンプルなメソッドで簡単に書ける方法のこと<br>
+                    ※Modelファイルを作成していないと使えません
+                </p>
+            </section>
+
+            <section>
+                <h3>データの取得</h3>
+                <pre><code class="php">$users = Admin::all();    // adminsテーブルの全データを取得
+$user = Admin::find(1);   // IDが1のadminを取得
+$thursfri = Subject::where('day_of_week', '>=', 4)->get();  // 木金の授業を全て取得</code></pre>
+            </section>
+
+            <section>
+                <h3>リレーションと効率化</h3>
+                <p>例えば、SchoolClassモデルに以下のメソッドが書かれているときに使えます</p>
+                <pre><code class="php">public function students(): HasMany
+{
+    return $this->hasMany(Student::class);  // // 1つのschool_classesは複数のstudentsを持つ
+}</code></pre>
+                <pre><code class="php">$school_classes = SchoolClass::with('students')->get();  // クラスと一緒にそのクラスの生徒もまとめて取得
+$school_classes = SchoolClass::withCount('students')->get();  // クラスと一緒にそのクラスの生徒数(sutudents_count)もまとめて取得</code></pre>
+                <p>件数のカウントはwithCount('〇〇')と書くだけで「〇〇_count」というデータが自動的に作られ、使うことができます</p>
+            </section>
+
+            <section>
+                <h3>データの新規登録</h3>
+                <pre><code class="php">// 一括代入
+Admin::create([
+    'login_id' => 1,
+    'password' => 'password123',
+]);
+
+// インスタンスを作って save
+$admin = new Admin();
+$admin->login_id = 1;
+$admin->password = 'password123';
+$admin->save();</code></pre>
+            </section>
+
+            <section>
+                <h3>データの更新</h3>
+                <pre><code class="php">$admin = Admin::find(1);
+$admin->login_id = admin1;
+$admin->save();</code></pre>
+            </section>
+
+            <section>
+                <h3>データの削除</h3>
+                <pre><code class="php">// IDを指定して直接削除
+Admin::destroy(1);
+
+// 対象のデータを取得して削除
+$admin = Admin::find(1);
+$admin->delete();</code></pre>
+            </section>
+
+            <section>
+                <h3>メソッドチェーンの順番</h3>
+                <p>->get();が１番最後にさえあれば順番は自由です</p>
+                <pre><code class="php">$classes = SchoolClass::query()
+    ->with(['teachers' => fn ($q) => $q->orderBy('name')])
+    ->withCount('students')
+    ->orderBy('name')
+    ->get();
+
+// ↑↓どっちで書いてもok!
+
+$classes = SchoolClass::query()
+    ->orderBy('name')
+    ->withCount('students')
+    ->with(['teachers' => fn ($q) => $q->orderBy('name')])
+    ->get();</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="sessions">sessions</h2>
+            <p>
+                セッション関係のテーブル２つ<br>
+                ※Laravelの初期設定に使っているので未使用でも絶対に削除しないでください<br>
+                ※中身を手で書き換える必要もありません
+            </p>
             <section>
                 <h3>password_reset_tokens</h3>
-                <p></p>
+                <p>パスワード再設定メール用の合言葉を保存する（未使用）</p>
                 <table border="1">
                     <tr>
                         <th>email</th>
@@ -121,8 +311,13 @@ php artisan cache:clear file　//古い特徴量キャッシュをクリア</cod
             </section>
 
             <section>
-                <h3>password_reset_tokens</h3>
-                <p></p>
+                <h3>sessions</h3>
+                <p>
+                    ログイン状態など利用者ごとの一時的な情報を覚えておくためのテーブル<br>
+                    ユーザーのブラウザのCookieに対応する情報をサーバー側のこのテーブルに保存<br>
+                    .envにSESSION_DRIVER=databaseと書いてあるのでデータベース保存<br>
+                    また、SESSION_LIFETIME=120 なので120分間操作がないとログインが切れる
+                </p>
                 <table border="1">
                     <tr>
                         <th>id</th>
@@ -130,23 +325,23 @@ php artisan cache:clear file　//古い特徴量キャッシュをクリア</cod
                     </tr>
                     <tr>
                         <th>user_id</th>
-                        <td>ユーザーID</td>
+                        <td>ログイン中の人のID（未ログインなら空）</td>
                     </tr>
                     <tr>
                         <th>ip_address</th>
-                        <td>IPアドレス</td>
+                        <td>アクセス元のIPアドレス</td>
                     </tr>
                     <tr>
                         <th>user_agent</th>
-                        <td></td>
+                        <td>アクセス元のブラウザの種類</td>
                     </tr>
                     <tr>
                         <th>payload</th>
-                        <td></td>
+                        <td>情報の本体</td>
                     </tr>
                     <tr>
                         <th>last_activity</th>
-                        <td></td>
+                        <td>最後にアクセスした時刻</td>
                     </tr>
                 </table>
             </section>
@@ -154,10 +349,18 @@ php artisan cache:clear file　//古い特徴量キャッシュをクリア</cod
 
         <div class="content-wrapper">
             <h2 id="cache">cache</h2>
-            <p>キャッシュ関係のテーブル２つ</p>
+            <p>
+                キャッシュ関係のテーブル２つ<br>
+                ※Laravelの初期設定に使っているので未使用でも絶対に削除しないでください<br>
+                ※中身を手で書き換える必要もありません
+            </p>
             <section>
                 <h3>cache</h3>
-                <p></p>
+                <p>
+                    一時的なデータを保存する<br>
+                    .envにCACHE_STORE=databaseとあるのでデータベースに保存される<br>
+                    このアプリではルートに付けた回数制限のカウントに使っている
+                </p>
                 <table border="1">
                     <tr>
                         <th>key</th>
@@ -176,7 +379,7 @@ php artisan cache:clear file　//古い特徴量キャッシュをクリア</cod
 
             <section>
                 <h3>cache_locks</h3>
-                <p></p>
+                <p>同じ処理が同時に2つ走らないようにする鍵（未使用）</p>
                 <table border="1">
                     <tr>
                         <th>key</th>
@@ -195,11 +398,15 @@ php artisan cache:clear file　//古い特徴量キャッシュをクリア</cod
         </div>
 
         <div class="content-wrapper">
-            <h2 id="teachers">jobs</h2>
-            <p>ジョブ関係のテーブル３つ</p>
+            <h2 id="jobs">jobs</h2>
+            <p>
+                ジョブ関係のテーブル３つ<br>
+                ※Laravelの初期設定に使っているので未使用でも絶対に削除しないでください<br>
+                ※中身を手で書き換える必要もありません
+            </p>
             <section>
                 <h3>jobs</h3>
-                <p></p>
+                <p>後で実行する処理の待ち行列（未使用）</p>
                 <table border="1">
                     <tr>
                         <th>id</th>
@@ -234,7 +441,7 @@ php artisan cache:clear file　//古い特徴量キャッシュをクリア</cod
 
             <section>
                 <h3>job_batches</h3>
-                <p></p>
+                <p>複数の処理をまとめて管理する（未使用）</p>
                 <table border="1">
                     <tr>
                         <th>id</th>
@@ -281,7 +488,7 @@ php artisan cache:clear file　//古い特徴量キャッシュをクリア</cod
 
             <section>
                 <h3>failed_jobs</h3>
-                <p></p>
+                <p>失敗した処理の記録（未使用）</p>
                 <table border="1">
                     <tr>
                         <th>id</th>

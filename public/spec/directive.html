@@ -33,6 +33,7 @@
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
                     <li><a href="route.html">ルーティング</a></li>
                     <li><a href="css.html">css</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
                 </ul>
             </nav>
         </div>
@@ -68,6 +69,58 @@
     $name = "Taro";
     $list = array(100, 200, 300);
 @endphp</code></pre>
+            </section>
+
+            <section>
+                <p>
+                    ただし、@phpはMVCやパフォーマンスの観点などからコントローラーファイルなどに書くことが推奨されています<br>
+                    例えば、
+                </p>
+                <pre><code class="php">@php
+    $classes = SchoolClass::query()
+        ->with(['teachers' => fn ($q) => $q->orderBy('name')])
+        ->withCount('students')
+        ->orderBy('name')
+        ->get();
+@endphp</code></pre>
+                <p>をコントローラーに書くと、</p>
+                <pre><code class="php">public function index(): View
+{
+    $classes = SchoolClass::query()
+        ->with(['teachers' => fn ($q) => $q->orderBy('name')])
+        ->withCount('students')
+        ->orderBy('name')
+        ->get();
+
+    return view('admin.classes.index', compact('classes'));
+}</code></pre>
+                <p>または、</p>
+                <pre><code class="php">public function index(): View
+{
+    $classes = SchoolClass::query()
+        ->with(['teachers' => fn ($q) => $q->orderBy('name')])
+        ->withCount('students')
+        ->orderBy('name')
+        ->get();
+
+    return view('admin.classes.index', [
+        'classes' => $classes,
+    ]);
+}</code></pre>
+                <p>
+                    になります<br>
+                    ビュー側の書き方は内容が同じなら@phpを使った場合もコントローラーを使った場合も変わりません
+                </p>
+                <pre><code class="php">@forelse ($classes as $schoolClass)
+    &lt;p>{{ $schoolClass->name }}の受講人数は{{ $schoolClass->students_count }}人です&lt;/p>
+    &lt;p>
+        担当教師は、
+            @forelse ($schoolClass->teachers as $teacher)
+                    {{ $teacher->name }}先生@if (! $loop->last)、@endif
+            @endforelse
+        です
+    &lt;/p>
+@endforelse</code></pre>
             </section>
         </div>
 
@@ -139,7 +192,7 @@
 
             <section>
                 <h3>@auth</h3>
-                <p>ログイン済みかどうか</p>
+                <p>ログインしているとき</p>
                 <pre><code class="php">@auth('admin')
     &lt;p>管理者としてログイン中（ログインID: {{ auth('admin')->user()->login_id }}）&lt;/p>
 @endauth</code></pre>
@@ -182,6 +235,50 @@
     &lt;p>ここにページ毎に違うコードを書く&lt;/p>
 
 @endsection</code></pre>
+            </section>
+
+            <section>
+                <h3>@vite</h3>
+                <p>
+                    cssやjavascriptの高速読み込み<br>
+                    ※vite.config.jsのinputにファイル名を書かないと使えません
+                </p>
+                <pre><code class="php">@vite(['resources/css/appp.css', 'resources/js/app.js'])</code></pre>
+                <pre><code class="js">// vite.config.js
+laravel({
+    input: [
+        'resources/css/app.css',
+        'resources/js/app.js',
+    ],
+})</code></pre>
+            </section>
+
+            <section>
+                <h3>@extends</h3>
+                <p>どのレイアウトを使うか</p>
+                <pre><code class="php">@extends('レイアウト名')
+@extends('layouts.app') // layouts/app.blade.phpのレイアウトを使う</code></pre>
+            </section>
+
+            <section>
+                <h3>@yield、@section</h3>
+                <p>各ファイルごとに違う中身を書くための穴を作る</p>
+                <pre><code class="php">@yield('content')           // 穴の名前は「content」
+@yield('title', 'Rollin')   // 穴の名前は「title」、子ファイルで使われなかったら「Rollin」が入る</code></pre>
+                <pre><code class="php">@section('content')
+    // 「content」の中身を書く
+@endsection
+
+@section('title', 'マイページ')   // 「title」に「マイページ」を入れる</code></pre>
+            </section>
+
+            <section>
+                <h3>@stack、@push</h3>
+                <p>特定のページだけで使いたい穴を作る</p>
+                <pre><code class="php">@stack('scripts')    // 子ページで使われなかったら無視される穴</code></pre>
+                <pre><code class="php">@push('scripts')
+    // 「scripts」の中身を書く
+@endpush</code></pre>
             </section>
         </div>
     </main>
