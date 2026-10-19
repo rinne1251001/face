@@ -78,9 +78,13 @@ header {
     position: fixed;
     top: 0;
     right: 0;
-    background-color: var(--color-base);
+    box-sizing: border-box;
     height: 100vh;
-    width: 300px;
+    height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background-color: var(--color-base);
+    width: 400px;
     padding: 70px 30px;
     z-index: 95;
     transform: translateX(100%);

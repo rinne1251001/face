@@ -4,13 +4,12 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --color-font: #28263E;
-    --color-font-light: coclor-mix(in srgb, var(--color-font) 30%, #FFFFFF 70%);
     --color-bg: #FFFFFF;
+    --color-font: #28263E;
+    --color-font-light: coclor-mix(in srgb, var(--color-font) 30%, var(--color-bg) 70%);
     --color-main: 	#8090C1;
     --color-sub: #F7F2EC;
     --color-accent: #F29C8F;
-    
 }
 
 body {
@@ -25,7 +24,7 @@ a {
 
 input {
     min-width: 0;
-    border: var(--color-font) 1px solid;
+    border: var(--color-font-light) 1px solid;
     outline: none;
 }
 

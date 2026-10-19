@@ -33,6 +33,7 @@
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
                     <li><a href="route.html">ルーティング</a></li>
                     <li><a href="css.html">css</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
                 </ul>
             </nav>
         </div>
@@ -208,6 +209,55 @@
                 <p>
                     ビューを置くフォルダ
                 </p>
+
+                <p>
+                    <span style="font-weight: bold;">views/layouts</span><br>
+                    レイアウト置き場
+                </p>
+
+                <p>
+                    <span style="font-weight: bold;">views/errors</span><br>
+                    エラー時（404や500など）に表示するファイル
+                </p>
+
+                <p>
+                    <span style="font-weight: bold;">フォルダ名/ファイル名の付け方</span><br>
+                    基本的にフォルダ名→コントローラー名、ファイル名→メソッド名で付けます<br>
+                    例）ArticleController::index() → articles/index.blade.php<br>
+                    <br>
+                    ↓Laravelのコントローラーで標準的に使用される7つのアクション<br>
+                    ※これに該当しない処理のファイル名は適当な名前を付けてください
+                </p>
+                <table border="1">
+                    <tr>
+                        <th>index</th>
+                        <td>一覧表示</td>
+                    </tr>
+                    <tr>
+                        <th>create</th>
+                        <td>新規作成フォーム表示</td>
+                    </tr>
+                    <tr>
+                        <th>store</th>
+                        <td>新規保存処理</td>
+                    </tr>
+                    <tr>
+                        <th>show</th>
+                        <td>詳細表示</td>
+                    </tr>
+                    <tr>
+                        <th>edit</th>
+                        <td>編集フォーム表示</td>
+                    </tr>
+                    <tr>
+                        <th>update</th>
+                        <td>更新保存処理</td>
+                    </tr>
+                    <tr>
+                        <th>destroy</th>
+                        <td>削除処理</td>
+                    </tr>
+                </table>
             </section>
         </div>
 
