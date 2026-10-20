@@ -1,21 +1,18 @@
 @extends('layouts.test')
 @section('title', 'デザインテスト')
-
-@section('content')
 @push('styles')
-<style>
+    <style>
 
-</style>
+    </style>
 @endpush
 
 @section('content')
 
-
+    <main>
+        ここに中身を書く
+    </main>
 
 @endsection
-
 @push('scripts')
-<script></script>
+    <script></script>
 @endpush
-</body>
-</html>

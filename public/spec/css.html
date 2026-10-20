@@ -41,6 +41,7 @@
 
     <nav>
         <ol>
+            <li><a href="#design">参考デザイン</a></li>
             <li><a href="#kihon">基本のcss</a></li>
             <li><a href="#camera">カメラ</a></li>
             <li><a href="#icons">Googleフォントアイコン</a></li>
@@ -55,7 +56,39 @@
 
     <main>
         <div class="content-wrapper">
+            <h2 id="design">参考デザイン</h2>
+            <section>
+                <h3>デザイン</h3>
+                <a href="https://partsdesign.net/" target="_blank" rel="noopener noreferrer">パーツ別Webデザイン集</a><br>
+                <a href="https://sankoudesign.com/" target="_blank"
+                    rel="noopener noreferrer">SANKOU!Webデザイン制作の参考になる国内のステキなサイト集</a><br>
+                <a href="https://bakuup.com/" target="_blank" rel="noopener noreferrer">BAKUup</a><br>
+                <a href="https://muuuuu.org/" target="_blank" rel="noopener noreferrer">MUUUUU.ORG</a>
+            </section>
+
+            <section>
+                <h3>コード付き</h3>
+                <a href="https://deshinon.com/" target="_blank" rel="noopener noreferrer">デシノン</a><br>
+                <a href="https://webdesignfacts.net/" target="_blank" rel="noopener noreferrer">Web Design Facts</a><br>
+                <a href="https://copypet.jp/" target="_blank" rel="noopener noreferrer">コピペっと</a>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
             <h2 id="kihon">基本のcss</h2>
+            <section>
+                <h3>cssの優先順位</h3>
+                <ol>
+                    <li>!important</li>
+                    <li>インラインスタイル</li>
+                    <li>IDセレクタ</li>
+                    <li>クラスセレクタ</li>
+                    <li>要素名セレクタ</li>
+                </ol>
+                <p>cssが効かない時は↑を確認してください</p>
+                <p>※要素名セレクタ(divやaなどのタグ)はcssが適用される範囲が広いので、cssファイルに書き込むときは上の方に書いてください</p>
+            </section>
+
             <section>
                 <h3>絶対使うcss</h3>
                 <pre><code class="css">div {
@@ -72,19 +105,119 @@
             </section>
 
             <section>
-                <h3>grid</h3>
-                <p></p>
-                <pre><code class="css">div {
-    display: grid;
-}</code></pre>
+                <h3>色</h3>
+                <pre><code class="css">color: #000000;             /* カラーコードで指定 */
+color: black;               /* 色名で指定 */
+color: var(--color-font);   /* 変数で指定 */
+color: coclor-mix(in srgb, var(--color-font) 30%, var(--color-bg) 70%); /* 色を混ぜる */</code></pre>
+            </section>
+
+            <section>
+                <h3>長さ</h3>
+                <pre><code class="css">width: 100px;   /* 画面の1ドット（例は100ドット） */
+width: 10em;    /* フォントサイズ（例はフォントサイズの10倍） */
+width: 10rem;   /* htmlタグのフォントサイズ（例はフォントサイズ(16px)の10倍） */
+width: 100%;    /* 親要素の％（例は親要素いっぱいに広がる） */
+width: 100vw;   /* ブラウザの画面の横幅（例は画面いっぱいに広がる） */
+height: 100vh;  /* ブラウザの画面の縦幅（例は画面いっぱいに広がる） */
+
+/* calc()は異なる単位を混ぜて計算 */
+width: calc(100% - 40px);   /* 100% - 40pxの長さ */
+
+/* clamp()は最小・推奨・最大を指定 */
+width: clamp(20px, 10vw, 60px);    /* 基本は10vw、最小幅は20px、最大幅は60px */</code></pre>
             </section>
 
             <section>
                 <h3>flex</h3>
-                <p></p>
-                <pre><code class="css">div {
-    display: flex;
-}</code></pre>
+                <p>要素を柔軟に並べるためのレイアウト機能</p>
+                <pre><code class="css">display: flex;
+gap: 10px;                  /* 隙間の大きさ */
+justify-content: center;    /* 横方向に中央揃え */
+align-items: center;        /* 縦方向に中央揃え */</code></pre>
+                <p>justify-contentの値</p>
+                <img src="https://www.w3.org/TR/css-flexbox-1/images/flex-pack.svg" style="width: 100%;">
+            </section>
+
+            <section>
+                <h3>grid</h3>
+                <p>要素を縦横の２次元に配置するためのレイアウト機能</p>
+                <pre><code class="css">display: grid;
+gap: 10px;                /* 隙間の大きさ */
+justify-content: center;  /* グリッド全体のトラックを横方向に中央 */
+justify-items: center;    /* 個々のアイテムを横方向に中央 */
+align-content: center;    /*グリッド全体のトラックを縦方向に中央  */
+align-items: center;      /* 個々のアイテムを縦方向に中央 */
+
+place-content: center;    /* グリッド全体のトラックを縦横に中央 */
+place-items: center;    /* 個々のアイテムを縦横に中央 */</code></pre>
+                <p>grid-template-columnsやgrid-columnを使うと好きな場所に配置できます</p>
+                <pre><code class="css">&lt;!DOCTYPE html>
+&lt;html lang="ja">
+
+&lt;head>
+    &lt;meta charset="utf-8">
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1">
+    &lt;title>grid template&lt;/title>
+    @vite(['resources/css/test.css', 'resources/js/app.js'])
+    &lt;style>
+        .oya {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: 20px 40px;
+            gap: 10px;
+            width: 100px;
+        }
+
+        .ko {
+            background-color: var(--color-main);
+            width: 100%;
+            height: 100%;
+        }
+
+        .oya .ko:nth-child(1) {
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+        }
+
+        .oya .ko:nth-child(2) {
+            grid-column: 2 / 3;
+            grid-row: 1 / 3;
+        }
+
+        .oya .ko:nth-child(3) {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+        }
+    &lt;/style>
+&lt;/head>
+
+&lt;body>
+
+    &lt;div class="oya">
+        &lt;div class="ko">&lt;/div>
+        &lt;div class="ko">&lt;/div>
+        &lt;div class="ko">&lt;/div>
+    &lt;/div>
+&lt;/body>
+
+&lt;/html></code></pre>
+                <div
+                    style="padding: 0 20px 20px; border: 1px solid var(--color-main); display: grid; justify-items: center;">
+                    <p>結果</p>
+                    <div
+                        style="display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 20px 40px; gap: 10px; width: 100px;">
+                        <div
+                            style="background-color: var(--color-main); width: 100%; height: 100%; grid-column: 1 / 2; grid-row: 1 / 2;">
+                        </div>
+                        <div
+                            style="background-color: var(--color-main); width: 100%; height: 100%; grid-column: 2 / 3; grid-row: 1 / 3;">
+                        </div>
+                        <div
+                            style="background-color: var(--color-main); width: 100%; height: 100%; grid-column: 1 / 2; grid-row: 2 / 3;">
+                        </div>
+                    </div>
+                </div>
             </section>
         </div>
 
@@ -906,8 +1039,8 @@
         <div class="content-wrapper">
             <h2 id="calendar">カレンダー</h2>
             <section>
-                <h3>教員用カレンダー</h3>
-                <p>受け持っている授業を表示したカレンダー</p>
+                <h3>全体用カレンダー</h3>
+                <p>データベースに登録されている全ての教科を表示したカレンダー</p>
                 <pre><code class="html">&lt;!DOCTYPE html>
 &lt;html lang="ja">
 
@@ -917,12 +1050,103 @@
     &lt;title>カレンダーテスト&lt;/title>
     @vite(['resources/css/test.css', 'resources/js/app.js'])
     &lt;style>
-        :root {
-            --color-font: #13355F;
-            --color-bg: #FFFFFF;
-            --color-accent: #F77251;
+        .calendar {
+            display: inline-grid;
+            grid-template-columns: auto repeat(5, 1fr);
+            border-top: 1px solid var(--color-font);
+            border-left: 1px solid var(--color-font);
         }
 
+        .calendar thead,
+        .calendar tbody,
+        .calendar tr {
+            display: contents;
+        }
+
+        .calendar th,
+        .calendar td {
+            padding: 10px;
+            border-right: 1px solid var(--color-font);
+            border-bottom: 1px solid var(--color-font);
+            text-align: center;
+        }
+
+        .calendar th {
+            color: var(--color-bg);
+            background-color: var(--color-accent);
+        }
+
+        .calendar th:first-child {
+            width: 3em;
+        }
+    &lt;/style>
+&lt;/head>
+
+&lt;body>
+
+    @php
+        // 全科目を取得（同じ枠に複数ある場合の並び順を固定）
+        $subjects = \App\Models\Subject::orderBy('period_start')
+            ->orderBy('name')
+            ->get();
+
+        // 月〜金だけ取り出す（[1 => '月', … 5 => '金']）
+        $days = array_slice(\App\Models\Subject::DAYS, 0, 5, true);
+
+        // $grid[時限][曜日] = その枠の授業
+        $grid = [];
+        foreach ($subjects as $subject) {
+            foreach (range($subject->period_start, $subject->period_end) as $period) {
+                $grid[$period][$subject->day_of_week][] = $subject;
+            }
+        }
+
+        // 表示する行数（全科目の最後の時限まで）
+        $maxPeriod = $subjects->max('period_end') ?? 1;
+    @endphp
+
+    &lt;table class="calendar">
+        &lt;thead>
+            &lt;tr>
+                &lt;th>&lt;/th>
+                @foreach ($days as $label)
+                    &lt;th>{{ $label }}&lt;/th>
+                @endforeach
+            &lt;/tr>
+        &lt;/thead>
+        &lt;tbody>
+            @for ($period = 1; $period &lt;= $maxPeriod; $period++)
+                &lt;tr>
+                    &lt;th>{{ $period }}限&lt;/th>
+                    @foreach ($days as $day => $label)
+                        &lt;td>
+                            @foreach ($grid[$period][$day] ?? [] as $subject)
+                                &lt;div>{{ $subject->name }}&lt;/div>
+                            @endforeach
+                        &lt;/td>
+                    @endforeach
+                &lt;/tr>
+            @endfor
+        &lt;/tbody>
+    &lt;/table>
+
+&lt;/body>
+
+&lt;/html></code></pre>
+            </section>
+
+            <section>
+                <h3>教員用カレンダー</h3>
+                <p>受け持っている授業を表示したカレンダー</p>
+                <pre><code class="html">&lt;!DOCTYPE html>
+&lt;html lang="ja">
+
+&lt;head>
+    &lt;meta charset="utf-8">
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1">
+    &lt;title>教員用カレンダー&lt;/title>
+    @vite(['resources/css/test.css', 'resources/js/app.js'])
+    &lt;style>
         .calendar {
             display: inline-grid;
             grid-template-columns: auto repeat(5, 1fr);

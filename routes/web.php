@@ -22,7 +22,9 @@ Route::view('/design2', 'tests/design2');
 Route::view('/design3', 'tests/design3');
 Route::view('/design4', 'tests/design4');
 Route::view('/design5', 'tests/design5');
+Route::view('/design6', 'tests/design6');
 Route::view('/aaabbbccc', 'tests/aaa');
+
 // ドボンゲームのページ
 Route::get('/dobon', function () {
     return view('tests.dobon');

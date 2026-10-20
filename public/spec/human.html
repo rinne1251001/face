@@ -137,16 +137,16 @@
                 <h3>①CheckinController::show</h3>
                 <p>
                     １．TeacherモデルのteachesSubjectで教師が授業の担当かを調べる<br>
-                    ２．subject(授業)、today(今日の日付)、wrongDay(曜日違いか)、studentCount(受講者人数)、recordedCount(今日の出席済み人数)を返す
+                    ２．teacher/subjects/checkin.blade.phpを開いて、subject(授業)、today(今日の日付)、wrongDay(曜日違いか)、studentCount(受講者人数)、recordedCount(今日の出席済み人数)を返す
                 </p>
             </section>
 
             <section>
                 <h3>②face-checkin.jsのmain()</h3>
-                <p>
-                    １．開いたteacher/subjects/checkin.blade.phpからface-checkin.jsを読み込む
-                </p>
+                <p>１．teacher/subjects/checkin.blade.phpからface-checkin.jsを読み込む</p>
                 <pre><code class="php">@vite('resources/js/face-checkin.js')</code></pre>
+                <p>２．出席受付で使うface-engine.jsの関数・定数10個を取り込む</p>
+                <pre><code class="php"></code></pre>
             </section>
 
             <section>
