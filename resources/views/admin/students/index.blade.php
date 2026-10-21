@@ -46,7 +46,6 @@
 .student-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
 .student-table th { background: var(--color-bg); color: var(--color-font-light); padding: 12px 16px; font-weight: 600; border-bottom: 1px solid var(--color-font-light); white-space: nowrap; }
 .student-table th.sortable { cursor: pointer; user-select: none; }
-.student-table th.sortable:hover { background: var(--color-font-light); }
 .student-table td { padding: 12px 16px; border-bottom: 1px solid var(--color-bg); vertical-align: middle; }
 .student-table tr:last-child td { border-bottom: none; }
 .student-table tr:hover { background: var(--color-bg); }
@@ -71,7 +70,10 @@
     <div class="student-container">
         <div class="page-header">
             <h1 class="page-title">生徒一覧</h1>
-            <a href="{{ route('admin.students.create') }}" class="btn-add">＋ 生徒を追加</a>
+            <div>
+                <a href="{{ route('admin.students.create') }}" class="btn-add">＋ 生徒を追加</a>
+                <a href="{{ route('admin.students.bulk.create') }}" class="btn-add">＋ 一斉に追加</a>
+            </div>
         </div>
 
         <div class="filter-card">

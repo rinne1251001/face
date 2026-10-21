@@ -47,6 +47,7 @@
             <li><a href="#icons">Googleフォントアイコン</a></li>
             <li><a href="#media">メディアクエリ（レスポンシブル対応）</a></li>
             <li><a href="#hamburger">ハンバーガーメニュー</a></li>
+            <li><a href="#img">imgタグ</a></li>
             <li><a href="#input">inputタグ</a></li>
             <li><a href="#select">selectタグ</a></li>
             <li><a href="#calendar">カレンダー</a></li>
@@ -109,7 +110,14 @@
                 <pre><code class="css">color: #000000;             /* カラーコードで指定 */
 color: black;               /* 色名で指定 */
 color: var(--color-font);   /* 変数で指定 */
-color: coclor-mix(in srgb, var(--color-font) 30%, var(--color-bg) 70%); /* 色を混ぜる */</code></pre>
+color: color-mix(in srgb, var(--color-font) 30%, var(--color-bg) 70%); /* 色を混ぜる */</code></pre>
+
+                <figure>
+                    <div>
+                        <img src="themecolor.png" style="width: clamp(100px, 100%, 400px)">
+                    </div>
+                    <figcaption>このアプリのテーマカラー</figcaption>
+                </figure>
             </section>
 
             <section>
@@ -136,7 +144,8 @@ gap: 10px;                  /* 隙間の大きさ */
 justify-content: center;    /* 横方向に中央揃え */
 align-items: center;        /* 縦方向に中央揃え */</code></pre>
                 <p>justify-contentの値</p>
-                <img src="https://www.w3.org/TR/css-flexbox-1/images/flex-pack.svg" style="width: 100%;">
+                <img src="https://www.w3.org/TR/css-flexbox-1/images/flex-pack.svg"
+                    style="width: clamp(100px, 100%, 500px)">
             </section>
 
             <section>
@@ -840,6 +849,53 @@ place-items: center;    /* 個々のアイテムを縦横に中央 */</code></pr
 &lt;/body>
 
 &lt;/html></code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="img">imgタグ</h2>
+            <section>
+                <h3>publicフォルダの写真</h3>
+                <pre><code class="html">&lt;!-- public/images/logo.pngの写真 -->
+&lt;img src="{{ asset('images/logo.png') }}"></code></pre>
+            </section>
+
+            <section>
+                <h3>storage/app/publicフォルダの写真</h3>
+                <pre><code class="html">&lt;!-- storage/app/public/marumo/image.jpgの写真 -->
+&lt;img src="{{ asset('storage/marumo/image.jpg') }}"></code></pre>
+            </section>
+
+            <section>
+                <h3>storage/app/privateフォルダの写真</h3>
+                <p>指定した１枚の写真を表示する</p>
+                <pre><code class="html">@php
+    // storage/app/private を指すディスク
+    $disk = \Illuminate\Support\Facades\Storage::disk('local');
+
+    // 顔写真の名前を指定（例：488054e6-999f-455a-acd7-95380db3e5d4.jpg）
+    $uuid = '488054e6-999f-455a-acd7-95380db3e5d4';
+    $path = collect($disk->allFiles('faces'))->first(fn ($p) => str_contains($p, $uuid));
+
+    // 画像の中身を base64 にして、HTML の中に直接埋め込む
+    $src = $path ? 'data:image/jpeg;base64,' . base64_encode($disk->get($path)) : null;
+@endphp
+
+@if ($src)
+    &lt;img src="{{ $src }}">
+@else
+    &lt;p>画像が見つかりません。</p>
+@endif</code></pre>
+
+                <p>storage/app/private/facesフォルダの写真を５枚表示する</p>
+                <pre><code class="html">@php
+    $disk = \Illuminate\Support\Facades\Storage::disk('local');
+    $files = collect($disk->allFiles('faces'))->take(5);
+@endphp
+
+@foreach ($files as $file)
+    &lt;img src="data:image/jpeg;base64,{{ base64_encode($disk->get($file)) }}">
+@endforeach</code></pre>
             </section>
         </div>
 

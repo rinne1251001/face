@@ -64,6 +64,63 @@ class StudentController extends Controller
             ->with('status', "{$student->name} さんを登録しました。顔写真は一覧の「顔を登録」から後で登録できます。");
     }
 
+    // 一斉追加の画面
+    public function bulkCreate(): View
+    {
+        return view('admin.students.bulk', [
+            'classes' => SchoolClass::orderBy('name')->get(),
+            'subjects' => Subject::orderBy('day_of_week')->orderBy('period_start')->orderBy('name')->get(),
+        ]);
+    }
+
+    // 一斉追加の保存（1人でもエラーがあれば、誰も登録しない）
+    public function bulkStore(Request $request): RedirectResponse
+    {
+        // 名前も学籍番号も空の行は無視する（クラスだけ選ばれている行も無視）
+        $rows = collect($request->input('students', []))
+            ->filter(fn ($row) => is_array($row) && (filled($row['name'] ?? null) || filled($row['student_number'] ?? null)))
+            ->values()
+            ->all();
+        $request->merge(['students' => $rows]);
+
+        $data = $request->validate([
+            'students' => ['required', 'array', 'max:200'],
+            'students.*.name' => ['required', 'string', 'max:100'],
+            // distinct:strict … 表の中での重複チェック（strict がないと "001" と "1" が同じ扱いになる）
+            'students.*.student_number' => ['required', 'string', 'max:20', 'distinct:strict', 'unique:students,student_number'],
+            'students.*.school_class_id' => ['required', 'integer', 'exists:school_classes,id'],
+            'subject_ids' => ['nullable', 'array'], // 受講する授業は空でも可
+            'subject_ids.*' => ['integer', 'distinct', 'exists:subjects,id'],
+        ], [
+            'students.required' => '名前と学籍番号を1人分以上入力してください。',
+            'students.*.student_number.distinct' => ':position行目の学籍番号「:input」が表の中で重複しています。',
+            'students.*.student_number.unique' => ':position行目の学籍番号「:input」は既に登録されています。',
+        ], [
+            // :position は「何行目か」（1から数える）に置き換わる
+            'students' => '生徒',
+            'students.*.name' => ':position行目の名前',
+            'students.*.student_number' => ':position行目の学籍番号',
+            'students.*.school_class_id' => ':position行目のクラス',
+            'subject_ids' => '受講する授業',
+            'subject_ids.*' => '受講する授業',
+        ]);
+
+        $subjectIds = $data['subject_ids'] ?? [];
+        $isActive = $request->boolean('is_active');
+
+        DB::transaction(function () use ($data, $subjectIds, $isActive) {
+            foreach ($data['students'] as $row) {
+                $student = Student::create($row + ['is_active' => $isActive]);
+                $student->subjects()->sync($subjectIds);
+            }
+        });
+
+        $count = count($data['students']);
+
+        return redirect()->route('admin.students.index')
+            ->with('status', "{$count}人の生徒を登録しました。顔写真は一覧の「顔を登録」から登録してください。");
+    }
+
     public function edit(Student $student): View
     {
         $student->load([

@@ -146,6 +146,149 @@
                 <p>１．teacher/subjects/checkin.blade.phpからface-checkin.jsを読み込む</p>
                 <pre><code class="php">@vite('resources/js/face-checkin.js')</code></pre>
                 <p>２．出席受付で使うface-engine.jsの関数・定数10個を取り込む</p>
+                <pre><code class="php">import {
+    init, startCamera, warmupDetection, attachOverlay, showLabel,
+    analyze, averageEmbedding, sleep, esc, MODEL_VERSION,
+} from './face-engine.js';</code></pre>
+                <p>
+                    ３．main()を起動<br>
+                    文字を表示（checkin.blade.phpの&lt;p id="status">&lt;/p>に描画）<br>
+                    カメラを起動<br>
+                    枠線表示<br>
+                    初動のもたつき防止のために一回裏で実行<br>
+                    &lt;button id="toggleBtn">を押せるように有効化<br>
+                    loop()を呼ぶ
+                </p>
+                <pre><code class="php">async function main() {
+    try {
+        await init(setStatus);
+        await startCamera(video, setStatus);
+        attachOverlay(video, overlayCanvas);
+        await warmupDetection(video, setStatus);
+    } catch (e) {
+        setStatus('初期化に失敗しました：' + e.message);
+        console.error(e);
+        return;
+    }
+    toggleBtn.disabled = false;
+    setStatus('受付中です。1人ずつカメラの正面に立ってください。');
+    loop();
+}</code></pre>
+                <p>
+                    ４．loop()を∞ループ（for (;;)）<br>
+                    runningがfalseの場合、新しい顔認証の処理は行わないでカメラの枠線表示のみ<br>
+                    collectFrames()で3枚(FRAMES_PER_MATCH)写真を集めて平均化したのをpostCheckin()でサーバーに送信<br>
+                    showLabel()で枠線、&lt;p id="status">に文字表示、addLog()で出席記録表に追加、総出席者数更新（&lt;strong
+                    id = "recordedCount">）<br>
+                    エラー時は照合停止、&lt;button id="toggleBtn">ボタンを無効化、エラー文表示<br>
+                </p>
+                <pre><code class="php">async function loop() {
+    for (;;) {
+        if (!running) {
+            await watch(300);
+            continue;
+        }
+
+        const collected = await collectFrames();
+        if (collected.length &lt; FRAMES_PER_MATCH) continue;
+
+        try {
+            setStatus('照合しています…');
+            const r = await postCheckin(averageEmbedding(collected));
+            const view = RESULT_VIEW[r.result] ?? RESULT_VIEW.unknown;
+            // 照合した顔の枠に結果を表示する（fillText は HTML ではないのでエスケープ不要）
+            showLabel(view.label(r.student ?? {}), view.ok, RESULT_HOLD);
+            setStatus(r.message);
+            addLog(r);
+            if (r.recorded_count !== undefined) recordedCountEl.textContent = r.recorded_count;
+        } catch (e) {
+            if (e.status === 401 || e.status === 419) {
+                // 401：ログインしていない／419：ページを開いてから時間がたちすぎた
+                setStatus('ログインの有効期限が切れました。ページを再読み込みして、もう一度ログインしてください。');
+                running = false;
+                toggleBtn.disabled = true;
+                return;
+            }
+            setStatus('エラー：' + e.message);
+        }
+        await watch(RESULT_HOLD);
+    }
+}</code></pre>
+
+                <p>
+                    collectFramesの仕組み<br>
+                    10以下＆runningがtrue＆集めた写真が3枚(FRAMES_PER_MATCH)以下の時に、safeAnalyze()で顔を検出＆枠線描画できたら配列collectedに入れ、失敗したらエラー文表示<br>
+                    配列collected（写真を入れた配列）を返す
+                </p>
+                <pre><code class="php">async function collectFrames() {
+    const collected = [];
+    for (let i = 0; i &lt; 10 && running && collected.length &lt; FRAMES_PER_MATCH; i++) {
+        const r = await safeAnalyze();
+        if (r.ok) {
+            collected.push(r.embedding);
+        } else {
+            setStatus(r.reason || 'カメラの正面に立ってください。');
+            await sleep(150);
+        }
+    }
+    return collected;
+}</code></pre>
+
+                <p>
+                    postCheckin()の仕組み<br>
+                    fetch(root.dataset.checkinUrl)（data-checkin-url="{{ route('teacher.checkin.store', $subject)
+                    }}"）に送信<br>
+                    JSON形式のデータでCSRFトークン、Humanのモデルバージョン、特徴量（embedding）を送る<br>
+                    通信が成功したらデータを呼び出し元に返し、失敗したらエラー文を表示する
+                </p>
+                <pre><code class="php">async function postCheckin(embedding) {
+    const res = await fetch(root.dataset.checkinUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        },
+        body: JSON.stringify({ model_version: MODEL_VERSION, embedding }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+        const error = new Error(data.message ?? `通信エラー（${res.status}）`);
+        error.status = res.status;
+        throw error;
+    }
+    return data;
+}</code></pre>
+
+                <p>
+                    addLogの仕組み<br>
+                    サーバーからの判定結果に生徒情報がなかったら処理終了<br>
+                    判定済みで、前回ログに出力してから10秒（SAME_PERSON）未満の生徒はスキップ<br>
+                    &lt;tbody id="log">の一番上に時刻、名前、クラス、結果を挿入
+                </p>
+                <pre><code class="php">function addLog(r) {
+    const s = r.student;
+    if (!s) return;
+    // 同じ人が立ち続けているときに「記録済み」が何行も並ばないようにする
+    if (r.result === 'already' && lastLogged.id === s.id && Date.now() - lastLogged.at < SAME_PERSON) return;
+    lastLogged = { id: s.id, at: Date.now() };
+
+    const text = {
+        recorded: '出席を記録しました',
+        already: `記録済み（${r.status_label}）`,
+        not_enrolled: 'この授業の受講者ではありません',
+    }[r.result] ?? r.message;
+    const cls = r.result === 'not_enrolled' ? 'error' : 'ok';
+
+    logEl.insertAdjacentHTML('afterbegin', `
+        &lt;tr><td>${new Date().toLocaleTimeString()}&lt;/td>&lt;td>${esc(s.name)}&lt;/td>
+        &lt;td>${esc(s.class_name)}&lt;/td>&lt;td class="${cls}">${esc(text)}&lt;/td>&lt;/tr>`);
+}</code></pre>
+
+                <p>５．</p>
+                <pre><code class="php">toggleBtn.addEventListener('click', toggle);</code></pre>
+
+                <p>６．</p>
                 <pre><code class="php"></code></pre>
             </section>
 
