@@ -10,6 +10,13 @@
     --color-main: #8090C1;
     --color-sub: #F7F2EC;
     --color-accent: #F29C8F;
+
+    --color-ok: ;
+    --color-ok-font: ;
+    --color-error: ;
+    --color-error-font: ;
+    --color-warn: ;
+    --color-warn-font: ;
 }
 
 /* ↓要素名セレクタ */
@@ -43,6 +50,9 @@ input {
 
 
 /* ↓クラス＆IDセレクタ */
+/* 成功、失敗、注意の文字色 */
+.ok { color: var(--color-ok-font); } .error { color: var(--color-error-font); } .warn { color: var(--color-warn-font); }
+
 /* =========================
     PCヘッダー
 ========================= */

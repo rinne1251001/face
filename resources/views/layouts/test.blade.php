@@ -176,6 +176,13 @@
         </nav>
     </div> 
 
+    @if (session('status'))
+        <p class="ok">{{ session('status') }}</p>
+    @endif
+    @if (session('error'))
+        <p class="error">{{ session('error') }}</p>
+    @endif
+
     @yield('content')
  
     <script>

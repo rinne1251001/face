@@ -46,6 +46,7 @@
             <li><a href="#seeder">テストデータ注入</a></li>
             <li><a href="#model">モデルファイル</a></li>
             <li><a href="#Eloquent">Eloquentモデル</a></li>
+            <li><a href="add">カラム追加方法</a></li>
             <li><a href="#sessions">sessions</a></li>
             <li><a href="#cache">cache</a></li>
             <li><a href="#jobs">jobs</a></li>
@@ -281,6 +282,105 @@ $classes = SchoolClass::query()
     ->withCount('students')
     ->with(['teachers' => fn ($q) => $q->orderBy('name')])
     ->get();</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="add">カラム追加方法</h2>
+            <section>
+                <h3>カラムを追加した後の手順</h3>
+                <p>
+                    １．テーブルにカラム追加<br>
+                    ２．追加したカラムに->nullable()が付いていなかったらseederファイルにテストデータを追加<br>
+                    ３．テーブルフレッシュ
+                </p>
+                <pre><code class="php">php artisan migrate:fresh --seed
+Remove-Item -Recurse -Force storage/app/private/faces -ErrorAction SilentlyContinue
+php artisan cache:clear file</code></pre>
+                <p>
+                    ４．モデルの$fillable（一括代入可のリスト）か$hidden（パスワードなどのリスト）にカラムを追加→casts（データ型変換）やデータ加工などが必要であればそれも追加
+                    ５．ビューで追加したカラムを使うコントローラーに追加<br>
+                    ６．ビューに追加
+                </p>
+            </section>
+
+            <section>
+                <h3>例：subjectsテーブルに開始終了日時を入れる方法</h3>
+                <p>１．2026_09_28_000005_create_subjects_table.phpにカラム追加</p>
+                <pre><code class="php">$table->date('start_date')->nullable();      // 開始日（例：4月1日）
+$table->date('end_date')->nullable();        // 終了日（例：7月31日）</code></pre>
+
+                <p>２．テーブルフレッシュ</p>
+                <pre><code class="php">php artisan migrate:fresh --seed
+Remove-Item -Recurse -Force storage/app/private/faces -ErrorAction SilentlyContinue
+php artisan cache:clear file</code></pre>
+
+                <p>３．app/Models/Subject.phpに追加</p>
+                <pre><code class="php">protected $fillable = ['name', 'day_of_week', 'period_start', 'period_end', 'start_date', 'end_date'];
+
+protected function casts(): array
+{
+    return [
+        'day_of_week' => 'integer',
+        'period_start' => 'integer',
+        'period_end' => 'integer',
+        'start_date' => 'date', // Carbon（日付）として扱える
+        'end_date' => 'date',
+    ];
+}
+
+// 画面表示用：「4月1日〜7月31日」（$subject->term_label で使える。未設定なら null）
+protected function termLabel(): Attribute
+{
+    return Attribute::get(fn () => $this->start_date && $this->end_date
+        ? $this->start_date->format('n月j日').'〜'.$this->end_date->format('n月j日')
+        : null);
+}</code></pre>
+
+                <p>４．app/Http/Controllers/Admin/SubjectController.phpのvalidated()に追加</p>
+                <pre><code class="php">private function validated(Request $request): array
+{
+    return $request->validate([
+        'name' => ['required', 'string', 'max:100'],
+        'day_of_week' => ['required', 'integer', Rule::in(array_keys(Subject::DAYS))],
+        'period_start' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD],
+        // 終了時限は開始時限以上（1限だけなら開始と同じ）
+        'period_end' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD, 'gte:period_start'],
+        'start_date' => ['required', 'date'],
+        // 終了日は開始日と同じか、それより後
+        'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+    ], [], [
+        'name' => '授業名',
+        'day_of_week' => '曜日',
+        'period_start' => '開始時限',
+        'period_end' => '終了時限',
+        'start_date' => '開始日',
+        'end_date' => '終了日',
+    ]);
+}</code></pre>
+
+                <p>５．resources/views/admin/subjectsフォルダのファイルで以下のように期間を表示できるようになります</p>
+                <pre><code class="php">@if ($subject->term_label)
+    // 例：4月1日～5月1日
+    {{ $subject->term_label }}
+
+    // 例：2026-04-01 00:00:00
+    {{ $subject->start_date }}
+
+    // 例：4月1日
+    {{ $subject->start_date->format('n月j日') }}
+
+    // 例：2026/04/01
+    {{ $subject->start_date->format('Y/m/d') }}
+
+    // 例：4月1日（水）
+    {{ $subject->start_date->isoFormat('M月D日（ddd）') }}
+@else
+    未設定
+@endif</code></pre>
+
+                <p>※日付が空の授業で->format()を呼ぶとエラーになるので、空の可能性があるときは@ifや?->を使ってください</p>
+                <pre><code class="php">{{ $subject->start_date?->format('n月j日') }}</code></pre>
             </section>
         </div>
 

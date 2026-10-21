@@ -10,18 +10,30 @@ const statusEl = document.getElementById('status');
 const video = document.getElementById('video');
 const overlayCanvas = document.getElementById('overlay');
 const cameraBtn = document.getElementById('cameraBtn');
-const autoCheck = document.getElementById('autoCheck');
 const fileInput = document.getElementById('fileInput');
 const resultEl = document.getElementById('result');
+const logsBody = document.getElementById('logs');
 
 const FRAMES_PER_MATCH = 3; // 平均に使うフレーム数
-const COOLDOWN = 3000;      // 結果を表示しておく時間／連続照合の間隔（ミリ秒）
+const LABEL_TIME = 3000;    // 顔の枠に結果を表示しておく時間（ミリ秒）
 
 const setStatus = (text) => { statusEl.textContent = text; };
 const fmt = (v) => (v === null || v === undefined) ? '-' : Number(v).toFixed(3);
 
-let busy = false;    // 照合の二重実行を防ぐ
-let looping = false; // 連続照合が動いているか
+let busy = false; // 照合の二重実行を防ぐ
+
+// 照合ログの表を読み込み直す（表の中身の HTML をサーバーからもらう）
+async function loadLogs() {
+    try {
+        const res = await fetch(root.dataset.logsUrl, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        if (!res.ok) throw new Error();
+        logsBody.innerHTML = await res.text();
+    } catch {
+        logsBody.innerHTML = '<tr><td colspan="5">ログを読み込めませんでした。ページを再読み込みしてください。</td></tr>';
+    }
+}
 
 function renderResult(r) {
     const rows = r.candidates.map((c) => `
@@ -43,9 +55,10 @@ async function sendEmbedding(embedding, { fromCamera = false } = {}) {
     setStatus('サーバーで照合しています…');
     const r = await postJson(root.dataset.matchUrl, { model_version: MODEL_VERSION, embedding });
     renderResult(r);
+    loadLogs(); // 照合したのでログの表を新しくする
     if (fromCamera) {
         // 照合した顔の枠に結果を表示する（fillText は HTML ではないのでエスケープ不要）
-        showLabel(r.accepted ? `${r.student.name} さん` : '該当者なし', r.accepted, COOLDOWN);
+        showLabel(r.accepted ? `${r.student.name} さん` : '該当者なし', r.accepted, LABEL_TIME);
     }
 }
 
@@ -82,38 +95,8 @@ async function matchOnce() {
         setStatus('エラー：' + e.message);
     } finally {
         busy = false;
-        cameraBtn.disabled = looping;
+        cameraBtn.disabled = false;
     }
-}
-
-// チェックボックス：顔が写るたびに照合し続ける
-async function autoLoop() {
-    if (looping) return;
-    looping = true;
-    cameraBtn.disabled = true;
-    while (autoCheck.checked) {
-        if (busy) {
-            await sleep(200);
-            continue;
-        }
-        busy = true;
-        try {
-            const collected = await collectFrames(10);
-            if (collected.length === FRAMES_PER_MATCH) {
-                await sendEmbedding(averageEmbedding(collected), { fromCamera: true });
-                setStatus(`照合しました。${COOLDOWN / 1000}秒後に次の照合を始めます。`);
-                await sleep(COOLDOWN);
-            }
-        } catch (e) {
-            setStatus('エラー：' + e.message);
-            await sleep(COOLDOWN);
-        } finally {
-            busy = false;
-        }
-    }
-    looping = false;
-    cameraBtn.disabled = false;
-    setStatus('連続照合を止めました。');
 }
 
 // 画像ファイルで照合する
@@ -121,7 +104,7 @@ async function matchFromFile() {
     const file = fileInput.files[0];
     if (!file) return;
     if (busy) {
-        setStatus('照合中です。連続照合を止めてから画像を選んでください。');
+        setStatus('照合中です。終わってから画像を選んでください。');
         fileInput.value = '';
         return;
     }
@@ -145,6 +128,8 @@ async function matchFromFile() {
 }
 
 async function main() {
+    loadLogs(); // ログの表はカメラの準備を待たずに出す
+
     try {
         await init(setStatus);
     } catch (e) {
@@ -169,12 +154,10 @@ async function main() {
     if (cameraReady) {
         startPreview(video);
         cameraBtn.disabled = false;
-        autoCheck.disabled = false;
-        setStatus('準備ができました。枠が緑色のときに「カメラで照合」を押すか、「連続して照合する」にチェックを入れてください。');
+        setStatus('準備ができました。枠が緑色のときに「カメラで照合」を押してください。');
     }
 }
 
 cameraBtn.addEventListener('click', matchOnce);
-autoCheck.addEventListener('change', () => { if (autoCheck.checked) autoLoop(); });
 fileInput.addEventListener('change', matchFromFile);
 main();

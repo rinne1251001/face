@@ -71,6 +71,11 @@ class SubjectController extends Controller
             'period_start' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD],
             // 終了時限は開始時限以上（1限だけなら開始と同じ）
             'period_end' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD, 'gte:period_start'],
+        ], [], [
+            'name' => '授業名',
+            'day_of_week' => '曜日',
+            'period_start' => '開始時限',
+            'period_end' => '終了時限',
         ]);
     }
 }
