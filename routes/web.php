@@ -50,6 +50,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('logout', [Admin\LoginController::class, 'logout'])->name('logout');
 
         // 生徒
+        Route::get('students/bulk', [Admin\StudentController::class, 'bulkCreate'])->name('students.bulk.create');
+        Route::post('students/bulk', [Admin\StudentController::class, 'bulkStore'])->name('students.bulk.store');
         Route::resource('students', Admin\StudentController::class)->except('show');
 
         // 顔写真
