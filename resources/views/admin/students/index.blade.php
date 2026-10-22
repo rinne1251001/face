@@ -3,14 +3,6 @@
 @push('styles')
 <style>
 :root {
-    /* プライマリ（ボタン・アクティブ状態など） */
-    --color-primary: #2563eb;
-    --color-primary-hover: #1d4ed8;
-
-    /* 二次ボタン（検索など） */
-    --color-secondary: #475569;
-    --color-secondary-hover: #334155;
-
     /* ステータスバッジ（有効・無効・写真なし） */
     --color-status-active-bg: #dcfce7;
     --color-status-active-text: #166534;
@@ -20,16 +12,16 @@
 }
 
 /* 全体 */
-.student-container { max-width: 1000px; margin: 20px auto; padding: 0 20px; font-family: sans-serif; color: var(--color-font); }
+.student-container { max-width: 1000px; margin: 20px auto; padding: 0 20px; font-family: sans-serif; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .page-title { font-size: 24px; font-weight: bold; margin: 0; }
 
 /* ボタン */
-.btn-add { background: var(--color-primary); color: var(--color-bg); padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold; }
-.btn-add:hover { background: var(--color-primary-hover); }
-.btn-search { background: var(--color-secondary); color: var(--color-bg); border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; }
-.btn-search:hover { background: var(--color-secondary-hover); }
-.btn-action { color: var(--color-primary); text-decoration: none; font-size: 13px; padding: 4px 8px; border: 1px solid var(--color-font-light); border-radius: 4px; background: var(--color-bg); }
+.btn-add { background: var(--color-main); color: var(--color-bg); padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold; }
+.btn-add:hover { background: var(--color-accent); }
+.btn-search { background: var(--color-main); color: var(--color-bg); border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; }
+.btn-search:hover { background: var(--color-accent); }
+.btn-action { color: var(--color-main); text-decoration: none; font-size: 13px; padding: 4px 8px; border: 1px solid var(--color-font-light); border-radius: 4px; background: var(--color-bg); }
 .btn-action:hover { background: var(--color-bg); }
 
 /* 検索・フィルター */
@@ -60,7 +52,7 @@
 /* ページネーション */
 .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; font-size: 14px; }
 .page-link { padding: 6px 12px; border: 1px solid var(--color-font-light); border-radius: 4px; text-decoration: none; color: var(--color-font); }
-.page-link.active { background: var(--color-primary); color: var(--color-bg); border-color: var(--color-primary); }
+.page-link.active { background: var(--color-main); color: var(--color-bg); border-color: var(--color-main); }
 </style>
 @endpush
 

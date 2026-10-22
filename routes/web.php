@@ -100,5 +100,12 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
 
         // 受け持ちクラスの出席状況
         Route::get('classes/{schoolClass}', [Teacher\ClassController::class, 'show'])->name('classes.show');
+
+        // 設定（パスワードの変更）
+        Route::get('settings', [Teacher\SettingController::class, 'index'])->name('settings.index');
+        Route::get('settings/password', [Teacher\SettingController::class, 'editPassword'])->name('settings.password.edit');
+        Route::put('settings/password', [Teacher\SettingController::class, 'updatePassword'])
+            ->name('settings.password.update')
+            ->middleware('throttle:5,1'); // 今のパスワードを総当たりで試されないように、1分に5回まで
     });
 });

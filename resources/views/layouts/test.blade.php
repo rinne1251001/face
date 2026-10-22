@@ -57,7 +57,7 @@
             // メインメニュー（PC左側・スマホメニュー）
             $mainMenu = [
                 ['label' => 'home',   'url' => route('teacher.dashboard')],
-                ['label' => '設定', 'url' => '#'],
+                ['label' => '設定', 'url' => route('teacher.settings.index')],
  
             ];
  

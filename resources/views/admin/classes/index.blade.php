@@ -3,12 +3,19 @@
 
 @section('content')
 <style>
+    :root {
+        /* 削除・警告関連カラー */
+        --color-danger-bg: #fff1f2;
+        --color-danger-text: #e11d48;
+        --color-danger-border: #fecdd3;
+    }
+    
     /* ------------------------------------------
-       1. ヘッダー（ナビゲーションバー）
+        1. ヘッダー（ナビゲーションバー）
     ------------------------------------------ */
     .top-navbar {
-        background-color: #ffffff;
-        border-bottom: 1px solid #e2e8f0;
+        background-color: var(--color-bg);
+        border-bottom: 1px solid var(--color-font-light);
         padding: 12px 40px;
     }
 
@@ -21,62 +28,8 @@
         align-items: center;
     }
 
-    .nav-links-left {
-        display: flex;
-        align-items: center;
-        gap: 24px;
-    }
-
-    .nav-item {
-        color: #2563eb;
-        text-decoration: none;
-        font-size: 15px;
-        font-weight: 500;
-    }
-
-    .nav-item:hover {
-        text-decoration: underline;
-    }
-
-    /* ★ 中央ロゴアイコン（サイズ調整はここ） ★ */
-    .header-logo-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0 20px;
-    }
-
-    .header-logo-img {
-        height: 75px; /* ロゴの大きさ */
-        width: auto;
-        display: block;
-    }
-
-    .nav-right-group {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        justify-content: flex-end;
-    }
-
-    .user-area {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        font-size: 15px;
-        color: #334155;
-    }
-
-    .btn-logout {
-        padding: 6px 16px;
-        background-color: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-
     /* ------------------------------------------
-       2. メインコンテンツ・テーブル
+        2. メインコンテンツ・テーブル
     ------------------------------------------ */
     .page-container {
         max-width: 1000px;
@@ -90,12 +43,12 @@
         align-items: center;
         margin-bottom: 20px;
         padding-bottom: 12px;
-        border-bottom: 2px solid #e2e8f0;
+        border-bottom: 2px solid var(--color-font-light);
     }
 
     .btn-create {
-        background-color: #2563eb;
-        color: #ffffff !important;
+        background-color: var(--color-main);
+        color: var(--color-bg) !important;
         padding: 9px 18px;
         border-radius: 6px;
         text-decoration: none;
@@ -106,16 +59,16 @@
         display: flex;
         justify-content: space-between;
         margin-bottom: 20px;
-        background: #ffffff;
+        background: var(--color-bg);
         padding: 14px 18px;
         border-radius: 10px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--color-font-light);
     }
 
     .table-container {
-        background: #ffffff;
+        background: var(--color-bg);
         border-radius: 10px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--color-font-light);
         overflow: hidden;
     }
 
@@ -126,27 +79,28 @@
 
     .custom-table th, .custom-table td {
         padding: 14px 20px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--color-font-light);
         text-align: left;
     }
 
     .btn-edit {
         padding: 6px 14px;
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--color-font-light);
         border-radius: 6px;
         text-decoration: none;
-        color: #334155 !important;
+        color: var(--color-main) !important;
     }
 
     .btn-delete {
         padding: 6px 14px;
-        background-color: #fff1f2;
-        color: #e11d48;
-        border: 1px solid #fecdd3;
+        background-color: var(--color-danger-bg);
+        color: var(--color-danger-text);
+        border: 1px solid var(--color-danger-border);
         border-radius: 6px;
         cursor: pointer;
     }
 </style>
+
 <!-- ページコンテンツ -->
 <div class="page-container">
     <div class="page-header">
