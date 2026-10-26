@@ -48,6 +48,7 @@
             <li><a href="#FaceMatcher">FaceMatcherの仕組み</a></li>
             <li><a href="#threshold">閾値</a></li>
             <li><a href="#folder">顔写真のフォルダ</a></li>
+            <li><a href="#interface">インターフェース</a></li>
             <li><a href="#variable">変数</a></li>
             <li><a href="#face-api">face-api.js</a></li>
             <li><a href="#dimension">次元数</a></li>
@@ -599,6 +600,41 @@ return [
                 <p>
                     とあるので、privateフォルダにある写真は全てGithubにアップロードされないようです<br>
                     顔写真を全て消すコマンドはphp artisan migrate:freshをした時に打ってください
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="interface">インターフェース</h2>
+            <section>
+                <h3>コードとの対応</h3>
+                <pre><code class="js">const human = new Human({                 // Config(設定全体)
+    modelBasePath: '/models/human/',
+    backend: 'webgl',
+    cacheSensitivity: 0,
+    face: {                                // FaceConfig
+        enabled: true,
+        detector: { rotation: true, maxDetected: MAX_FACES },  // FaceDetectorConfig
+        mesh: { enabled: true },                               // FaceMeshConfig
+        iris: { enabled: false },                              // FaceIrisConfig
+        description: { enabled: true },                        // FaceDescriptionConfig
+        emotion: { enabled: false },                           // FaceEmotionConfig
+        antispoof: { enabled: false },                         // FaceAntiSpoofConfig
+        liveness: { enabled: false },                          // FaceLivenessConfig
+    },
+    body: { enabled: false },              // BodyConfig
+    hand: { enabled: false },              // HandConfig
+    object: { enabled: false },            // ObjectConfig
+    segmentation: { enabled: false },      // SegmentationConfig
+    gesture: { enabled: true },            // GestureConfig
+});</code></pre>
+            </section>
+
+            <section>
+                <h3>GenericConfig</h3>
+                <p>
+                    他の設定の型が引き継いでいる共通の4項目<br>
+                    各行の土台
                 </p>
             </section>
         </div>

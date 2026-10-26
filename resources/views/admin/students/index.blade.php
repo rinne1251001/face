@@ -12,7 +12,6 @@
 }
 
 /* 全体 */
-.student-container { max-width: 1000px; margin: 20px auto; padding: 0 20px; font-family: sans-serif; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .page-title { font-size: 24px; font-weight: bold; margin: 0; }
 
@@ -37,10 +36,16 @@
 .table-wrapper { overflow-x: auto; border: 1px solid var(--color-font-light); border-radius: 8px; background: var(--color-bg); }
 .student-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
 .student-table th { background: var(--color-bg); color: var(--color-font-light); padding: 12px 16px; font-weight: 600; border-bottom: 1px solid var(--color-font-light); white-space: nowrap; }
-.student-table th.sortable { cursor: pointer; user-select: none; }
+.student-table th.sortable { padding: 0; }
 .student-table td { padding: 12px 16px; border-bottom: 1px solid var(--color-bg); vertical-align: middle; }
 .student-table tr:last-child td { border-bottom: none; }
 .student-table tr:hover { background: var(--color-bg); }
+
+/* 並び替え（見出し全体をリンクにして、どこを押しても並び替わるようにする） */
+.sort-link { display: flex; align-items: center; gap: 2px; padding: 12px 16px; color: inherit; text-decoration: none; user-select: none; }
+.sort-arrow { font-size: 10px; opacity: .3; }
+.sort-arrow.active { opacity: 1; color: var(--color-main); }
+[data-ajax-list][aria-busy="true"] { opacity: .5; transition: opacity .2s; } /* 読み込み中は少し薄くする */
 
 /* バッジ・その他 */
 .badge-status { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
@@ -58,8 +63,8 @@
 
 @section('content')
 
-<main>
-    <div class="student-container">
+<main class="main">
+    <div class="content-wrapper">
         <div class="page-header">
             <h1 class="page-title">生徒一覧</h1>
             <div>
@@ -76,66 +81,32 @@
                     </svg>
                     <input type="text" class="input-search" name="q" value="{{ $q }}" placeholder="名前・学籍番号で検索...">
                 </div>
-                <select class="select-filter">
+                <select class="select-filter" name="class_id">
                     <option value="">すべてのクラス</option>
-                    <option value="1A">1年A組</option>
-                    <option value="1B">1年B組</option>
+                    @foreach ($classes as $class)
+                        <option value="{{ $class->id }}" @selected($classId === $class->id)>{{ $class->name }}</option>
+                    @endforeach
                 </select>
-                <select class="select-filter">
+                <select class="select-filter" name="faces">
                     <option value="">顔写真：すべて</option>
-                    <option value="registered">登録済</option>
-                    <option value="unregistered">未登録</option>
+                    <option value="registered" @selected($faces === 'registered')>登録済</option>
+                    <option value="unregistered" @selected($faces === 'unregistered')>未登録</option>
                 </select>
+                {{-- 検索しても、いまの並び順のままにする（data-sync-query：並び替えたときに JS が値を書き換える） --}}
+                <input type="hidden" name="sort" value="{{ $sort }}" data-sync-query>
+                <input type="hidden" name="direction" value="{{ $direction }}" data-sync-query>
                 <button type="submit" class="btn-search">検索</button>
             </form>
         </div>
 
-        <div class="table-info">
-            <span>全 <strong>3</strong> 件中 1〜3 件を表示</span>
+        {{-- data-ajax-list：この中の data-ajax が付いたリンクを押すと、リロードせずにここだけ入れ替わる --}}
+        <div data-ajax-list>
+            @include('admin.students.partials.list')
         </div>
 
-        <div class="table-wrapper">
-            <table class="student-table">
-                <thead>
-                    <tr>
-                        <th class="sortable">学籍番号 ▲▼</th>
-                        <th class="sortable">名前 ▲▼</th>
-                        <th class="sortable">クラス ▲▼</th>
-                        <th>状態</th>
-                        <th>顔写真</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($students as $student)
-                        <tr>
-                            <td>{{ $student->student_number }}</td>
-                            <td>{{ $student->name }}</td>
-                            <td>{{ $student->schoolClass->name }}</td>
-                            <td><span class="badge-status {{ $student->is_active ? 'active' : 'inactive' }}">{{ $student->is_active ? '有効' : '停止中' }}</span></td>
-                            <td>
-                                @if ($student->face_samples_count > 0)
-                                    {{ $student->face_samples_count }}枚
-                                @else
-                                    <span class="badge-photo-none">未登録</span></td>
-                                @endif
-                            <td class="action-links">
-                                <a href="{{ route('admin.students.edit', $student) }}" class="btn-action">編集</a>
-                                <a href="{{ route('admin.faces.create', $student) }}">顔を登録</a>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="6">該当する生徒はいません。</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <div class="pagination">
-            @if ($students->previousPageUrl())<a href="{{ $students->previousPageUrl() }}" class="page-link">&laquo; 前へ</a>@endif
-            <a href="#" class="page-link active">{{ $students->currentPage() }} / {{ $students->lastPage() }}</a>
-            @if ($students->nextPageUrl())<a href="{{ $students->nextPageUrl() }}" class="page-link">次へ &raquo;</a>@endif
-        </div>
     </div>
 </main>
 @endsection
+@push('scripts')
+    @vite('resources/js/ajax-list.js')
+@endpush

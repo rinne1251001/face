@@ -24,26 +24,6 @@
         --color-shadow: rgba(40, 38, 62, 0.05);
     }
 
-    .subjects-page {
-        color: var(--color-font);
-        background: var(--color-bg);
-        padding: 32px;
-        min-height: 100vh;
-        font-family: sans-serif;
-        box-sizing: border-box;
-    }
-
-    .subjects-page *,
-    .subjects-page *::before,
-    .subjects-page *::after {
-        box-sizing: border-box;
-    }
-
-    .subjects-container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
     .subjects-header {
         display: flex;
         justify-content: space-between;
@@ -303,8 +283,8 @@
 @endpush
 @section('content')
 
-<main class="subjects-page">
-    <div class="subjects-container">
+<main class="main">
+    <div class="content-wrapper">
 
         <header class="subjects-header">
             <div>

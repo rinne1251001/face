@@ -268,6 +268,21 @@ input {
     background: rgb(135 74 44 / 7%);
 }
 
+
+/* =========================
+    レイアウト
+========================= */
+.main {
+    padding-block: 40px;
+}
+
+.content-wrapper {
+    width: min(1000px, 100% - clamp(16px, 4vw, 32px) * 2);
+    margin-inline: auto;
+    display: flow-root;
+}
+
+
 /* =========================
     レスポンシブ切り替え
 ========================= */

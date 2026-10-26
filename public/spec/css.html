@@ -897,6 +897,13 @@ place-items: center;    /* 個々のアイテムを縦横に中央 */</code></pr
 @foreach ($files as $file)
     &lt;img src="data:image/jpeg;base64,{{ base64_encode($disk->get($file)) }}">
 @endforeach</code></pre>
+
+                <p>
+                    ※上記の例はデザイン確認用なので、本番環境ではコントローラーを介してください
+                </p>
+                <pre><code class="php">@foreach ($student->faceSamples as $sample)
+    &lt;img src="{{ route('admin.faces.image', $sample) }}">
+@endforeach</code></pre>
             </section>
         </div>
 
@@ -1072,7 +1079,7 @@ place-items: center;    /* 個々のアイテムを縦横に中央 */</code></pr
             border: var(--color-font) 1px solid;
             padding: 10px 50px 10px 20px;
             appearance: none;
-            background: url("data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'>&lt;path d='M0 0l5 6 5-6z' fill='%333333'/>&lt;/svg>") no-repeat right 20px center / 10px;
+            background: url("data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'>&lt;path d='M0 0l5 6 5-6z' fill='%23333333'/>&lt;/svg>") no-repeat right 20px center / 10px;
         }
     &lt;/style>
 &lt;/head>

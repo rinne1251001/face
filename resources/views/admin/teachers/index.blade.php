@@ -18,17 +18,6 @@
         --danger: #b86e62;
     }
 
-    /* このページの中だけにデザインを適用 */
-    .teacher-demo {
-        max-width: 1120px;
-        margin: 48px auto;
-        padding: 0 24px 64px;
-        color: var(--color-font);
-    }
-
-    .teacher-demo * { box-sizing: border-box; }
-    .teacher-demo p { margin: 0; }
-
     /* ページタイトルと追加ボタン */
     .heading,
     .toolbar,
@@ -41,7 +30,7 @@
 
     .heading { margin-bottom: 24px; }
     .eyebrow { margin-bottom: 8px !important; color: var(--color-main); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
-    .teacher-demo h1 { margin: 0; font-size: clamp(28px, 4vw, 38px); }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 38px); }
     .description { margin-top: 8px !important; color: var(--color-main); font-size: 14px; }
     .add-btn { padding: 12px 18px; border: 0; border-radius: 9px; background: var(--color-main); color: #fff; font-size: 14px; font-weight: 700; }
 
@@ -57,12 +46,12 @@
     .toolbar h2 { margin: 0; font-size: 16px; }
     .search { padding: 9px 12px; border: 1px solid var(--color-font-light); border-radius: 8px; color: var(--text-search); font-size: 13px; }
     .table-wrap { overflow-x: auto; }
-    .teacher-demo table { width: 100%; margin: 0; border-collapse: collapse; text-align: left; }
-    .teacher-demo th,
-    .teacher-demo td { padding: 14px 16px; border: 0; border-bottom: 1px solid var(--border-td); vertical-align: middle; }
-    .teacher-demo th { background: var(--bg-th); color: var(--color-main); font-size: 11px; white-space: nowrap; }
-    .teacher-demo td { color: var(--text-sub); font-size: 13px; }
-    .teacher-demo tbody tr:last-child td { border-bottom: 0; }
+    table { width: 100%; margin: 0; border-collapse: collapse; text-align: left; }
+    th,
+    td { padding: 14px 16px; border: 0; border-bottom: 1px solid var(--border-td); vertical-align: middle; }
+    th { background: var(--bg-th); color: var(--color-main); font-size: 11px; white-space: nowrap; }
+    td { color: var(--text-sub); font-size: 13px; }
+    tbody tr:last-child td { border-bottom: 0; }
 
     /* 名前・クラス・授業の表示 */
     .person { display: flex; align-items: center; gap: 10px; min-width: 150px; }
@@ -79,7 +68,6 @@
     .note { margin-top: 12px !important; color: var(--color-main); font-size: 12px; }
 
     @media (max-width: 767px) {
-        .teacher-demo { margin-top: 28px; padding: 0 16px 40px; }
         .heading,
         .toolbar,
         .summary { align-items: flex-start; flex-direction: column; }
@@ -88,51 +76,52 @@
 @endpush
 @section('content')
 
-<main class="teacher-demo">
-    <div class="heading">
-        <div>
-            <h1>教師一覧</h1>
-            <p class="description">教師と担当クラス・授業をまとめて確認できます。</p>
+<main class="main">
+    <div class="content-wrapper">
+        <div class="heading">
+            <div>
+                <h1>教師一覧</h1>
+                <p class="description">教師と担当クラス・授業をまとめて確認できます。</p>
+            </div>
+            <form action="{{ route('admin.teachers.create') }}" method="GET">
+                <button class="add-btn" type="submit">＋ 教師を追加</button>
+            </form>
         </div>
-        <form action="{{ route('admin.teachers.create') }}" method="GET">
-            <button class="add-btn" type="submit">＋ 教師を追加</button>
-        </form>
+
+        <section class="summary" aria-label="教師数">
+            <div>
+                <span class="subtext">登録されている教師</span>
+                <span class="count">{{ \App\Models\Teacher::count() }}<small> 名</small></span>
+            </div>
+        </section>
+
+        <section class="card" aria-labelledby="teacher-demo-title">
+            <div class="toolbar">
+                <h2 id="teacher-demo-title">教師アカウント</h2>
+                <span class="search">⌕ 名前・ログインIDで検索</span>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>教師</th><th>ログインID</th><th>受け持ちクラス</th><th>担当授業</th><th>操作</th></tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($teachers as $teacher)
+                            <tr>
+                                <td><div class="person"><span class="avatar">佐</span><span><span class="name">{{ $teacher->name }}</span><span class="subtext">教師アカウント</span></span></div></td>
+                                <td>{{ $teacher->login_id }}</td>
+                                <td><div class="tags"><span class="tag">1年A組</span><span class="tag">1年B組</span></div></td>
+                                <td><span class="subject">国語</span><span class="subtext">月曜日・1〜2限</span></td>
+                                <td><div class="actions"><button class="action" type="button">編集</button><button class="action action--delete" type="button">削除</button></div></td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="5"><span class="muted">なし</span></td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
-
-    <section class="summary" aria-label="教師数">
-        <div>
-            <span class="subtext">登録されている教師</span>
-            <span class="count">{{ \App\Models\teacher::count() }}<small> 名</small></span>
-        </div>
-    </section>
-
-    <section class="card" aria-labelledby="teacher-demo-title">
-        <div class="toolbar">
-            <h2 id="teacher-demo-title">教師アカウント</h2>
-            <span class="search">⌕ 名前・ログインIDで検索</span>
-        </div>
-
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr><th>教師</th><th>ログインID</th><th>受け持ちクラス</th><th>担当授業</th><th>操作</th></tr>
-                </thead>
-                <tbody>
-                     @forelse ($teachers as $teacher)
-                    <tr>
-                        <td><div class="person"><span class="avatar">佐</span><span><span class="name">{{ $teacher->name }}</span><span class="subtext">教師アカウント</span></span></div></td>
-                        <td>{{ $teacher->login_id }}</td>
-                        <td><div class="tags"><span class="tag">1年A組</span><span class="tag">1年B組</span></div></td>
-                        <td><span class="subject">国語</span><span class="subtext">月曜日・1〜2限</span></td>
-                        <td><div class="actions"><button class="action" type="button">編集</button><button class="action action--delete" type="button">削除</button></div></td>
-                    </tr>
-                    @empty
-                    <span class="muted">なし</span>
-                @endforelse
-
-                </tbody>
-            </table>
-        </div>
-    </section>
 </main>
 @endsection

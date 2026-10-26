@@ -47,6 +47,7 @@
             <li><a href="#cache">キャッシュクリア</a></li>
             <li><a href="#composer">composer関連</a></li>
             <li><a href="#env">.env関連</a></li>
+            <li><a href="#version">Laravelバージョン</a></li>
             <li><a href="#create">プロジェクト作成</a></li>
             <li><a href="#human">Humanをインストール</a></li>
             <li><a href="#japanese">日本語ファイル追加</a></li>
@@ -115,6 +116,20 @@ Remove-Item -Recurse -Force storage/app/private/faces -ErrorAction SilentlyConti
                 </p>
                 <pre><code class="language-plaintext">composer install
 npm install</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="version">Laravelバージョン</h2>
+            <section>
+                <h3>Laravelのバージョンを確認</h3>
+                <pre><code class="language-plaintext">php artisan --version</code></pre>
+            </section>
+
+            <section>
+                <h3>Laravelのバージョンアップ（バージョン内のみ）</h3>
+                <p>※変更後、他のチームメンバーは「composer install」を打つこと</p>
+                <pre><code class="language-plaintext">composer update laravel/framework</code></pre>
             </section>
         </div>
 
