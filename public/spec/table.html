@@ -554,27 +554,33 @@ protected function termLabel(): Attribute
 }</code></pre>
 
                 <p>６．resources/views/admin/subjectsフォルダのファイルで以下のように期間を表示できるようになります</p>
-                <pre><code class="php">@if ($subject->term_label)
-    // 例：4月1日～5月1日
-    {{ $subject->term_label }}
+                <pre><code class="php">@forelse ($subjects as $subject)
+    @if ($subject->term_label)
+        // 例：4月1日～5月1日
+        {{ $subject->term_label }}
 
-    // 例：2026-04-01 00:00:00
-    {{ $subject->start_date }}
+        // 例：2026-04-01 00:00:00
+        {{ $subject->start_date }}
 
-    // 例：4月1日
-    {{ $subject->start_date->format('n月j日') }}
+        // 例：4月1日
+        {{ $subject->start_date->format('n月j日') }}
 
-    // 例：2026/04/01
-    {{ $subject->start_date->format('Y/m/d') }}
+        // 例：2026/04/01
+        {{ $subject->start_date->format('Y/m/d') }}
 
-    // 例：4月1日（水）
-    {{ $subject->start_date->isoFormat('M月D日（ddd）') }}
-@else
-    未設定
-@endif</code></pre>
+        // 例：4月1日（水）
+        {{ $subject->start_date->isoFormat('M月D日（ddd）') }}
+    @else
+        未設定
+    @endif
+@endforelse</code></pre>
 
                 <p>※日付が空の授業で->format()を呼ぶとエラーになるので、空の可能性があるときは@ifや?->を使ってください</p>
                 <pre><code class="php">{{ $subject->start_date?->format('n月j日') }}</code></pre>
+
+                <p>フォームには以下を追加</p>
+                <pre
+                    class="php"><code>&lt;input type="date" name="start_date" value="{{ old('start_date', $subject->start_date?->format('Y-m-d')) }}"></code></pre>
             </section>
         </div>
 
