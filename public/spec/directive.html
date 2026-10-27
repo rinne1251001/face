@@ -33,7 +33,6 @@
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
                     <li><a href="route.html">ルーティング</a></li>
                     <li><a href="css.html">css</a></li>
-                    <li><a href="controller.html">コントローラー</a></li>
                     <li><a href="reference.html">参考文献</a></li>
                 </ul>
             </nav>
@@ -62,18 +61,6 @@
         </div>
 
         <div class="content-wrapper">
-            <h2 id=""></h2>
-            <section>
-                {{ }} は自動でエスケープ<br>
-                {!! !!} は自動でエスケープしない利用者が入力した値にを使ってはいけない
-            </section>
-
-            <section>
-                {{-- --}}Bladeのコメントアウト
-            </section>
-        </div>
-
-        <div class="content-wrapper">
             <h2 id="php">生PHP</h2>
             <section>
                 <h3>@php</h3>
@@ -90,7 +77,7 @@
                     例えば、
                 </p>
                 <pre><code class="php">@php
-    $classes = \App\Models\SchoolClass::query()
+    $classes = SchoolClass::query()
         ->with(['teachers' => fn ($q) => $q->orderBy('name')])
         ->withCount('students')
         ->orderBy('name')
@@ -125,18 +112,14 @@
                     ビュー側の書き方は内容が同じなら@phpを使った場合もコントローラーを使った場合も変わりません
                 </p>
                 <pre><code class="php">@forelse ($classes as $schoolClass)
-    &lt;p>{{ $schoolClass->name }}のクラスの人数は{{ $schoolClass->students_count }}人です&lt;/p>
+    &lt;p>{{ $schoolClass->name }}の受講人数は{{ $schoolClass->students_count }}人です&lt;/p>
     &lt;p>
         担当教師は、
             @forelse ($schoolClass->teachers as $teacher)
-                {{ $teacher->name }}先生@if (! $loop->last)、@endif
-            @empty
-                いません
+                    {{ $teacher->name }}先生@if (! $loop->last)、@endif
             @endforelse
         です
     &lt;/p>
-@empty
-    &lt;p>登録されている授業がありません&lt;/p>
 @endforelse</code></pre>
             </section>
         </div>
@@ -222,14 +205,6 @@
     &lt;p>管理者ログインをしてください&lt;/p>
 @endguest</code></pre>
             </section>
-
-            <section>
-                <h3>@error</h3>
-                <p>エラーがあるとき</p>
-                <pre><code class="php">@error('login_id')
-    &lt;p>{{ $message }}&lt;/p>
-@enderror</code></pre>
-            </section>
         </div>
 
         <div class="content-wrapper">
@@ -265,10 +240,10 @@
             <section>
                 <h3>@vite</h3>
                 <p>
-                    CSSとJSを読み込むタグを出力する<br>
+                    cssやjavascriptの高速読み込み<br>
                     ※vite.config.jsのinputにファイル名を書かないと使えません
                 </p>
-                <pre><code class="php">@vite(['resources/css/app.css', 'resources/js/app.js'])</code></pre>
+                <pre><code class="php">@vite(['resources/css/appp.css', 'resources/js/app.js'])</code></pre>
                 <pre><code class="js">// vite.config.js
 laravel({
     input: [
@@ -282,35 +257,28 @@ laravel({
                 <h3>@extends</h3>
                 <p>どのレイアウトを使うか</p>
                 <pre><code class="php">@extends('レイアウト名')
-@extends('layouts.app') {{-- layouts/app.blade.phpのレイアウトを使う --}}</code></pre>
+@extends('layouts.app') // layouts/app.blade.phpのレイアウトを使う</code></pre>
             </section>
 
             <section>
                 <h3>@yield、@section</h3>
                 <p>各ファイルごとに違う中身を書くための穴を作る</p>
-                <pre><code class="php">@yield('content')           {{-- 穴の名前は「content」 --}}
-@yield('title', 'Rollin')   {{-- 穴の名前は「title」、子ファイルで使われなかったら「Rollin」が入る --}}</code></pre>
+                <pre><code class="php">@yield('content')           // 穴の名前は「content」
+@yield('title', 'Rollin')   // 穴の名前は「title」、子ファイルで使われなかったら「Rollin」が入る</code></pre>
                 <pre><code class="php">@section('content')
-    {{-- 「content」の中身を書く --}}
+    // 「content」の中身を書く
 @endsection
 
-@section('title', 'マイページ')   {{-- 「title」に「マイページ」を入れる --}}</code></pre>
+@section('title', 'マイページ')   // 「title」に「マイページ」を入れる</code></pre>
             </section>
 
             <section>
                 <h3>@stack、@push</h3>
                 <p>特定のページだけで使いたい穴を作る</p>
-                <pre><code class="php">@stack('scripts')    {{-- 子ページで使われなかったら無視される穴 --}}</code></pre>
+                <pre><code class="php">@stack('scripts')    // 子ページで使われなかったら無視される穴</code></pre>
                 <pre><code class="php">@push('scripts')
-    {{-- 「scripts」の中身を書く --}} 
+    // 「scripts」の中身を書く
 @endpush</code></pre>
-            </section>
-
-            <section>
-                <h3>@include</h3>
-                <p>指定したファイルを埋め込む</p>
-                <pre><code class="php">@include('admin.students.partials.list')
-@include('partials.sort-header', ['key' => 'class', 'label' => 'クラス'])</code></pre>
             </section>
         </div>
     </main>

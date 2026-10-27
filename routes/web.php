@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Route;
 | 実験用
 |--------------------------------------------------------------------------
 */
+// http://127.0.0.1:8000/admin/tests/experiment
+if (app()->environment('local')) {
+    require __DIR__.'/experiment.php';
+}
 // http://127.0.0.1:8000/tests
 Route::view('/test', 'tests/test');
 Route::view('/toduka', 'tests/toduka');
@@ -66,8 +70,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // 照合テスト（しきい値の調整用）
         Route::get('match', [Admin\FaceMatchController::class, 'show'])->name('match.show');
         Route::post('match', [Admin\FaceMatchController::class, 'match'])->name('match.run')->middleware('throttle:60,1');
-        Route::get('match/logs', [Admin\FaceMatchController::class, 'logs'])->name('match.logs');      // 照合ログの表の中身
-        Route::post('match/log', [Admin\FaceMatchController::class, 'toggleLog'])->name('match.log');  // ログを取る／取らないの切り替え
     });
 });
 
@@ -100,12 +102,5 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
 
         // 受け持ちクラスの出席状況
         Route::get('classes/{schoolClass}', [Teacher\ClassController::class, 'show'])->name('classes.show');
-
-        // 設定（パスワードの変更）
-        Route::get('settings', [Teacher\SettingController::class, 'index'])->name('settings.index');
-        Route::get('settings/password', [Teacher\SettingController::class, 'editPassword'])->name('settings.password.edit');
-        Route::put('settings/password', [Teacher\SettingController::class, 'updatePassword'])
-            ->name('settings.password.update')
-            ->middleware('throttle:5,1'); // 今のパスワードを総当たりで試されないように、1分に5回まで
     });
 });

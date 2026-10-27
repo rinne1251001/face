@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Concerns\SortsList;
 use App\Http\Controllers\Controller;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -10,7 +9,6 @@ use App\Models\Subject;
 use App\Services\FaceMatcher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -19,63 +17,25 @@ use Illuminate\View\View;
 // 生徒の一覧・追加・編集・削除（管理者のみ）
 class StudentController extends Controller
 {
-    use SortsList;
-
     public function __construct(private FaceMatcher $matcher) {}
 
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $q = trim((string) $request->query('q', ''));
-        $classId = $request->integer('class_id');   // 選ばれていなければ 0
-        $faces = $request->query('faces');           // 'registered'（登録済）か 'unregistered'（未登録）
-        if (! in_array($faces, ['registered', 'unregistered'], true)) {
-            $faces = '';                             // それ以外は「すべて」
-        }
 
-        $query = Student::query()
+        $students = Student::query()
             ->with('schoolClass')
             ->withCount('faceSamples')
-            // キーワード（空なら絞り込まない）
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
                 ->where('name', 'like', "%{$q}%")
                 ->orWhere('student_number', 'like', "%{$q}%")
                 ->orWhereHas('schoolClass', fn ($c) => $c->where('name', 'like', "%{$q}%"))))
-            // クラス（「すべてのクラス」なら絞り込まない）
-            ->when($classId > 0, fn ($query) => $query->where('school_class_id', $classId))
-            // 顔写真
-            ->when($faces === 'registered', fn ($query) => $query->has('faceSamples'))
-            ->when($faces === 'unregistered', fn ($query) => $query->doesntHave('faceSamples'));
-
-        // 並び替え（何も指定がなければクラス順）
-        [$sort, $direction] = $this->applySort($query, $request, $this->sortColumns(), 'class');
-
-        $students = $query
-            ->orderBy('student_number') // 同じ値どうしは学籍番号順（同じクラスの中など）
-            ->orderBy('id')
+            ->orderBy('school_class_id')
+            ->orderBy('student_number')
             ->paginate(20)
-            ->withQueryString();       // ページ送りのリンクにも、検索・並び替えの条件を付ける
+            ->withQueryString();
 
-        // Ajax（並び替え・ページ送り）のときは、一覧の表の部分だけを返す
-        $view = $request->ajax() ? 'admin.students.partials.list' : 'admin.students.index';
-
-        $classes = SchoolClass::orderBy('name')->get(); // クラスの絞り込みの選択肢
-
-        return response()
-            ->view($view, compact('students', 'q', 'classId', 'faces', 'classes', 'sort', 'direction'))
-            // 同じ URL で「ページ全体」と「表だけ」を返し分けるので、ブラウザのキャッシュで混ざらないようにする
-            ->header('Vary', 'X-Requested-With');
-    }
-
-    // 一覧で並び替えできる列（URL の ?sort= に使うキー => 並び替えに使う列）
-    // 並び替えを増やすときは、ここに1行足して、ビューの見出しを partials.sort-header にするだけ
-    private function sortColumns(): array
-    {
-        return [
-            'student_number' => 'student_number',
-            'name' => 'name',
-            // クラス名は別のテーブルにあるので、クラス名を取り出すサブクエリで並び替える
-            'class' => SchoolClass::select('name')->whereColumn('school_classes.id', 'students.school_class_id'),
-        ];
+        return view('admin.students.index', compact('students', 'q'));
     }
 
     public function create(): View

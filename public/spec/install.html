@@ -33,7 +33,6 @@
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
                     <li><a href="route.html">ルーティング</a></li>
                     <li><a href="css.html">css</a></li>
-                    <li><a href="controller.html">コントローラー</a></li>
                     <li><a href="reference.html">参考文献</a></li>
                 </ul>
             </nav>
@@ -71,36 +70,12 @@ git config --global user.email "あなたのメールアドレス"</code></pre>
                     ④③にある「php.ini-development」をコピペして「php.ini」にリネーム＆↓のコメントアウトを外す
                 </p>
                 <pre><code class="language-plaintext">extension_dir = "C:\xampp\php\ext"
-extension=curl
 extension=fileinfo
-extension=gd
-extension=intl
-extension=mbstring
+extension=zip
 extension=openssl
 extension=pdo_mysql
-extension=pdo_sqlite
-extension=zip</code></pre>
-
-                <p>余裕があれば以下も↓</p>
-                <pre><code class="language-plaintext">date.timezone = Asia/Tokyo    ; PHPの日付の基準を日本時間に
-upload_max_filesize = 20M   ; 1回あたりにアップロードできるファイルの最大サイズを20M
-post_max_size = 25M ; POSTリクエスト全体の最大サイズを25メガバイト ※upload_max_filesizeより大きい値にすること
-memory_limit = 256M ; 1つのスクリプトが使用できる最大メモリ量を256M
-opcache.revalidate_freq=0   ; ファイルの変更がすぐ反映
-opcache.memory_consumption=256  ; OPcacheに割り当てるメモリのサイズを本番環境向に
-opcache.interned_strings_buffer=16  ; 文字列キャッシュ用に割り当てるメモリのサイズ
-opcache.max_accelerated_files=20000 ; キャッシュできるスクリプトファイルの最大数を大規模フレームワーク向けに</code></pre>
-
-                <p>本番環境向け↓<br>※開発環境では設定しない</p>
-                <pre><code class="language-plaintext">opcache.validate_timestamps=0   ; ファイルのタイムスタンプを再検証しない
-display_errors = Off    ; 画面上に直接エラー内容を出力・表示しない
-display_startup_errors = Off    ; PHPの起動シーケンスで発生したエラーを画面に表示しない
-error_reporting = E_ALL & ~E_DEPRECATED ; 非推奨の古い書き方以外のすべてのエラーを出力
-zend.assertions = -1    ; assert()関数の実行を無効し実行速度を上げる
-zend.exception_ignore_args = On ; 例外が発生してもトレース情報に引数の値を含めない
-zend.exception_string_param_max_len = 0 ; 例外メッセージに含める文字列パラメータの最大長を0に
-mysqlnd.collect_memory_statistics = Off ; MySQLのネイティブドライバのメモリ使用統計の収集をオフ
-expose_php = Off    ; HTTPレスポンスヘッダーのPHPのバージョン情報を隠蔽</code></pre>
+extension=mbstring
+extension=curl</code></pre>
             </section>
         </div>
 
@@ -120,9 +95,9 @@ expose_php = Off    ; HTTPレスポンスヘッダーのPHPのバージョン情
             <section>
                 ①<a href="https://nodejs.org/en/download" target="_blank"
                     rel="noopener noreferrer">Node.jsダウンロードページ</a>の「Windows Installer (.msi)」をクリックしてインストール→展開<br>
-                ②「環境設定を編集」→新規で、変数名PATH、変数値C:\Program Files\nodejs\に設定<br>
+                ②「環境設定を編集」→新規で、変数名PATH、変数値C:\Program Files\node.js\に設定<br>
                 ③ターミナル(管理者)で以下のコードを打つ
-                <pre><code class="language-plaintext">Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</code></pre>
+                <pre><code class="language-plaintext">Ser-ExecutionPolicy RemotoSigned -Scope CurrentUser</code></pre>
             </section>
         </div>
 

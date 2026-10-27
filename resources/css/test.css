@@ -10,13 +10,6 @@
     --color-main: #8090C1;
     --color-sub: #F7F2EC;
     --color-accent: #F29C8F;
-
-    --color-ok: ;
-    --color-ok-font: ;
-    --color-error: ;
-    --color-error-font: ;
-    --color-warn: ;
-    --color-warn-font: ;
 }
 
 /* ↓要素名セレクタ */
@@ -50,9 +43,6 @@ input {
 
 
 /* ↓クラス＆IDセレクタ */
-/* 成功、失敗、注意の文字色 */
-.ok { color: var(--color-ok-font); } .error { color: var(--color-error-font); } .warn { color: var(--color-warn-font); }
-
 /* =========================
     PCヘッダー
 ========================= */
@@ -267,21 +257,6 @@ input {
 .mobile-menu-links a:hover {
     background: rgb(135 74 44 / 7%);
 }
-
-
-/* =========================
-    レイアウト
-========================= */
-.main {
-    padding-block: 40px;
-}
-
-.content-wrapper {
-    width: min(1000px, 100% - clamp(16px, 4vw, 32px) * 2);
-    margin-inline: auto;
-    display: flow-root;
-}
-
 
 /* =========================
     レスポンシブ切り替え
