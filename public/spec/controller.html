@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>コントローラー</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>コントローラー</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="folder.html">フォルダー</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                    <li><a href="command.html">よく使うコマンド</a></li>
+                    <li><a href="directive.html">よく使うディレクティブ</a></li>
+                    <li><a href="route.html">ルーティング</a></li>
+                    <li><a href="css.html">css</a></li>
+                    <li><a href="controller.html">コントローラー</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <li><a href="#format">コントローラーファイルの形式</a></li>
+            <li><a href="#use">このアプリで使っているuse文</a></li>
+            <li><a href="#return">戻り値の型</a></li>
+            <li><a href="#method">メソッド</a></li>
+            <li><a href="#validation">バリデーションチェック</a></li>
+            <li><a href="#chain">メソッドチェーン</a></li>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="format">コントローラーファイルの形式</h2>
+            <section>
+                <p>コントローラーファイルとはユーザーからのリクエストを受け取ってモデル（データ処理）とビュー（画面表示）に橋渡しするファイルのことです</p>
+            </section>
+
+            <section>
+                <h3>コントローラーの形式</h3>
+                <pre><code class="php">&lt;?php
+
+namespace App\Http\Controllers\フォルダ名;  // 例：Admin/FaceMatchController.phpなら「Admin」
+
+// 必要なクラスや機能をインポートする
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+// クラス宣言
+class SettingController extends Controller
+{
+    // 一覧画面
+    public function index()
+    {
+        //
+    }
+
+    // 新規作成画面
+    public function create()
+    {
+        //
+    }
+
+    // 新規作成保存処理
+    public function store(Request $request)
+    {
+        //
+    }
+
+    // 詳細画面
+    public function show(string $id)
+    {
+        //
+    }
+
+    // 編集画面
+    public function edit(string $id)
+    {
+        //
+    }
+
+    // 編集保存処理
+    public function update(Request $request, string $id)
+    {
+        //
+    }
+
+    // 削除処理
+    public function destroy(string $id)
+    {
+        //
+    }
+
+    // 自分で作った名前のメソッド
+    public function 〇〇()
+    {
+        //
+    }
+}</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="use">このアプリで使っているuse文</h2>
+            <section>
+                <h3>use文とは？</h3>
+                <p>
+                    use文は必要なクラスや機能をインポートするために書きます<br>
+                    他の名前空間（フォルダ）にある場合に書き、同じフォルダにある場合は書かなくても構いません<br>
+                    例：Controllers/Admin/FaceMatchController.phpはuse
+                    App\Http\Controllers\Controller;を書かないとエラーになるが、Controllers/PhotoControllerなら書かなくてもok
+                </p>
+            </section>
+
+            <section>
+                <h3>基底コントローラー</h3>
+                <pre><code class="php">App\Http\Controllers\Controller</code></pre>
+                <p>
+                    Laravelのすべてのコントローラーが継承する「親クラス（基底コントローラー）」<br>
+                    共通処理を書くための置き場所
+                </p>
+            </section>
+
+            <section>
+                <h3>リクエストとレスポンス関連</h3>
+                <pre><code class="php">Illuminate\Http\Request</code></pre>
+                <p>ユーザーが送信したデータ（フォームの入力値、クエリパラメータ、ヘッダー情報など）を受け取る</p>
+
+                <pre style="margin-top: 30px;"><code class="php">Illuminate\Http\JsonResponse</code></pre>
+                <p>データをJSON形式（APIのレスポンスなど）で返す</p>
+
+                <pre style="margin-top: 30px;"><code class="php">Illuminate\Http\RedirectResponse</code></pre>
+                <p>処理が終わった後に別のURLやページへリダイレクト（転送）</p>
+
+                <pre
+                    style="margin-top: 30px;"><code class="php">Symfony\Component\HttpFoundation\StreamedResponse</code></pre>
+                <p>大量のデータや重いファイル（CSVダウンロードなど）を、メモリを節約しながら少しずつクライアントにストリーミング送信</p>
+            </section>
+
+            <section>
+                <h3>データベース・認証・ストレージ関連</h3>
+                <pre><code class="php">Illuminate\Support\Facades\DB</code></pre>
+                <p>
+                    データベース操作用ファサード<br>
+                    SQLを直接実行したり、高度なクエリを組み立てたりする
+                </p>
+
+                <pre style="margin-top: 30px;"><code class="php">Illuminate\Support\Facades\Auth</code></pre>
+                <p>
+                    認証用ファサード<br>
+                    現在ログインしているユーザーの情報を取得したり、ログイン・ログアウトの処理を行ったりする
+                </p>
+
+                <pre style="margin-top: 30px;"><code class="php">Illuminate\Support\Facades\Storage</code></pre>
+                <p>
+                    ファイルストレージ用ファサード<br>
+                    画像やPDFなどのファイルをサーバーやクラウド（S3など）に保存・削除・読み込みする
+                </p>
+            </section>
+
+            <section>
+                <h3>ユーティリティ（便利機能）関連</h3>
+                <pre><code class="php">Illuminate\Support\Carbon</code></pre>
+                <p>PHP標準の日付・時刻操作（DateTime）をより強力で直感的に扱えるように拡張した、日時操作ライブラリ</p>
+
+                <pre style="margin-top: 30px;"><code class="php">Illuminate\Support\Str</code></pre>
+                <p>
+                    文字列を操作・加工する便利なメソッド集<br>
+                    ランダムな文字列の生成、スラッグ化、文字の切り詰めなど
+                </p>
+            </section>
+
+            <section>
+                <h3>バリデーション（入力チェック）関連</h3>
+                <pre><code class="php">Illuminate\Validation\Rule</code></pre>
+                <p>バリデーションルールを複雑に定義・カスタマイズするためのクラス</p>
+
+                <pre style="margin-top: 30px;"><code class="php">Illuminate\Validation\ValidationException</code></pre>
+                <p>バリデーション（入力チェック）に失敗したときに発生する例外（エラー）を扱うクラス</p>
+            </section>
+
+            <section>
+                <h3>画面表示関連</h3>
+                <pre><code class="php">Illuminate\View\View</code></pre>
+                <p>画面（ビュー）を返却・操作するためのクラス</p>
+            </section>
+
+            <section>
+                <h3>他use文一覧</h3>
+                <p>
+                    <a href="https://laravel.com/docs/13.x/facades">Laravel Facades</a><br>
+                    <a href="https://api.laravel.com/docs/13.x/index.html">Laravel API Namespaces</a>
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="return">戻り値の型</h2>
+            <section>
+                <h3>戻り値の型宣言</h3>
+                <p>
+                    public function index(): Viewの「: View」はメソッドがどの型を返すのかを宣言するものです<br>
+                    一目でメソッドの戻り値の型が分かる＆IDEサポートの強くなるのでこのアプリでは必ず書いてください
+                </p>
+            </section>
+
+            <section>
+                <h3>View</h3>
+                <p>ビューを表示する</p>
+                <pre><code class="php">// データを渡さず画面表示のみ
+return view('teacher.settings.index');
+
+// 変数を渡す＆画面表示
+return view('admin.classes.index', compact('classes'));
+
+// 連想配列で細かくデータを渡す＆画面表示
+return view('auth.login', [
+    'title' => '管理者ログイン',
+    'action' => route('admin.login'),
+    'otherLink' => ['label' => '教師の方はこちら', 'url' => route('teacher.login')],
+]);</code></pre>
+            </section>
+
+            <section>
+                <h3>JsonResponse</h3>
+                <p>
+                    データをJSON形式で返す
+                    Javascriptに返して非同期処理をするときなどに使う
+                </p>
+                <pre><code class="php">return response()->json([
+    'saved' => count($prepared),
+    'total' => $student->faceSamples()->count(),
+]);</code></pre>
+            </section>
+
+            <section>
+                <h3>RedirectResponse</h3>
+                <p>処理終了後に別のページへリダイレクト</p>
+                <pre><code class="php">// 指定したURLへ直でリダイレクト
+return redirect()->route('admin.login');
+
+// intendedはログインしていない人が開こうとしたページを覚えておきログイン後にそこへ戻す。覚えたページがなければ引数のページへリダイレクト
+return redirect()->intended(route('admin.students.index'));
+
+// 直前のページへリダイレクト
+return back();
+
+// withはメッセージを付けてリダイレクト
+return redirect()->route('admin.classes.index')->with('status', '削除しました。');</code></pre>
+            </section>
+
+            <section>
+                <h3>StreamedResponse</h3>
+                <p>データサイズが非常に大きい重いファイルをメモリを圧迫しないように少しずつ分割して送信</p>
+                <pre><code class="php">return Storage::disk('local')->response($faceSample->image_path, null, [
+    'Cache-Control' => 'private, no-store',
+]);
+
+/**
+ * Storage::disk('local')：storage/app/private
+ * response：指定したパスにあるファイルをブラウザへファイルデータそのものとして送信、画面を表示する代わりに画像ファイルのバイナリデータをそのまま返す
+ * private：ブラウザ以外にキャッシュしない
+ * no-store：ブラウザの履歴やキャッシュ領域にデータを保存しない
+ */
+</code></pre>
+            </section>
+
+            <section>
+                <h3>string</h3>
+                <p>純粋な文字列を返す</p>
+                <pre><code class="php">return '文字';</code></pre>
+            </section>
+
+            <section>
+                <h3>array</h3>
+                <p>配列を返す</p>
+                <pre><code class="php">return [$data, $subjectIds];</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="method">メソッド</h2>
+            <section>
+                <h3>メソッドの引数（パラメータ）</h3>
+                <p style="font-weight: bold;">ルートモデルバインディング</p>
+                <pre><code class="php">public function show(Subject $subject): View
+{
+    /**
+     * subjectsテーブルからルートパラメータのIDのデータ1件が入った$subjectという変数と一緒にビューを表示する
+     * ルートパラメータとはhttp://127.0.0.1:8000/subjects/1の「1」、ルーティングで{subject}と表現されるもの
+     */
+    return view('subjects.show', compact('subject'));
+}</code></pre>
+                <p>
+                    自動的にデータベースからルートパラメータのIDのデータを持ってきてくれる書き方<br>
+                    該当データがなければ404を表示<br>
+                    ※使うテーブルのモデルをuse文に書かないとエラーになります
+                </p>
+
+                <p style="font-weight: bold; margin-top: 30px;">Request $request</p>
+                <pre><code class="php">public function store(Request $request)
+{
+    //  「title」という名前の入力値を取得する
+    $body = $request->title; 
+
+    // 「image」というファイルや項目が送信されてきているか？
+    if ($request->hasFile('image')) {
+        //
+    }
+
+    // バリデーションチェック
+    $validated = $request->validate([
+        'title' => 'required|max:255',
+        'body' => 'required',
+    ]);
+
+    // フォームに入力したすべてのデータを配列で取得し、データベース（Postテーブル）に一括保存
+    $allData = $request->all();
+    Post::create($allData);
+}</code></pre>
+                <p>
+                    「Request $request」はユーザーがWebブラウザから送信したデータ（フォームの入力値、URLのパラメータ、ヘッダー情報など）をコントローラーで受け取ります<br>
+                    ※use Illuminate\Http\Request;がないとエラーになります
+                </p>
+            </section>
+
+            <section>
+                <h3>CRUDメソッド</h3>
+                <div class="table-container">
+                    <table border="1">
+                        <thead>
+                            <tr>
+                                <th>メソッド名</th>
+                                <th style="min-width: 6em;">役割</th>
+                                <th>ビューの有無</th>
+                                <th>ルート</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th>index</th>
+                                <td>一覧表示</td>
+                                <td style="text-align: center;">〇</td>
+                                <td>
+                                    <pre><code class="php">Route::get('/students', [StudentController::class, 'index'])->name('students.index');</code></pre>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>create</th>
+                                <td>新規作成フォーム表示</td>
+                                <td style="text-align: center;">〇</td>
+                                <td>
+                                    <pre><code class="php">Route::get('/students/create', [StudentController::class, 'create'])->name('students.create');</code></pre>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>store</th>
+                                <td>新規保存処理</td>
+                                <td style="text-align: center;">×</td>
+                                <td>
+                                    <pre><code class="php">Route::post('/students', [StudentController::class, 'store'])->name('students.store');</code></pre>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>show</th>
+                                <td>詳細表示</td>
+                                <td style="text-align: center;">〇</td>
+                                <td>
+                                    <pre><code class="php">Route::get('/students/{student}', [StudentController::class, 'show'])->name('students.show');</code></pre>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>edit</th>
+                                <td>編集フォーム表示</td>
+                                <td style="text-align: center;">〇</td>
+                                <td>
+                                    <pre><code class="php">Route::get('/students/{student}/edit', [StudentController::class, 'edit'])->name('students.edit');</code></pre>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>update</th>
+                                <td>更新保存処理</td>
+                                <td style="text-align: center;">×<br>※formに@method('PUT')、@csrfが必要</td>
+                                <td>
+                                    <pre><code class="php">Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');</code></pre>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>destroy</th>
+                                <td>削除処理</td>
+                                <td style="text-align: center;">×<br>※formに@method('DELETE')、@csrfが必要</td>
+                                <td>
+                                    <pre><code class="php">Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');</code></pre>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>※「resource」を使うとまとめてルーティングできます</p>
+                <pre><code class="php">Route::resource('students', StudentController::class);</code></pre>
+                <p>※「except」を使うと特定のルーティングを除外できます</p>
+                <pre><code class="php">Route::resource('students', StudentController::class)->except('show');</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="validation">バリデーションチェック</h2>
+            <section>
+                <h3>書き方</h3>
+                <p>$request->validate～と書いて入力値をチェック<br>２つ目と３つ目の配列は省略可</p>
+                <pre><code class="php">$data = $request->validate(
+    [
+        // チェック項目とルール
+        'students' => ['required', 'array', 'max:200'],
+        'students.*.student_number' => ['required', 'string'],
+    ], 
+    [
+        // カスタムエラーメッセージ（特定のルールに違反したときに表示するエラー文）
+        'students.required' => '名前と学籍番号を1人分以上入力してください。',
+        'students.*.student_number.distinct' => ':position行目の学籍番号が重複しています。',
+    ], 
+    [
+        // カスタム属性名（エラー文に表示する置き換え用テキスト）
+        'students' => '生徒',
+        'students.*.name' => ':position行目の名前',
+    ]
+);</code></pre>
+
+                <p>バリデーションに失敗した場合は$errorsと$messageを使ってエラー文を表示</p>
+                <pre><code class="php">@if ($errors->any())
+    &lt;ul>
+        @foreach ($errors->all() as $error)
+            &lt;li>{{ $error }}&lt;/li>
+        @endforeach
+    &lt;/ul>
+@endif
+
+@error('students')
+    &lt;p style="color: red;">{{ $message }}&lt;/p>
+@enderror</code></pre>
+            </section>
+
+            <section>
+                <h3>バリデーションルール</h3>
+                <p>ルールは|で繋ぐか、配列形式で複数指定できる</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>ルール</th>
+                            <th>意味</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>required</td>
+                            <td>必須項目</td>
+                        </tr>
+                        <tr>
+                            <td>nullable</td>
+                            <td>空でok</td>
+                        </tr>
+                        <tr>
+                            <td>string</td>
+                            <td>文字列</td>
+                        </tr>
+                        <tr>
+                            <td>array</td>
+                            <td>配列</td>
+                        </tr>
+                        <tr>
+                            <td>numeric</td>
+                            <td>数値</td>
+                        </tr>
+                        <tr>
+                            <td>integer</td>
+                            <td>整数</td>
+                        </tr>
+                        <tr>
+                            <td>max:値</td>
+                            <td>指定した文字数、数値、配列の個数、ファイルのKB以下</td>
+                        </tr>
+                        <tr>
+                            <td>min:値</td>
+                            <td>指定した文字数、数値、配列の個数、ファイルのKB以上</td>
+                        </tr>
+                        <tr>
+                            <td>email</td>
+                            <td>有効なメールアドレス形式</td>
+                        </tr>
+                        <tr>
+                            <td>unique:テーブル名,カラム名</td>
+                            <td>テーブルのカラムの値と重複していない</td>
+                        </tr>
+                        <tr>
+                            <td>exists:テーブル名,カラム</td>
+                            <td>指定したカラムにその値が存在する</td>
+                        </tr>
+                        <tr>
+                            <td>distinct</td>
+                            <td>配列の中に重複した値がない</td>
+                        </tr>
+                        <tr>
+                            <td>distinct:strict</td>
+                            <td>配列内で値がデータ型も含めて重複していない</td>
+                        </tr>
+                        <tr>
+                            <td>between:最小値,最大値</td>
+                            <td>最小値以上最大値以下</td>
+                        </tr>
+                        <tr>
+                            <td>gte:他のカラム名</td>
+                            <td>指定した他のカラム以上の値</td>
+                        </tr>
+                        <tr>
+                            <td>gt:他のカラム名</td>
+                            <td>指定した他のカラムより大きい値</td>
+                        </tr>
+                        <tr>
+                            <td>date_format:Y-m-d</td>
+                            <td>指定した日付フォーマット（例: 2026-06-06）であること</td>
+                        </tr>
+                        <tr>
+                            <td>before_or_equal:today</td>
+                            <td>今日以前の日付</td>
+                        </tr>
+                        <tr>
+                            <td>Rule::in([config('ファイル名.値')])</td>
+                            <td>指定した設定ファイル内の値と同じ</td>
+                        </tr>
+                        <tr>
+                            <td>Rule::unique('テーブル名')->ignore($モデル名)</td>
+                            <td>自分以外でテーブル内の値が重複していない</td>
+                        </tr>
+                        <tr>
+                            <td>Rule::in([...array_keys(モデル名::定数)])</td>
+                            <td>指定したモデルの定数のいずれかの値</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="chain">メソッドチェーン</h2>
+            <section>
+                <h3>データベース操作（Eloquentクエリビルダ）</h3>
+                <table border="1">
+                    <tr>
+                        <td>where()</td>
+                        <td>データを絞り込む<br>例：where('status', 'active')、where('age', '>=', 20)、where('name', 'LIKE', '%田中%')
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>with(リレーション名)</td>
+                        <td>関連テーブルも取得<br>例：with('students')</td>
+                    </tr>
+                    <tr>
+                        <td>get()</td>
+                        <td>全て取得</td>
+                    </tr>
+                    <tr>
+                        <td>first()</td>
+                        <td>最初の一件のみ取得</td>
+                    </tr>
+                    <tr>
+                        <td>orderBy(列)</td>
+                        <td>指定した列で並び替え</td>
+                    </tr>
+                    <tr>
+                        <td>paginate(数字)</td>
+                        <td>指定した数字でページネーション</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h3>リダイレクトとフラッシュメッセージ</h3>
+                <table border="1">
+                    <tr>
+                        <td>redirect()->route('ルート名')</td>
+                        <td>指定したURLへリダイレクト</td>
+                    </tr>
+                    <tr>
+                        <td>redirect()->back()</td>
+                        <td>前のページに戻る</td>
+                    </tr>
+                    <tr>
+                        <td>->with('キー', 'メッセージ')</td>
+                        <td>一時的なメッセージを渡す</td>
+                    </tr>
+                    <tr>
+                        <td>->withInput()</td>
+                        <td>入力内容保持</td>
+                    </tr>
+                    <tr>
+                        <td>->withErrors(内容)</td>
+                        <td>エラーを次の画面に渡す<br>ビューの $errors に入る</td>
+                    </tr>
+                </table>
+            </section>
+
+
+            <section>
+                <h3>コレクションの操作（取得したデータの加工）</h3>
+                <table border="1">
+                    <tr>
+                        <td>->sortBy('カラム名')</td>
+                        <td>指定したカラムで並び替え</td>
+                    </tr>
+                    <tr>
+                        <td>->pluck('カラム名')</td>
+                        <td>指定したカラムのみ抽出</td>
+                    </tr>
+                    <tr>
+                        <td>->filter(fn($item) => ...)</td>
+                        <td>条件に合うものだけ抽出</td>
+                    </tr>
+                    <tr>
+                        <td>->map(function($item) { ... })</td>
+                        <td>新しいデータ構造に変換</td>
+                    </tr>
+                    <tr>
+                        <td>->values()</td>
+                        <td>コレクションの添字を0から始まる連番に振り直す</td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

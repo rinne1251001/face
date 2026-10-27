@@ -33,6 +33,7 @@
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
                     <li><a href="route.html">ルーティング</a></li>
                     <li><a href="css.html">css</a></li>
+                    <li><a href="controller.html">コントローラー</a></li>
                     <li><a href="reference.html">参考文献</a></li>
                 </ul>
             </nav>
@@ -44,8 +45,10 @@
             <li><a href="#show">テーブル確認方法</a></li>
             <li><a href="#create">テーブル作成</a></li>
             <li><a href="#seeder">テストデータ注入</a></li>
+            <li><a href="#approach">マイグレーション型と修飾子一覧</a></li>
             <li><a href="#model">モデルファイル</a></li>
             <li><a href="#Eloquent">Eloquentモデル</a></li>
+            <li><a href="#add">カラム追加方法</a></li>
             <li><a href="#sessions">sessions</a></li>
             <li><a href="#cache">cache</a></li>
             <li><a href="#jobs">jobs</a></li>
@@ -99,19 +102,201 @@ php artisan cache:clear file　//古い特徴量キャッシュをクリア</cod
 
             <section>
                 <h3>ログインIDやパスワード</h3>
-                <p>databases/seedersのAdminSeeder.php、TeacherSeeder.phpに書いてある</p>
+                <p>database/seedersのAdminSeeder.php、TeacherSeeder.phpに書いてある</p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="approach">マイグレーション型と修飾子一覧</h2>
+            <section>
+                <h3>テーブルの型</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>マイグレーションメソッド</th>
+                            <th>SQLの型</th>
+                            <th>説明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>string</td>
+                            <td>VARCHAR</td>
+                            <td>可変長文字列<br>デフォルトの長さは255文字<br>文字数指定をするときはstring('カラム名', 長さ)</td>
+                        </tr>
+                        <tr>
+                            <td>char</td>
+                            <td>CHAR</td>
+                            <td>固定長文字列</td>
+                        </tr>
+                        <tr>
+                            <td>text</td>
+                            <td>TEXT</td>
+                            <td>長文用のテキスト（最大約64KB）</td>
+                        </tr>
+                        <tr>
+                            <td>mediumText</td>
+                            <td>MEDIUMTEXT</td>
+                            <td>中程度の長文テキスト（最大約16MB）</td>
+                        </tr>
+                        <tr>
+                            <td>longText</td>
+                            <td>LONGTEXT</td>
+                            <td>非常に長いテキスト（最大約4GB）</td>
+                        </tr>
+                        <tr>
+                            <td>integer</td>
+                            <td>INT</td>
+                            <td>標準的な整数型</td>
+                        </tr>
+                        <tr>
+                            <td>bigInteger</td>
+                            <td>BIGINT</td>
+                            <td>大きな整数型</td>
+                        </tr>
+                        <tr>
+                            <td>unsignedInteger</td>
+                            <td>INT UNSIGNED</td>
+                            <td>符号なし整数型（マイナスの値を扱わない場合）</td>
+                        </tr>
+                        <tr>
+                            <td>tinyInteger</td>
+                            <td>TINYINT</td>
+                            <td>小さな整数型（フラグやステータスなど、小さな数値用）</td>
+                        </tr>
+                        <tr>
+                            <td>double</td>
+                            <td>DOUBLE</td>
+                            <td>倍精度浮動小数点数</td>
+                        </tr>
+                        <tr>
+                            <td>decimal</td>
+                            <td>DECIMAL</td>
+                            <td>固定小数点数</td>
+                        </tr>
+                        <tr>
+                            <td>date</td>
+                            <td>DATE</td>
+                            <td>日付（例: 2026-06-06）</td>
+                        </tr>
+                        <tr>
+                            <td>dateTime</td>
+                            <td>DATETIME</td>
+                            <td>日付と時間（例: 2026-06-06 12:00:00）</td>
+                        </tr>
+                        <tr>
+                            <td>timestamp</td>
+                            <td>TIMESTAMP</td>
+                            <td>タイムスタンプ</td>
+                        </tr>
+                        <tr>
+                            <td>timestamps</td>
+                            <td>TIMESTAMP</td>
+                            <td>created_atとupdated_atの2つのカラムを同時に作成したタイムスタンプ</td>
+                        </tr>
+                        <tr>
+                            <td>time</td>
+                            <td>TIME</td>
+                            <td>時間のみ<br>（例: 12:00:00）</td>
+                        </tr>
+                        <tr>
+                            <td>year</td>
+                            <td>YEAR</td>
+                            <td>年（例: 2026）</td>
+                        </tr>
+                        <tr>
+                            <td>boolean</td>
+                            <td>TINYINT(1)</td>
+                            <td>真偽値（true / false）</td>
+                        </tr>
+                        <tr>
+                            <td>json</td>
+                            <td>JSON</td>
+                            <td>JSON形式のデータ保存用</td>
+                        </tr>
+                        <tr>
+                            <td>id()</td>
+                            <td>BIGINT UNSIGNED</td>
+                            <td>自動インクリメントの主キー</td>
+                        </tr>
+                        <tr>
+                            <td>foreignId</td>
+                            <td>BIGINT UNSIGNED</td>
+                            <td>外部キー</td>
+                        </tr>
+                        <tr>
+                            <td>binary</td>
+                            <td>BLOBなど</td>
+                            <td>バイナリデータ用</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>カラム修飾子</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>メソッド</th>
+                            <th>説明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>->nullable()</td>
+                            <td>NULLでもok</td>
+                        </tr>
+                        <tr>
+                            <td>->default(初期値)</td>
+                            <td>初期値設定</td>
+                        </tr>
+                        <tr>
+                            <td>->unique()</td>
+                            <td>一意の値</td>
+                        </tr>
+                        <tr>
+                            <td>->primary()</td>
+                            <td>プライマリーキー</td>
+                        </tr>
+                        <tr>
+                            <td>->index()</td>
+                            <td>インデックス</td>
+                        </tr>
+                        <tr>
+                            <td>->useCurrent()</td>
+                            <td>現在の日時をデフォルト値に設定</td>
+                        </tr>
+                        <tr>
+                            <td>->constrained()</td>
+                            <td>外部キー制約を定義</td>
+                        </tr>
+                        <tr>
+                            <td>->cascadeOnDelete()</td>
+                            <td>親レコードが削除されたとき子レコードも同時に削除</td>
+                        </tr>
+                        <tr>
+                            <td>->restrictOnDelete()</td>
+                            <td>子レコードが存在する場合、親レコードの削除を禁止</td>
+                        </tr>
+                        <tr>
+                            <td>->nullOnDelete()</td>
+                            <td>親レコードが削除されたとき、子レコードの外部キーをNULLに変更</td>
+                        </tr>
+                    </tbody>
+                </table>
             </section>
         </div>
 
         <div class="content-wrapper">
             <h2 id="model">モデルファイル</h2>
             <section>
-                <p>１つのテーブルにつき、１つのモデルファイルを作成します</p>
+                <p>１つのテーブルにつき、１つ以下のモデルファイルを作成します</p>
             </section>
 
             <section>
                 <h3>クラス宣言</h3>
-                <p>クラス名は大文字単数形になります（テーブルは小文字複数形）</p>
+                <p>クラス名は先頭大文字単数形になります（テーブルは小文字複数形）</p>
 
                 <p>↓主な継承</p>
                 <table border="1">
@@ -218,7 +403,7 @@ protected function scheduleLabel(): Attribute
                 <h3>データの取得</h3>
                 <pre><code class="php">$users = Admin::all();    // adminsテーブルの全データを取得
 $user = Admin::find(1);   // IDが1のadminを取得
-$thursfri = Subject::where('day_of_week', '>=', 4)->get();  // 木金の授業を全て取得</code></pre>
+$thursfri = Subject::where('day_of_week', '>=', 4)->get();  // 木金土日の授業を全て取得</code></pre>
             </section>
 
             <section>
@@ -229,7 +414,7 @@ $thursfri = Subject::where('day_of_week', '>=', 4)->get();  // 木金の授業�
     return $this->hasMany(Student::class);  // // 1つのschool_classesは複数のstudentsを持つ
 }</code></pre>
                 <pre><code class="php">$school_classes = SchoolClass::with('students')->get();  // クラスと一緒にそのクラスの生徒もまとめて取得
-$school_classes = SchoolClass::withCount('students')->get();  // クラスと一緒にそのクラスの生徒数(sutudents_count)もまとめて取得</code></pre>
+$school_classes = SchoolClass::withCount('students')->get();  // クラスと一緒にそのクラスの生徒数(students_count)もまとめて取得</code></pre>
                 <p>件数のカウントはwithCount('〇〇')と書くだけで「〇〇_count」というデータが自動的に作られ、使うことができます</p>
             </section>
 
@@ -251,7 +436,7 @@ $admin->save();</code></pre>
             <section>
                 <h3>データの更新</h3>
                 <pre><code class="php">$admin = Admin::find(1);
-$admin->login_id = admin1;
+$admin->login_id = 'admin1';
 $admin->save();</code></pre>
             </section>
 
@@ -267,7 +452,11 @@ $admin->delete();</code></pre>
 
             <section>
                 <h3>メソッドチェーンの順番</h3>
-                <p>->get();が１番最後にさえあれば順番は自由です</p>
+                <p>
+                    ->get();が１番最後にさえあれば順番は自由です
+                    ※orderByが２つあるときは先に書いた条件の方が優先されます
+                    ※select()をwithCount()の後に書くと件数の列が消えます
+                </p>
                 <pre><code class="php">$classes = SchoolClass::query()
     ->with(['teachers' => fn ($q) => $q->orderBy('name')])
     ->withCount('students')
@@ -281,6 +470,111 @@ $classes = SchoolClass::query()
     ->withCount('students')
     ->with(['teachers' => fn ($q) => $q->orderBy('name')])
     ->get();</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="add">カラム追加方法</h2>
+            <section>
+                <h3>カラムを追加した後の手順</h3>
+                <p>
+                    １．テーブルにカラム追加<br>
+                    ２．追加したカラムに->nullable()が付いていなかったらseederファイルにテストデータを追加<br>
+                    ３．テーブルフレッシュ
+                </p>
+                <pre><code class="php">php artisan migrate:fresh --seed
+Remove-Item -Recurse -Force storage/app/private/faces -ErrorAction SilentlyContinue
+php artisan cache:clear file</code></pre>
+                <p>
+                    ４．モデルの$fillable（一括代入可のリスト）か$hidden（パスワードなどのリスト）にカラムを追加→casts（データ型変換）やデータ加工などが必要であればそれも追加<br>
+                    ５．ビューで追加したカラムを使うコントローラーに追加<br>
+                    ６．ビューに追加
+                </p>
+            </section>
+
+            <section>
+                <h3>例：subjectsテーブルに開始終了日時を入れる方法</h3>
+                <p>１．2026_09_28_000005_create_subjects_table.phpにカラム追加</p>
+                <pre><code class="php">$table->date('start_date')->nullable();      // 開始日（例：4月1日）
+$table->date('end_date')->nullable();        // 終了日（例：7月31日）</code></pre>
+
+                <p>２．databases/seeders/SchoolSeeder.phpに追加</p>
+                <pre><code class="php">Subject::firstOrCreate(
+    ['name' => '数学', 'day_of_week' => 1, 'period_start' => 1, 'period_end' => 1],
+    ['start_date' => '2026-04-01', 'end_date' => '2026-07-31'],
+);</code></pre>
+
+                <p>３．テーブルフレッシュ</p>
+                <pre><code class="php">php artisan migrate:fresh --seed
+Remove-Item -Recurse -Force storage/app/private/faces -ErrorAction SilentlyContinue
+php artisan cache:clear file</code></pre>
+
+                <p>４．app/Models/Subject.phpに追加</p>
+                <pre><code class="php">protected $fillable = ['name', 'day_of_week', 'period_start', 'period_end', 'start_date', 'end_date'];
+
+protected function casts(): array
+{
+    return [
+        'day_of_week' => 'integer',
+        'period_start' => 'integer',
+        'period_end' => 'integer',
+        'start_date' => 'date', // Carbon（日付）として扱える
+        'end_date' => 'date',
+    ];
+}
+
+// 画面表示用：「4月1日〜7月31日」（$subject->term_label で使える。未設定なら null）
+protected function termLabel(): Attribute
+{
+    return Attribute::get(fn () => $this->start_date && $this->end_date
+        ? $this->start_date->format('n月j日').'〜'.$this->end_date->format('n月j日')
+        : null);
+}</code></pre>
+
+                <p>５．app/Http/Controllers/Admin/SubjectController.phpのvalidated()に追加</p>
+                <pre><code class="php">private function validated(Request $request): array
+{
+    return $request->validate([
+        'name' => ['required', 'string', 'max:100'],
+        'day_of_week' => ['required', 'integer', Rule::in(array_keys(Subject::DAYS))],
+        'period_start' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD],
+        // 終了時限は開始時限以上（1限だけなら開始と同じ）
+        'period_end' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD, 'gte:period_start'],
+        'start_date' => ['nullable', 'date'],
+        // 終了日は開始日と同じか、それより後
+        'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+    ], [], [
+        'name' => '授業名',
+        'day_of_week' => '曜日',
+        'period_start' => '開始時限',
+        'period_end' => '終了時限',
+        'start_date' => '開始日',
+        'end_date' => '終了日',
+    ]);
+}</code></pre>
+
+                <p>６．resources/views/admin/subjectsフォルダのファイルで以下のように期間を表示できるようになります</p>
+                <pre><code class="php">@if ($subject->term_label)
+    // 例：4月1日～5月1日
+    {{ $subject->term_label }}
+
+    // 例：2026-04-01 00:00:00
+    {{ $subject->start_date }}
+
+    // 例：4月1日
+    {{ $subject->start_date->format('n月j日') }}
+
+    // 例：2026/04/01
+    {{ $subject->start_date->format('Y/m/d') }}
+
+    // 例：4月1日（水）
+    {{ $subject->start_date->isoFormat('M月D日（ddd）') }}
+@else
+    未設定
+@endif</code></pre>
+
+                <p>※日付が空の授業で->format()を呼ぶとエラーになるので、空の可能性があるときは@ifや?->を使ってください</p>
+                <pre><code class="php">{{ $subject->start_date?->format('n月j日') }}</code></pre>
             </section>
         </div>
 
@@ -325,7 +619,7 @@ $classes = SchoolClass::query()
                     </tr>
                     <tr>
                         <th>user_id</th>
-                        <td>ログイン中の人のID（未ログインなら空）</td>
+                        <td>既定のガード（teacher）の教師IDだけが入る（未ログインなら空）</td>
                     </tr>
                     <tr>
                         <th>ip_address</th>
@@ -364,15 +658,21 @@ $classes = SchoolClass::query()
                 <table border="1">
                     <tr>
                         <th>key</th>
-                        <td></td>
+                        <td>
+                            保存したデータの名前<br>
+                            先頭にAPP_NAMEから作った接頭辞（例：laravel_cache_）が付く
+                        </td>
                     </tr>
                     <tr>
                         <th>value</th>
-                        <td></td>
+                        <td>
+                            保存したデータの中身<br>
+                            PHPのserialize()で文字列にしたもの（例：回数制限のカウントが3回なら i:3;）
+                        </td>
                     </tr>
                     <tr>
                         <th>expiration</th>
-                        <td>作成日</td>
+                        <td>有効期限（1970年からの秒数）</td>
                     </tr>
                 </table>
             </section>
@@ -383,15 +683,15 @@ $classes = SchoolClass::query()
                 <table border="1">
                     <tr>
                         <th>key</th>
-                        <td></td>
+                        <td>鍵の名前</td>
                     </tr>
                     <tr>
                         <th>owner</th>
-                        <td></td>
+                        <td>鍵を持っている処理を見分けるランダムな文字列</td>
                     </tr>
                     <tr>
                         <th>expiration</th>
-                        <td></td>
+                        <td>鍵が自動で外れる時刻（1970年からの秒数）</td>
                     </tr>
                 </table>
             </section>
@@ -410,31 +710,34 @@ $classes = SchoolClass::query()
                 <table border="1">
                     <tr>
                         <th>id</th>
-                        <td>メールアドレス</td>
+                        <td>ID</td>
                     </tr>
                     <tr>
                         <th>queue</th>
-                        <td>トークン</td>
+                        <td>待ち行列の名前（指定しなければ default）</td>
                     </tr>
                     <tr>
                         <th>payload</th>
-                        <td></td>
+                        <td>実行する処理の中身（処理のクラス名と渡すデータをJSONにしたもの）</td>
                     </tr>
                     <tr>
                         <th>attempts</th>
-                        <td></td>
+                        <td>試した回数</td>
                     </tr>
                     <tr>
                         <th>reserved_at</th>
-                        <td></td>
+                        <td>
+                            処理を始めた時刻（1970年からの秒数）<br>
+                            空なら、まだ順番待ち
+                        </td>
                     </tr>
                     <tr>
                         <th>available_at</th>
-                        <td></td>
+                        <td>実行してよい時刻（1970年からの秒数）</td>
                     </tr>
                     <tr>
                         <th>created_at</th>
-                        <td>作成日</td>
+                        <td>追加した時刻（1970年からの秒数）</td>
                     </tr>
                 </table>
             </section>
@@ -449,39 +752,39 @@ $classes = SchoolClass::query()
                     </tr>
                     <tr>
                         <th>name</th>
-                        <td></td>
+                        <td>まとまりの名前（付けたときだけ）</td>
                     </tr>
                     <tr>
                         <th>total_jobs</th>
-                        <td></td>
+                        <td>まとまりに入っている処理の数</td>
                     </tr>
                     <tr>
                         <th>pending_jobs</th>
-                        <td></td>
+                        <td>まだ終わっていない処理の数</td>
                     </tr>
                     <tr>
                         <th>failed_jobs</th>
-                        <td></td>
+                        <td>失敗した処理の数</td>
                     </tr>
                     <tr>
                         <th>failed_job_ids</th>
-                        <td></td>
+                        <td>失敗した処理のIDの一覧（JSON）</td>
                     </tr>
                     <tr>
                         <th>options</th>
-                        <td></td>
+                        <td>全部終わったときや失敗したときに実行する後処理などの設定</td>
                     </tr>
                     <tr>
                         <th>cancelled_at</th>
-                        <td></td>
+                        <td>取り消した時刻（1970年からの秒数、取り消していなければ空）</td>
                     </tr>
                     <tr>
                         <th>created_at</th>
-                        <td></td>
+                        <td>作った時刻（1970年からの秒数）</td>
                     </tr>
                     <tr>
                         <th>finished_at</th>
-                        <td></td>
+                        <td>全部終わった時刻（1970年からの秒数、終わっていなければ空）</td>
                     </tr>
                 </table>
             </section>
@@ -496,27 +799,27 @@ $classes = SchoolClass::query()
                     </tr>
                     <tr>
                         <th>uuid</th>
-                        <td></td>
+                        <td>失敗した処理を見分ける番号</td>
+                    </tr>
+                    <tr>
+                        <th>connection</th>
+                        <td>使っていたキューの接続名</td>
                     </tr>
                     <tr>
                         <th>queue</th>
-                        <td></td>
+                        <td>待ち行列の名前</td>
                     </tr>
                     <tr>
                         <th>payload</th>
-                        <td></td>
+                        <td>失敗した処理の中身（jobsのpayloadと同じ）</td>
                     </tr>
                     <tr>
                         <th>exception</th>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th>failed_job_ids</th>
-                        <td></td>
+                        <td>失敗したときのエラー内容（エラーメッセージと、どこで起きたかの記録）</td>
                     </tr>
                     <tr>
                         <th>failed_at</th>
-                        <td></td>
+                        <td>失敗した日時</td>
                     </tr>
                 </table>
             </section>
@@ -545,7 +848,7 @@ $classes = SchoolClass::query()
                     </tr>
                     <tr>
                         <th>remember_token</th>
-                        <td>ログイン状態を保持するか</td>
+                        <td>「ログイン状態を保持」にチェックしたときに使う合言葉（ランダムな文字列）</td>
                     </tr>
                     <tr>
                         <th>created_at</th>
@@ -578,7 +881,7 @@ $classes = SchoolClass::query()
                     </tr>
                     <tr>
                         <th>remember_token</th>
-                        <td>ログインし続けるか</td>
+                        <td>「ログイン状態を保持」にチェックしたときに使う合言葉（ランダムな文字列）</td>
                     </tr>
                     <tr>
                         <th>created_at</th>
@@ -721,7 +1024,8 @@ $classes = SchoolClass::query()
                         <th>embedding</th>
                         <td>
                             AIが顔の画像から作る1024個の数値の並び<br>
-                            並び全体でその人の顔を表し、矢印の向き（コサイン類似度）で似ているかを判断する
+                            並び全体でその人の顔を表し、矢印の向き（コサイン類似度）で似ているかを判断する<br>
+                            長さを1に揃えてから保存
                         </td>
                     </tr>
                     <tr>
@@ -793,7 +1097,7 @@ $classes = SchoolClass::query()
                     データベースに照合結果を保存する理由<br>
                     ①不正アクセスやなりすましを追跡しやすい<br>
                     ②システムの運用基準を最適化するデータとして活用できる<br>
-                    ③モデルバージョン変更時の互換性チェック
+                    ③どのモデルで照合した記録かを追える
                 </p>
             </section>
         </div>

@@ -10,6 +10,13 @@
     --color-main: #8090C1;
     --color-sub: #F7F2EC;
     --color-accent: #F29C8F;
+
+    --color-ok: ;
+    --color-ok-font: ;
+    --color-error: ;
+    --color-error-font: ;
+    --color-warn: ;
+    --color-warn-font: ;
 }
 
 /* ↓要素名セレクタ */
@@ -22,15 +29,18 @@ body {
     color: var(--color-font);
     background-color: var(--color-bg);
 }
+
 body.menu-open {
     overflow: hidden;
 }
+
 button:focus-visible,
 a:focus-visible,
 input:focus-visible {
     outline: 3px solid var(--color-accent);
     outline-offset: 4px;
 }
+
 a {
     color: var(--color-main);
 }
@@ -43,6 +53,19 @@ input {
 
 
 /* ↓クラス＆IDセレクタ */
+/* 成功、失敗、注意の文字色 */
+.ok {
+    color: var(--color-ok-font);
+}
+
+.error {
+    color: var(--color-error-font);
+}
+
+.warn {
+    color: var(--color-warn-font);
+}
+
 /* =========================
     PCヘッダー
 ========================= */
@@ -93,7 +116,7 @@ input {
     gap: clamp(18px, 2.5vw, 45px);
 }
 
-.pc-header > .logo {
+.pc-header>.logo {
     justify-self: center;
 }
 
@@ -258,6 +281,21 @@ input {
     background: rgb(135 74 44 / 7%);
 }
 
+
+/* =========================
+    レイアウト
+========================= */
+.main {
+    padding-block: 40px;
+}
+
+.content-wrapper {
+    width: min(1000px, 100% - clamp(16px, 4vw, 32px) * 2);
+    margin-inline: auto;
+    display: flow-root;
+}
+
+
 /* =========================
     レスポンシブ切り替え
 ========================= */
@@ -346,6 +384,7 @@ input {
 
 /* 激しいアニメーションや画面がグニャグニャ動く演出が、前庭障害や乗り物酔いのような体調不良（めまいや吐き気など）を引き起こす人への配慮 */
 @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {

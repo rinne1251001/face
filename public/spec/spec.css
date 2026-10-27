@@ -169,9 +169,13 @@ pre code {
     padding: 1em;
 }
 
+.table-container {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
 table {
     border-collapse: collapse;
-    overflow-x: auto;
 }
 
 table th,

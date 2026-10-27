@@ -13,6 +13,7 @@ export default defineConfig({
                 'resources/js/face-register.js',
                 'resources/js/face-match.js',
                 'resources/js/face-checkin.js',
+                'resources/js/ajax-list.js',
             ],
             refresh: true,
             fonts: [

@@ -57,7 +57,7 @@
             // メインメニュー（PC左側・スマホメニュー）
             $mainMenu = [
                 ['label' => 'home',   'url' => route('teacher.dashboard')],
-                ['label' => '設定', 'url' => '#'],
+                ['label' => '設定', 'url' => route('teacher.settings.index')],
  
             ];
  
@@ -175,6 +175,13 @@
             </ul>
         </nav>
     </div> 
+
+    @if (session('status'))
+        <p class="ok">{{ session('status') }}</p>
+    @endif
+    @if (session('error'))
+        <p class="error">{{ session('error') }}</p>
+    @endif
 
     @yield('content')
  

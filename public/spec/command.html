@@ -33,6 +33,7 @@
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
                     <li><a href="route.html">ルーティング</a></li>
                     <li><a href="css.html">css</a></li>
+                    <li><a href="controller.html">コントローラー</a></li>
                     <li><a href="reference.html">参考文献</a></li>
                 </ul>
             </nav>
@@ -46,6 +47,7 @@
             <li><a href="#cache">キャッシュクリア</a></li>
             <li><a href="#composer">composer関連</a></li>
             <li><a href="#env">.env関連</a></li>
+            <li><a href="#version">Laravelバージョン</a></li>
             <li><a href="#create">プロジェクト作成</a></li>
             <li><a href="#human">Humanをインストール</a></li>
             <li><a href="#japanese">日本語ファイル追加</a></li>
@@ -71,7 +73,7 @@ php artisan serve　//PHPのサーバー起動</code></pre>
                 <p>テーブルリセット</p>
                 <pre><code class="language-plaintext">php artisan migrate:fresh　//テーブル作り直し
 php artisan cache:clear file　//古い特徴量キャッシュをクリア
-Remove-Item -Recurse -Force storage/app/private/faces　//顔写真削除</code></pre>
+Remove-Item -Recurse -Force storage/app/private/faces -ErrorAction SilentlyContinue　//顔写真削除</code></pre>
             </section>
 
             <section>
@@ -98,7 +100,7 @@ Remove-Item -Recurse -Force storage/app/private/faces　//顔写真削除</code>
             <section>
                 <p>
                     各種キャッシュを一括で削除するコマンド<br>
-                    config(設定ファイルのキャッシュ)、route(ルートのキャッシュ)、viewのコンパイル済みファイル、アプリケーションのコンテナ最適化ファイル
+                    config(設定ファイルのキャッシュ)、route(ルートのキャッシュ)、viewのコンパイル済みファイル、アプリケーションのコンテナ最適化ファイル、イベントとアプリのキャッシュ
                 </p>
                 <pre><code class="language-plaintext">php artisan optimize:clear</code></pre>
             </section>
@@ -112,7 +114,22 @@ Remove-Item -Recurse -Force storage/app/private/faces　//顔写真削除</code>
                     ②チームメンバーがライブラリを追加・変更した時<br>
                     ③vendorフォルダを消しちゃったとき
                 </p>
-                <pre><code class="language-plaintext">composer install</code></pre>
+                <pre><code class="language-plaintext">composer install
+npm install</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="version">Laravelバージョン</h2>
+            <section>
+                <h3>Laravelのバージョンを確認</h3>
+                <pre><code class="language-plaintext">php artisan --version</code></pre>
+            </section>
+
+            <section>
+                <h3>Laravelのバージョンアップ（バージョン内のみ）</h3>
+                <p>※変更後、他のチームメンバーは「composer install」を打つこと</p>
+                <pre><code class="language-plaintext">composer update laravel/framework</code></pre>
             </section>
         </div>
 
@@ -144,7 +161,7 @@ Remove-Item -Recurse -Force storage/app/private/faces　//顔写真削除</code>
                 <p>node_modules/@vladmandicにHuman本体とTensorFlow.jsを入れる</p>
                 <pre><code class="language-plaintext">npm install --save-exact @vladmandic/human@3.3.6</code></pre>
 
-                <p>public/modelsに学習済みの重み(.bin)とネットワーク構造(.json)を入れる（blazeface、facemesh、faceresのインターフェース３つ）</p>
+                <p>public/modelsに学習済みの重み(.bin)とネットワーク構造(.json)を入れる（blazeface、facemesh、faceresのモデル３つ）</p>
                 <pre><code class="language-plaintext">New-Item -ItemType Directory -Force public/models/human
 Copy-Item node_modules/@vladmandic/human/models/blazeface.*, node_modules/@vladmandic/human/models/facemesh.*, node_modules/@vladmandic/human/models/faceres.* public/models/human/
 </code></pre>
@@ -169,7 +186,7 @@ php artisan lang:update</code></pre>
                     公開ディレクトリである public/storage から、実体の保存先である storage/app/public へのシンボリックリンク（ショートカット）を作成することで見れるようになる
                 </p>
                 <pre><code class="language-plaintext">php artisan storage:link</code></pre>
-                <p>storage/publicに置いた画像を使うときは、</p>
+                <p>storage/app/publicに置いた画像を使うときは、</p>
                 <pre><code class="html">&lt;img src="{{ asset('storage/フォルダ名/ファイル名.jpg') }}"></code></pre>
             </section>
         </div>
