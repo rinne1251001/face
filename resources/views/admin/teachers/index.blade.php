@@ -63,7 +63,10 @@
     .teacher-demo__actions { display: flex; flex-wrap: wrap; gap: 6px; white-space: nowrap; }
     .teacher-demo__tag { padding: 4px 7px; border-radius: 5px; background: #f2f3f8; color: #626d91; font-size: 11px; }
     .teacher-demo__action { padding: 5px 9px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--blue); font-size: 11px; }
+    .teacher-demo__action--link { display: inline-block; text-decoration: none; }
     .teacher-demo__action--delete { color: #b86e62; }
+    .teacher-demo__actions form { margin: 0; }
+    .teacher-demo__status { margin-bottom: 16px !important; padding: 12px 16px; border-radius: 8px; background: #edf7ef; color: #316b3a; font-size: 14px; }
     .teacher-demo__note { margin-top: 12px !important; color: var(--muted); font-size: 12px; }
 
     @media (max-width: 700px) {
@@ -76,7 +79,7 @@
 @endpush
 @section('content')
 
-<main class="teacher-demo"> {{-- デザイン確認用のサンプルです。検索・編集・削除は動作しません。 --}}
+<main class="teacher-demo">
     <header class="teacher-demo__heading"> {{-- ページタイトルと追加ボタン --}}
         <div>
             <h1>教師一覧</h1>
@@ -87,10 +90,14 @@
         </form>
     </header>
 
+    @if (session('status'))
+        <p class="teacher-demo__status" role="status">{{ session('status') }}</p>
+    @endif
+
     <section class="teacher-demo__summary" aria-label="教師数">
         <div>
             <span class="teacher-demo__subtext">登録されている教師</span>
-            <span class="teacher-demo__count">{{ \App\Models\teacher::count() }}<small> 名</small></span>{{-- 教師数。仮置きなので人数は反映してない。count入れる --}}
+            <span class="teacher-demo__count">{{ $teachers->count() }}<small> 名</small></span>
         </div>
     </section>
 
@@ -106,17 +113,39 @@
                     <tr><th>教師</th><th>ログインID</th><th>受け持ちクラス</th><th>担当授業</th><th>操作</th></tr>
                 </thead>
                 <tbody>
-                     @forelse ($teachers as $teacher)
-                     
+                    @forelse ($teachers as $teacher)
                     <tr>
-                        <td><div class="teacher-demo__person"><span class="teacher-demo__avatar">佐</span><span><span class="teacher-demo__name">{{ $teacher->name }}</span><span class="teacher-demo__subtext">教師アカウント</span></span></div></td>
+                        <td><div class="teacher-demo__person"><span class="teacher-demo__avatar">{{ mb_substr($teacher->name, 0, 1) }}</span><span><span class="teacher-demo__name">{{ $teacher->name }}</span><span class="teacher-demo__subtext">教師アカウント</span></span></div></td>
                         <td>{{ $teacher->login_id }}</td>
-                        <td><div class="teacher-demo__tags"><span class="teacher-demo__tag">1年A組</span><span class="teacher-demo__tag">1年B組</span></div></td>
-                        <td><span class="teacher-demo__subject">国語</span><span class="teacher-demo__subtext">月曜日・1〜2限</span></td>
-                        <td><div class="teacher-demo__actions"><button class="teacher-demo__action" type="button">編集</button><button class="teacher-demo__action teacher-demo__action--delete" type="button">削除</button></div></td>
+                        <td>
+                            <div class="teacher-demo__tags">
+                                @forelse ($teacher->schoolClasses as $schoolClass)
+                                    <span class="teacher-demo__tag">{{ $schoolClass->name }}</span>
+                                @empty
+                                    <span class="teacher-demo__subtext">なし</span>
+                                @endforelse
+                            </div>
+                        </td>
+                        <td>
+                            <div class="teacher-demo__tags">
+                                @foreach ($teacher->subjects as $subject)
+                                    <span class="teacher-demo__tag">{{ $subject->name }}（{{ $subject->schedule_label }}）</span>
+                                @endforeach
+                            </div>
+                        </td>
+                        <td>
+                            <div class="teacher-demo__actions">
+                                <a class="teacher-demo__action teacher-demo__action--link" href="{{ route('admin.teachers.edit', $teacher) }}">編集</a>
+                                <form action="{{ route('admin.teachers.destroy', $teacher) }}" method="POST" onsubmit="return confirm('この教師を削除してもよろしいですか？')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="teacher-demo__action teacher-demo__action--delete" type="submit">削除</button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                     @empty
-                    <span class="muted">なし</span>
+                    <tr><td colspan="5">教師が登録されていません。</td></tr>
                 @endforelse
 
                 </tbody>
