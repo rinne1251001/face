@@ -300,7 +300,7 @@
 
             <div class="subjects-card-header">
                 <h2 class="subjects-card-title">登録済みの授業</h2>
-                <span class="subjects-count">全 {{ \App\Models\Subject::count(); }} 件</span>
+                <span class="subjects-count">全 {{ \App\Models\Subject::count() }} 件</span>
             </div>
 
             <div class="subjects-table-wrapper">
