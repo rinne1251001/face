@@ -15,7 +15,7 @@ class Subject extends Model
     // 1日の最大時限（フォームの選択肢に使う）
     public const MAX_PERIOD = 10;
 
-    protected $fillable = ['name', 'day_of_week', 'period_start', 'period_end'];
+    protected $fillable = ['name', 'day_of_week', 'period_start', 'period_end', 'start_date', 'end_date'];
 
     protected function casts(): array
     {
@@ -23,6 +23,8 @@ class Subject extends Model
             'day_of_week' => 'integer',
             'period_start' => 'integer',
             'period_end' => 'integer',
+            'start_date' => 'date', // Carbon（日付）として扱える
+            'end_date' => 'date',
         ];
     }
 
@@ -52,5 +54,13 @@ class Subject extends Model
 
             return "{$day}曜 {$period}";
         });
+    }
+    
+    // 画面表示用：「4月1日〜7月31日」（$subject->term_label で使える。未設定なら null）
+    protected function termLabel(): Attribute
+    {
+        return Attribute::get(fn () => $this->start_date && $this->end_date
+            ? $this->start_date->format('n月j日').'〜'.$this->end_date->format('n月j日')
+            : null);
     }
 }

@@ -14,7 +14,10 @@ class SchoolSeeder extends Seeder
             SchoolClass::firstOrCreate(['name' => $name]);
         }
 
-        Subject::firstOrCreate(['name' => '数学', 'day_of_week' => 1, 'period_start' => 1, 'period_end' => 1]);
+        Subject::firstOrCreate(
+            ['name' => '数学', 'day_of_week' => 1, 'period_start' => 1, 'period_end' => 1],
+            ['start_date' => '2026-04-01', 'end_date' => '2026-07-31'],
+        );
         Subject::firstOrCreate(['name' => '情報実習', 'day_of_week' => 3, 'period_start' => 3, 'period_end' => 5]);
     }
 }

@@ -14,6 +14,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('day_of_week');  // 曜日：1=月 2=火 … 7=日
             $table->unsignedTinyInteger('period_start'); // 開始時限（3限〜5限なら 3）
             $table->unsignedTinyInteger('period_end');   // 終了時限（1限だけなら開始と同じ 1）
+            $table->date('start_date')->nullable();      // 開始日（例：4月1日）
+            $table->date('end_date')->nullable();        // 終了日（例：7月31日）
             $table->timestamps();
             $table->index(['day_of_week', 'period_start']);
         });
