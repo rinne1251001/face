@@ -307,7 +307,8 @@
                 <table class="subjects-table">
                     <thead>
                         <tr>
-                            <th scope="col">曜日・時限</th>
+                            <th scope="col">曜日</th>
+                            <th scope="col">時限</th>
                             <th scope="col">授業名</th>
                             <th scope="col">受講生徒数</th>
                             <th scope="col">担当の教師</th>
@@ -317,6 +318,7 @@
                     <tbody>
                         @forelse ($subjects as $subject)
                             <tr>
+                                <td>{{ $subject->start_date?->format('n月j日') }} - {{ $subject->end_date?->format('n月j日') }}</td>
                                 <td><span class="schedule-label">{{ $subject->schedule_label }}</span></td>
                                 <td><span class="subject-name">{{ $subject->name }}</span></td>
                                 <td><span class="student-count">{{ $subject->students_count }}人</span></td>

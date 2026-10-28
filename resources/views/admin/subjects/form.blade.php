@@ -37,6 +37,9 @@
         <span class="muted">（1限だけの授業は「1限〜1限」）</span>
     </p>
 
+    <input type="date" name="start_date" value="{{ old('start_date', $subject->start_date?->format('Y-m-d')) }}">
+    <input type="date" name="end_date" value="{{ old('end_date', $subject->end_date?->format('Y-m-d')) }}">
+
     @if ($errors->any())
         <ul class="error">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
     @endif
