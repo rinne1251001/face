@@ -65,7 +65,8 @@
             <h2 id=""></h2>
             <section>
                 {{ }} は自動でエスケープ<br>
-                {!! !!} は自動でエスケープしない利用者が入力した値にを使ってはいけない
+                {!! !!} は自動でエスケープしない利用者が入力した値にを使ってはいけない<br>
+                {!! nl2br(e($変数)) !!} は改行
             </section>
 
             <section>
@@ -229,6 +230,12 @@
                 <pre><code class="php">@error('login_id')
     &lt;p>{{ $message }}&lt;/p>
 @enderror</code></pre>
+            </section>
+
+            <section>
+                <h3>@checked / @selected</h3>
+                <p></p>
+                <pre><code class="php"></code></pre>
             </section>
         </div>
 

@@ -9,97 +9,101 @@
     .bulk-table .invalid { border-color: #b91c1c; background: #fef2f2; }
 </style>
 
-<h1>生徒を一斉に追加</h1>
+<main class="main">
+    <div class="content-wrapper">
+        <h1>生徒を一斉に追加</h1>
 
-@if ($classes->isEmpty())
-    <p class="warn">先に<a href="{{ route('admin.classes.index') }}">クラス</a>を1つ以上登録してください。</p>
-@endif
+        @if ($classes->isEmpty())
+            <p class="warn">先に<a href="{{ route('admin.classes.index') }}">クラス</a>を1つ以上登録してください。</p>
+        @endif
 
-<p class="muted">
-    Excel で「名前・学籍番号・クラス名」の順に並んだ範囲をコピーし、表の「名前」のマスを選んで Ctrl+V で貼り付けると一気に入力できます。<br>
-    名前と学籍番号が両方とも空の行は無視されます。1人でもエラーがあると、誰も登録されません。
-</p>
+        <p class="muted">
+            Excel で「名前・学籍番号・クラス名」の順に並んだ範囲をコピーし、表の「名前」のマスを選んで Ctrl+V で貼り付けると一気に入力できます。<br>
+            名前と学籍番号が両方とも空の行は無視されます。1人でもエラーがあると、誰も登録されません。
+        </p>
 
-@if ($errors->any())
-    <ul class="error">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-@endif
+        @if ($errors->any())
+            <ul class="error">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+        @endif
 
-@php
-    // エラーで戻ってきたときは入力していた行を、最初は空の行を10行出す
-    $rows = old('students') ?: array_fill(0, 10, []);
-    $oldSubjectIds = array_map('intval', old('subject_ids', []));
-@endphp
+        @php
+            // エラーで戻ってきたときは入力していた行を、最初は空の行を10行出す
+            $rows = old('students') ?: array_fill(0, 10, []);
+            $oldSubjectIds = array_map('intval', old('subject_ids', []));
+        @endphp
 
-<form method="POST" action="{{ route('admin.students.bulk.store') }}">
-    @csrf
+        <form method="POST" action="{{ route('admin.students.bulk.store') }}">
+            @csrf
 
-    <p>
-        <label>クラスをまとめて設定
-            <select id="bulk-class">
-                <option value="">選択してください</option>
-                @foreach ($classes as $class)
-                    <option value="{{ $class->id }}">{{ $class->name }}</option>
-                @endforeach
-            </select>
-        </label>
-        <button type="button" id="apply-class">全行に反映</button>
-    </p>
+            <p>
+                <label>クラスをまとめて設定
+                    <select id="bulk-class">
+                        <option value="">選択してください</option>
+                        @foreach ($classes as $class)
+                            <option value="{{ $class->id }}">{{ $class->name }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <button type="button" id="apply-class">全行に反映</button>
+            </p>
 
-    <table class="bulk-table">
-        <thead>
-            <tr>
-                <th></th>
-                <th>名前</th>
-                <th>学籍番号</th>
-                <th>クラス</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody id="rows">
-            @foreach ($rows as $i => $row)
-                <tr>
-                    <td class="row-no">{{ $loop->iteration }}</td>
-                    <td>
-                        <input name="students[{{ $i }}][name]" value="{{ $row['name'] ?? '' }}" maxlength="100"
-                               @class(['invalid' => $errors->has("students.$i.name")])>
-                    </td>
-                    <td>
-                        <input name="students[{{ $i }}][student_number]" value="{{ $row['student_number'] ?? '' }}" maxlength="20"
-                               @class(['invalid' => $errors->has("students.$i.student_number")])>
-                    </td>
-                    <td>
-                        <select name="students[{{ $i }}][school_class_id]"
-                                @class(['invalid' => $errors->has("students.$i.school_class_id")])>
-                            <option value="">選択してください</option>
-                            @foreach ($classes as $class)
-                                <option value="{{ $class->id }}" @selected(($row['school_class_id'] ?? '') == $class->id)>{{ $class->name }}</option>
-                            @endforeach
-                        </select>
-                    </td>
-                    <td><button type="button" class="remove-row" title="この行を削除">×</button></td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-    <p><button type="button" id="add-rows">＋ 10行追加</button></p>
+            <table class="bulk-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>名前</th>
+                        <th>学籍番号</th>
+                        <th>クラス</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="rows">
+                    @foreach ($rows as $i => $row)
+                        <tr>
+                            <td class="row-no">{{ $loop->iteration }}</td>
+                            <td>
+                                <input name="students[{{ $i }}][name]" value="{{ $row['name'] ?? '' }}" maxlength="100"
+                                    @class(['invalid' => $errors->has("students.$i.name")])>
+                            </td>
+                            <td>
+                                <input name="students[{{ $i }}][student_number]" value="{{ $row['student_number'] ?? '' }}" maxlength="20"
+                                    @class(['invalid' => $errors->has("students.$i.student_number")])>
+                            </td>
+                            <td>
+                                <select name="students[{{ $i }}][school_class_id]"
+                                        @class(['invalid' => $errors->has("students.$i.school_class_id")])>
+                                    <option value="">選択してください</option>
+                                    @foreach ($classes as $class)
+                                        <option value="{{ $class->id }}" @selected(($row['school_class_id'] ?? '') == $class->id)>{{ $class->name }}</option>
+                                    @endforeach
+                                </select>
+                            </td>
+                            <td><button type="button" class="remove-row" title="この行を削除">×</button></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <p><button type="button" id="add-rows">＋ 10行追加</button></p>
 
-    <fieldset>
-        <legend>受講する授業（全員共通・空でも可）</legend>
-        @forelse ($subjects as $subject)
-            <label style="display:block">
-                <input type="checkbox" name="subject_ids[]" value="{{ $subject->id }}"
-                       @checked(in_array($subject->id, $oldSubjectIds, true))>
-                {{ $subject->name }}（{{ $subject->schedule_label }}）
-            </label>
-        @empty
-            <p>授業が登録されていません。</p>
-        @endforelse
-    </fieldset>
+            <fieldset>
+                <legend>受講する授業（全員共通・空でも可）</legend>
+                @forelse ($subjects as $subject)
+                    <label style="display:block">
+                        <input type="checkbox" name="subject_ids[]" value="{{ $subject->id }}"
+                            @checked(in_array($subject->id, $oldSubjectIds, true))>
+                        {{ $subject->name }}（{{ $subject->schedule_label }}）
+                    </label>
+                @empty
+                    <p>授業が登録されていません。</p>
+                @endforelse
+            </fieldset>
 
-    <p><label><input type="checkbox" name="is_active" value="1" @checked(session()->hasOldInput() ? old('is_active') : true)> 照合の対象にする</label></p>
+            <p><label><input type="checkbox" name="is_active" value="1" @checked(session()->hasOldInput() ? old('is_active') : true)> 照合の対象にする</label></p>
 
-    <button>まとめて保存</button>
-</form>
+            <button>まとめて保存</button>
+        </form>
+    </div>
+</main>
 @endsection
 
 @push('scripts')

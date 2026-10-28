@@ -46,8 +46,10 @@
             <li><a href="#use">このアプリで使っているuse文</a></li>
             <li><a href="#return">戻り値の型</a></li>
             <li><a href="#method">メソッド</a></li>
+            <li><a href="#crud">CRUDメソッド</a></li>
             <li><a href="#validation">バリデーションチェック</a></li>
             <li><a href="#chain">メソッドチェーン</a></li>
+            <li><a href="#sql">SQL文</a></li>
         </ol>
     </nav>
 
@@ -55,7 +57,8 @@
         <div class="content-wrapper">
             <h2 id="format">コントローラーファイルの形式</h2>
             <section>
-                <p>コントローラーファイルとはユーザーからのリクエストを受け取ってモデル（データ処理）とビュー（画面表示）に橋渡しするファイルのことです</p>
+                <p>コントローラーファイルとはユーザーからのリクエストを受け取ってモデル（データ処理）とビュー（画面表示）に橋渡しするファイルのこと</p>
+                <p>ファットコントローラー（文量がめちゃくちゃあること）は読みにくく嫌われるので、メソッドを分割したり、Servicesフォルダに処理を移しましょう</p>
             </section>
 
             <section>
@@ -71,7 +74,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 // クラス宣言
-class SettingController extends Controller
+class ファイル名 extends Controller
 {
     // 一覧画面
     public function index(): View
@@ -363,6 +366,7 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
                                 <th style="min-width: 3em;">ビューの有無</th>
                                 <th>（例）ルート</th>
                                 <th>（例）リンク / フォームアクション</th>
+                                <th>（例）URL</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -378,6 +382,7 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
                                     <pre
                                         style="margin: 0;"><code class="php">&lt;a href="{{ route('admin.students.index') }}">生徒一覧&lt;/a></code></pre>
                                 </td>
+                                <td>http://127.0.0.1:8000/students</td>
                             </tr>
                             <tr>
                                 <th>create</th>
@@ -391,6 +396,7 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
                                     <pre
                                         style="margin: 0;"><code class="php">&lt;a href="{{ route('admin.students.create') }}">生徒を追加&lt;/a></code></pre>
                                 </td>
+                                <td>http://127.0.0.1:8000/students/create</td>
                             </tr>
                             <tr>
                                 <th>store</th>
@@ -420,6 +426,7 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
     &lt;a href="{{ route('admin.students.show', $student) }}">詳細表示&lt;/a>
 @endforeach</code></pre>
                                 </td>
+                                <td>http://127.0.0.1:8000/students/ID名</td>
                             </tr>
                             <tr>
                                 <th>edit</th>
@@ -434,6 +441,7 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
     &lt;a href="{{ route('admin.students.edit', $student) }}">編集&lt;/a>
 @endforeach</code></pre>
                                 </td>
+                                <td>http://127.0.0.1:8000/students/ID名/edit</td>
                             </tr>
                             <tr>
                                 <th>update</th>
@@ -474,6 +482,19 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
                 <pre><code class="php">Route::resource('students', StudentController::class);</code></pre>
                 <p>※「except」を使うと特定のルーティングを除外できます</p>
                 <pre><code class="php">Route::resource('students', StudentController::class)->except('show');</code></pre>
+            </section>
+
+            <section>
+                <p>
+                    以下、TestControllerでsubjectsテーブルのCRUD処理を実装する方法<br>
+                    ↓必要なuse文
+                </p>
+                <pre><code class="php">use App\Models\Subject;
+use App\Models\Student;
+use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
+use Illuminate\Validation\Rule;</code></pre>
             </section>
 
             <section>
@@ -710,6 +731,45 @@ public function show(Subject $subject): View
     return redirect()->route('tests.index');
 }</code></pre>
             </section>
+
+            <section>
+                <h3>７つのルートを１つにまとめる</h3>
+                <pre><code class="php">Route::resource('tests', TestController::class);</code></pre>
+            </section>
+
+            <section>
+                <h3>共通処理を新メソッドに委譲</h3>
+                <pre><code class="php">private function validated(Request $request): array
+{
+    return $request->validate([
+        'name' => ['required', 'string', 'max:100'],
+        'day_of_week' => ['required', 'integer', Rule::in(array_keys(Subject::DAYS))],
+        'period_start' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD],
+        'period_end' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD, 'gte:period_start'],
+        'start_date' => ['nullable', 'date'],
+        'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+    ], [], [
+        'name' => '授業名',
+        'day_of_week' => '曜日',
+        'period_start' => '開始時限',
+        'period_end' => '終了時限',
+        'start_date' => '開始日',
+        'end_date' => '終了日',
+    ]);
+}</code></pre>
+                <pre><code class="php">public function store(Request $request): RedirectResponse
+{
+    $subject = Subject::create($this->validated($request));
+
+    return redirect()->route('tests.index');
+}</code></pre>
+                <pre><code class="php">public function update(Request $request, Subject $subject): RedirectResponse
+{
+    $subject->update($this->validated($request));
+
+    return redirect()->route('admin.subjects.index')->with('status', '保存しました。');
+}</code></pre>
+            </section>
         </div>
 
         <div class="content-wrapper">
@@ -937,6 +997,136 @@ public function show(Subject $subject): View
                         <td>コレクションの添字を0から始まる連番に振り直す</td>
                     </tr>
                 </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="sql">SQL文</h2>
+            <section>
+                <h3>SELECT</h3>
+                <p>全件取得</p>
+                <pre><code>SELECT * FROM subjects;</code></pre>
+                <pre><code class="php">$subjects = Subject::all();</code></pre>
+            </section>
+
+            <section>
+                <h3>WHERE</h3>
+                <p>条件に一致するか</p>
+                <pre><code>SELECT * FROM students where is_acrive = 1;</code></pre>
+                <pre><code class="php">$subjects = Student::where('is_acrive', 1)->get();</code></pre>
+
+                <pre
+                    style="margin-top: 35px;"><code>SELECT * FROM subjects where period_start >= 1 AND period_end <= 3;</code></pre>
+                <pre><code class="php">$subjects = Subject::where('period_start', '>=', 1)
+                ->where('period_end', '<=', 3)
+                ->get();</code></pre>
+
+                <pre style="margin-top: 35px;"><code>SELECT * FROM students WHERE name LIKE '山田%';</code></pre>
+                <pre><code class="php">$students = Student::where('name', 'LIKE', '山田%')->get();</code></pre>
+            </section>
+
+            <section>
+                <h3>INSERT</h3>
+                <p>新規データ追加</p>
+                <pre><code>INSERT INTO students (name, day_of_week, period_start, period_end) VALUES ('国語', 2, 1, 2);</code></pre>
+                <pre><code class="php">$subject = Subject::create([
+    'name' => '国語',
+    'day_of_week' => 2,
+    'period_start' => 1,
+    'period_end' => 2,
+]);</code></pre>
+            </section>
+
+            <section>
+                <h3>ORDER BY</h3>
+                <p>降順・昇順に並び替え</p>
+                <pre><code>SELECT * FROM attendances ORDER BY student_id ASC;
+SELECT * FROM attendances ORDER BY student_id DESC;
+SELECT * FROM attendances ORDER BY student_id ASC, subject_id DESC;</code></pre>
+                <pre><code class="php">// 昇順
+$attendances = Attendance::query()
+    ->orderBy('student_id')
+    ->get();
+
+// 降順
+$attendances = Attendance::query()
+    ->orderByDesc('student_id')
+    ->get();
+
+// ２つ組み合わせ
+$attendances = Attendance::query()
+    ->orderBy('student_id')
+    ->orderByDesc('subject_id')
+    ->get();</code></pre>
+
+                <pre style="margin-top: 35px;"><code>SELECT * FROM attendances ORDER BY created_at ASC;
+SELECT * FROM attendances ORDER BY created_at DESC;</code></pre>
+                <pre><code class="php">// created_at の昇順
+$attendances = Attendance::oldest()->get();
+
+// created_at の降順
+$attendances = Attendance::latest()->get();</code></pre>
+            </section>
+
+            <section>
+                <h3>LEFT JOIN</h3>
+                <p>右側のデータが空でも左側のデータは全て残したまま結合</p>
+                <pre><code>SELECT attendances.*, students.name FROM attendances LEFT JOIN students ON attendances.student_id = students.id;</code></pre>
+                <pre><code class="php">$attendances = Attendance::query()
+    ->leftJoin('students', 'attendances.student_id', '=', 'students.id')
+    ->select('attendances.*', 'students.name')
+    ->get();</code></pre>
+            </section>
+
+            <section>
+                <h3>->with()</h3>
+                <p>テーブルをくっつける</p>
+                <pre><code>SELECT * FROM students;
+SELECT * FROM school_classes WHERE id IN (1, 2);</code></pre>
+                <pre><code class="php">$students = Student::query()
+            ->with('schoolClass')
+            ->get();</code></pre>
+
+                <pre style="margin-top: 35px;"><code>SELECT * FROM school_classes;
+SELECT 
+    teachers.*, 
+    school_class_teacher.school_class_id AS pivot_school_class_id, 
+    school_class_teacher.teacher_id AS pivot_teacher_id 
+FROM teachers 
+INNER JOIN school_class_teacher ON teachers.id = school_class_teacher.teacher_id 
+WHERE school_class_teacher.school_class_id IN (1, 2) 
+ORDER BY name ASC;</code></pre>
+                <pre><code class="php">// teachersテーブルをnameで並び替えしてからschool_classesテーブルにくっつける
+$classes = SchoolClass::query()
+            ->with(['teachers' => fn ($q) => $q->orderBy('name')])
+            ->get();</code></pre>
+            </section>
+
+            <section>
+                <h3>実行結果＆SQL文確認</h3>
+                <p>以下のコマンドを打つと、Eloquentクエリの実行結果やSQL文を確認できる</p>
+                <pre><code>php artisan tinker
+DB::enableQueryLog();   // クエリログの有効化（これから実行するSQLの履歴を記録）
+Eloquentクエリ
+DB::getQueryLog();      // 入力したEloquentクエリをSQL文に変換
+
+/**
+ * $classes = SchoolClass::query()
+ *             ->with(['teachers' => fn ($q) => $q->orderBy('name')])
+ *             ->get();
+ *
+ * のEloquentクエリを確認したいなら、
+ */
+DB::enableQueryLog();
+App\Models\SchoolClass::with(['teachers' => fn ($q) => $q->orderBy('name')])->get();
+DB::getQueryLog();</code></pre>
+            </section>
+
+            <section>
+                <h3></h3>
+                <p></p>
+                <pre><code></code></pre>
+                <pre><code class="php"></code></pre>
             </section>
         </div>
     </main>

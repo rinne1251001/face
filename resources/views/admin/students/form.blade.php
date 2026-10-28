@@ -7,7 +7,6 @@
 }
 
 /* レイアウト・カード */
-.form-container { max-width: 680px; margin: 30px auto; padding: 0 20px; font-family: sans-serif; color: var(--color-font); }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .page-title { font-size: 24px; font-weight: bold; margin: 0; }
 .btn-back { color: var(--color-accent); text-decoration: none; font-size: 14px; }
@@ -43,8 +42,8 @@
 @endpush
 
 @section('content')
-<main>
-    <div class="form-container">
+<main class="main">
+    <div class="content-wrapper">
         <div class="page-header">
             <h1 class="page-title">{{ $student->exists ? '生徒の編集' : '生徒の追加' }}</h1>
             <a href="{{ route('admin.students.index') }}" class="btn-back">← 一覧に戻る</a>

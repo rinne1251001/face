@@ -88,10 +88,18 @@ Remove-Item -Recurse -Force storage/app/private/faces -ErrorAction SilentlyConti
 
             <section>
                 <p>
-                    マイグレーションファイルの適用状況確認
+                    マイグレーションファイルの適用状況確認<br>
                     データベースに反映されていないマイグレーションが見つかる
                 </p>
                 <pre><code class="language-plaintext">php artisan migrate:status</code></pre>
+            </section>
+
+            <section>
+                <p>
+                    マイグレーションファイルを作成<br>
+                    テーブル名は小文字＆複数形
+                </p>
+                <pre><code>php artisan make:migration create_テーブル名_table</code></pre>
             </section>
         </div>
 
