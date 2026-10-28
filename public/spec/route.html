@@ -43,6 +43,7 @@
     <nav>
         <ol>
             <li><a href="#overview">概要</a></li>
+            <li><a href="#write">基本的な書き方</a></li>
             <li><a href="#prefix">プレフィックス</a></li>
             <li><a href="#list">一覧</a></li>
         </ol>
@@ -55,9 +56,29 @@
                 <p>
                     routes/web.php
                 </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="write">基本的な書き方</h2>
+            <section>
+                <h3>コントローラーを使わない書き方</h3>
                 <p>
-                    Route::prefix('admin')->name('admin.')->group(function () {
-                    });
+                </p>
+                <pre><code class="php">Route::view('/URL名', 'ファイル名')->name('ルート名');
+
+// URLはhttp://127.0.0.1:8000/design1、ファイルはresources/views/tests/design1.blade.php、ルート名はdesign1
+Route::view('/design1', 'tests/design1')->name('design1');
+
+// URLはhttp://127.0.0.1:8000/dobon、ファイルはresources/views/tests/dobon.blade.php、ルート名はdobon
+Route::get('/dobon', function () {
+    return view('tests.dobon');
+})->name('dobon');</code></pre>
+            </section>
+
+            <section>
+                <h3>コントローラーを使う書き方</h3>
+                <p>
                 </p>
             </section>
         </div>
@@ -65,10 +86,13 @@
         <div class="content-wrapper">
             <h2 id="prefix">プレフィックス</h2>
             <section>
+                <p>複数のルートに共通の接頭辞をまとめて一括設定する機能</p>
                 <pre><code class="php">Route::prefix('admin')->name('admin.')->group(function () {
     Route::view('/URL名', 'ファイルの場所')->name('名前付きルート');
+
+    // URLはhttp://127.0.0.1:8000/admin/students、ルート名はadmin.students.index
+    Route::get('/students', [StudentController::class, 'index'])->name('students.index');
 });</code></pre>
-                <p>URLはhttp://127.0.0.1:8000/admin/URL名、名前付きルートはhref="{{ route('admin.名前付きルート')}}"</p>
             </section>
         </div>
 
