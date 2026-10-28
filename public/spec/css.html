@@ -52,6 +52,7 @@
             <li><a href="#input">inputタグ</a></li>
             <li><a href="#select">selectタグ</a></li>
             <li><a href="#calendar">カレンダー</a></li>
+            <li><a href="#binding">データ結合</a></li>
             <li><a href="#"></a></li>
         </ol>
     </nav>
@@ -959,12 +960,6 @@ place-items: center;    /* 個々のアイテムを縦横に中央 */</code></pr
         .inp-hov:hover label {
             color: var(--color-accent);
         }
-
-        .detail-block>div>div:nth-of-type(2) {
-            color: var(--color-font-light1);
-            font-size: 0.8em;
-            padding-left: 10px;
-        }
     &lt;/style>
 &lt;/head>
 
@@ -1031,12 +1026,6 @@ place-items: center;    /* 個々のアイテムを縦横に中央 */</code></pr
 
         .inp-hov:hover label {
             color: var(--color-accent);
-        }
-
-        .detail-block>div>div:nth-of-type(2) {
-            color: var(--color-font-light1);
-            font-size: 0.8em;
-            padding-left: 10px;
         }
     &lt;/style>
 &lt;/head>
@@ -1293,6 +1282,227 @@ place-items: center;    /* 個々のアイテムを縦横に中央 */</code></pr
 &lt;/body>
 
 &lt;/html></code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="binding">データ結合</h2>
+            <section>
+                <h3>ビューとコントローラーの関係</h3>
+                <p>
+                    基本的に、ビューのフォルダ名がコントローラーのファイル名になります※例外あり<br>
+                    例：ビューがadmin/subjectsフォルダ→コントローラーはAdmin/SubjectController.php<br>
+                    　　ビューがadmin/classesフォルダ→コントローラーはAdmin/SchoolClassController.php
+                </p>
+                <p>
+                    基本的に、ビューのファイル名がコントローラーのメソッド名になります※例外あり<br>
+                    例：ビューがindex.blade.php→コントローラーのメソッドはindex()<br>
+                    　　ビューがpassword.blade.php→コントローラーのメソッドはeditPassword()
+                </p>
+                <p>どんなデータが返ってくるかは対応するコントローラーのメソッドを確認してください</p>
+                <pre><code class="php">public function index(): View
+{
+    // school_classesとteachersテーブルからデータを取得し$classesに代入
+    $classes = SchoolClass::query()
+        ->with(['teachers' => fn ($q) => $q->orderBy('name')])
+        // students_countでそのクラスの生徒の人数を取得できるようになる
+        ->withCount('students')
+        ->orderBy('name')
+        ->get();
+
+    // $classesと一緒にadmin/classes/index.blade.phpにビューを渡す
+    return view('admin.classes.index', compact('classes'));
+}</code></pre>
+
+                <pre><code class="php">クラスの数は{{ $classes->count() }}あります
+
+@forelse ($classes as $schoolClass)
+    {{ $schoolClass->name }}のクラスは{{ $schoolClass->students_count }}人の生徒がいます&lt;br>
+
+    担任の先生は、
+    @if ($schoolClass->teachers->isNotEmpty())
+        {{ $schoolClass->teachers->count() }}人いて、
+        @foreach ($schoolClass->teachers as $teacher)
+            {{ $teacher->name }}先生@if (! $loop->last)、@endif
+        @endforeach
+        です
+    @else
+        いません
+    @endif
+@empty
+    登録クラスがありません
+@endforelse</code></pre>
+            </section>
+
+            <section>
+                <h3>ビュー側でよく使うメソッド</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>メソッド / プロパティ</th>
+                            <th>意味</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>->count()</td>
+                            <td>データの件数<br>ページネーションの場合はそのページの件数<br>例：登録されている授業が何件あるか</td>
+                        </tr>
+                        <tr>
+                            <td>->total()</td>
+                            <td>データベース全体の総件数<br>ページ分割を無視した全体の数<br>ページネーションのときに使う</td>
+                        </tr>
+                        <tr>
+                            <td>->currentPage()</td>
+                            <td>ページネーションのときの現在のページ番号</td>
+                        </tr>
+                        <tr>
+                            <td>->lastPage()</td>
+                            <td>ページネーションのときの最後のページ番号</td>
+                        </tr>
+                        <tr>
+                            <td>->previousPageUrl()</td>
+                            <td>ページネーションのときの前のページのリンク</td>
+                        </tr>
+                        <tr>
+                            <td>->nextPageUrl()</td>
+                            <td>ページネーションのときの次のページのリンク</td>
+                        </tr>
+                        <tr>
+                            <td>->isEmpty()</td>
+                            <td>データが0件ならtrue、データがあるならfalse</td>
+                        </tr>
+                        <tr>
+                            <td>->isNotEmpty()</td>
+                            <td>データが0件ならfalse、データがあるならtrue</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>ディレクティブ</h3>
+                <p>
+                    @から始まる命令文（例：@if、@forelse）<br>
+                    詳しくは<a href="directive.html">こちら</a>
+                </p>
+            </section>
+
+            <section>
+                <h3>リンク</h3>
+                <p>リンクはroutes/web.phpのルート名のところをroute('')の中に入れ込んで書きます（詳しくは<a href="route.html">こちら</a>）</p>
+                <pre><code class="php">Route::get('URL名', [コントローラー名::class, 'メソッド名'])->name('ルート名');
+
+// ルート名は末尾の「->name('design1')」→「design1」
+Route::view('/design1', 'tests/design1')->name('design1');
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    // 例：ルート名は「->name('admin.')」+「->name('match.show')」= 「admin.match.show」
+    Route::get('match', [Admin\FaceMatchController::class, 'show'])->name('match.show');
+});</code></pre>
+                <pre><code class="php">&lt;a href="{{ route('ルート名') }}">
+
+&lt;a href="{{ route('design1') }}">デザインテスト&lt;/a>
+&lt;a href="{{ route('admin.match.show') }}">照合テスト&lt;/a></code></pre>
+
+                <p>
+                    index、create、store、show、edit、update、destroyの７つはresourcesでまとめることができます<br>
+                    この場合、ルート名は末尾の->name('')ではなく、URLのパス名と同じになります<br>
+                    詳しくは<a href="controller.html#method">コントローラーのCRUDメソッド</a>を参照
+                </p>
+                <pre><code class="php">Route::resource('URL名＆ルート名', コントローラー名::class);
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    // show以外の６つのルートを作成
+    Route::resource('students', Admin\StudentController::class)->except('show');
+});</code></pre>
+                <pre><code class="php">&lt;a href="{{ route('admin.students.index') }}">生徒一覧&lt;/a>
+&lt;a href="{{ route('admin.students.create') }}">生徒を追加&lt;/a></code></pre>
+
+                <p>
+                    詳細ページや編集ページなどデータベースに登録されているIDによってそれぞれ違うページを見せたいときには第２引数に変数を渡す必要があります
+                </p>
+                <pre><code class="php">Route::prefix('admin')->name('admin.')->group(function () {
+    // {student}のところがDBのID
+    Route::get('students/{student}/faces', [Admin\FaceSampleController::class, 'create'])->name('faces.create');
+    Route::resource('students', Admin\StudentController::class)->except('show');
+});</code></pre>
+                <pre><code class="php">@foreach ($students as $student)
+    {{-- 生成されるhttp://127.0.0.1:8000/admin/students/1/editの「1」がDBのID --}}
+    &lt;a href="{{ route('admin.students.edit', $student) }}">編集&lt;/a>
+
+    {{-- 生成されるhttp://127.0.0.1:8000/admin/students/1/facesの「1」がDBのID --}}
+    &lt;a href="{{ route('admin.faces.create', $student) }}">顔を登録&lt;/a>
+@endforeach</code></pre>
+            </section>
+
+            <section>
+                <h3>データフォーマット</h3>
+                <p>->format()を使うと日付や時刻を好きな表示に変えられます</p>
+                <pre><code class="php">@foreach ($subjects as $subject)
+    // 例：2026年4月1日
+    {{ $subject->start_date?->format('Y年m月d日') }}
+
+    // 例：4月1日（水）（isoFormatは日本語の曜日を出力）
+    {{ $subject->start_date?->isoFormat('M月D日（ddd）') }}
+@endforeach</code></pre>
+
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>記号</th>
+                            <th>意味</th>
+                            <th>出力例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Y</td>
+                            <td>4桁の年</td>
+                            <td>2026</td>
+                        </tr>
+                        <tr>
+                            <td>y</td>
+                            <td>2桁の年</td>
+                            <td>26</td>
+                        </tr>
+                        <tr>
+                            <td>m</td>
+                            <td>2桁の月（0埋めあり）</td>
+                            <td>04, 10</td>
+                        </tr>
+                        <tr>
+                            <td>n</td>
+                            <td>1〜2桁の月（0埋めなし）</td>
+                            <td>4, 10</td>
+                        </tr>
+                        <tr>
+                            <td>d</td>
+                            <td>2桁の日（0埋めあり）</td>
+                            <td>05, 27</td>
+                        </tr>
+                        <tr>
+                            <td>j</td>
+                            <td>1〜2桁の日（0埋めなし）</td>
+                            <td>5, 27</td>
+                        </tr>
+                        <tr>
+                            <td>H</td>
+                            <td>24時間表記の時</td>
+                            <td>15</td>
+                        </tr>
+                        <tr>
+                            <td>i</td>
+                            <td>分</td>
+                            <td>30</td>
+                        </tr>
+                        <tr>
+                            <td>s</td>
+                            <td>秒</td>
+                            <td>45</td>
+                        </tr>
+                    </tbody>
+                </table>
             </section>
         </div>
 

@@ -67,48 +67,50 @@ namespace App\Http\Controllers\フォルダ名;  // 例：Admin/FaceMatchControl
 // 必要なクラスや機能をインポートする
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 // クラス宣言
 class SettingController extends Controller
 {
     // 一覧画面
-    public function index()
+    public function index(): View
     {
         //
     }
 
     // 新規作成画面
-    public function create()
+    public function create(): View
     {
         //
     }
 
     // 新規作成保存処理
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         //
     }
 
     // 詳細画面
-    public function show(string $id)
+    public function show(string $id): View
     {
         //
     }
 
     // 編集画面
-    public function edit(string $id)
+    public function edit(string $id): View
     {
         //
     }
 
     // 編集保存処理
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id): RedirectResponse
     {
         //
     }
 
     // 削除処理
-    public function destroy(string $id)
+    public function destroy(string $id): RedirectResponse
     {
         //
     }
@@ -345,17 +347,22 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
                     ※use Illuminate\Http\Request;がないとエラーになります
                 </p>
             </section>
+        </div>
 
+        <div class="content-wrapper">
+            <h2 id="crud">CRUDメソッド</h2>
             <section>
                 <h3>CRUDメソッド</h3>
+                <p>Laravelに用意されている７つのメソッド</p>
                 <div class="table-container">
                     <table border="1">
                         <thead>
                             <tr>
                                 <th>メソッド名</th>
                                 <th style="min-width: 6em;">役割</th>
-                                <th>ビューの有無</th>
-                                <th>ルート</th>
+                                <th style="min-width: 3em;">ビューの有無</th>
+                                <th>（例）ルート</th>
+                                <th>（例）リンク / フォームアクション</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -364,7 +371,12 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
                                 <td>一覧表示</td>
                                 <td style="text-align: center;">〇</td>
                                 <td>
-                                    <pre><code class="php">Route::get('/students', [StudentController::class, 'index'])->name('students.index');</code></pre>
+                                    <pre
+                                        style="margin: 0;"><code class="php">Route::get('/students', [StudentController::class, 'index'])->name('students.index');</code></pre>
+                                </td>
+                                <td>
+                                    <pre
+                                        style="margin: 0;"><code class="php">&lt;a href="{{ route('admin.students.index') }}">生徒一覧&lt;/a></code></pre>
                                 </td>
                             </tr>
                             <tr>
@@ -372,7 +384,12 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
                                 <td>新規作成フォーム表示</td>
                                 <td style="text-align: center;">〇</td>
                                 <td>
-                                    <pre><code class="php">Route::get('/students/create', [StudentController::class, 'create'])->name('students.create');</code></pre>
+                                    <pre
+                                        style="margin: 0;"><code class="php">Route::get('/students/create', [StudentController::class, 'create'])->name('students.create');</code></pre>
+                                </td>
+                                <td>
+                                    <pre
+                                        style="margin: 0;"><code class="php">&lt;a href="{{ route('admin.students.create') }}">生徒を追加&lt;/a></code></pre>
                                 </td>
                             </tr>
                             <tr>
@@ -380,7 +397,14 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
                                 <td>新規保存処理</td>
                                 <td style="text-align: center;">×</td>
                                 <td>
-                                    <pre><code class="php">Route::post('/students', [StudentController::class, 'store'])->name('students.store');</code></pre>
+                                    <pre
+                                        style="margin: 0;"><code class="php">Route::post('/students', [StudentController::class, 'store'])->name('students.store');</code></pre>
+                                </td>
+                                <td>
+                                    <pre style="margin: 0;"><code class="php">&lt;form method="POST" action="{{ route('admin.students.store') }}">
+    @csrf
+    &lt;button>保存&lt;/button>
+&lt;/form></code></pre>
                                 </td>
                             </tr>
                             <tr>
@@ -388,7 +412,13 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
                                 <td>詳細表示</td>
                                 <td style="text-align: center;">〇</td>
                                 <td>
-                                    <pre><code class="php">Route::get('/students/{student}', [StudentController::class, 'show'])->name('students.show');</code></pre>
+                                    <pre
+                                        style="margin: 0;"><code class="php">Route::get('/students/{student}', [StudentController::class, 'show'])->name('students.show');</code></pre>
+                                </td>
+                                <td>
+                                    <pre style="margin: 0;"><code class="php">@foreach ($students as $student)
+    &lt;a href="{{ route('admin.students.show', $student) }}">詳細表示&lt;/a>
+@endforeach</code></pre>
                                 </td>
                             </tr>
                             <tr>
@@ -396,23 +426,45 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
                                 <td>編集フォーム表示</td>
                                 <td style="text-align: center;">〇</td>
                                 <td>
-                                    <pre><code class="php">Route::get('/students/{student}/edit', [StudentController::class, 'edit'])->name('students.edit');</code></pre>
+                                    <pre
+                                        style="margin: 0;"><code class="php">Route::get('/students/{student}/edit', [StudentController::class, 'edit'])->name('students.edit');</code></pre>
+                                </td>
+                                <td>
+                                    <pre style="margin: 0;"><code class="php">@foreach ($students as $student)
+    &lt;a href="{{ route('admin.students.edit', $student) }}">編集&lt;/a>
+@endforeach</code></pre>
                                 </td>
                             </tr>
                             <tr>
                                 <th>update</th>
                                 <td>更新保存処理</td>
-                                <td style="text-align: center;">×<br>※formに@method('PUT')、@csrfが必要</td>
+                                <td style="text-align: center;">×</td>
                                 <td>
-                                    <pre><code class="php">Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');</code></pre>
+                                    <pre
+                                        style="margin: 0;"><code class="php">Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');</code></pre>
+                                </td>
+                                <td>
+                                    <pre style="margin: 0;"><code class="php">&lt;form method="POST" action="{{ route('admin.students.update', $student)>
+    @csrf
+    @method('PUT')
+    &lt;button>保存&lt;/button>
+&lt;/form></code></pre>
                                 </td>
                             </tr>
                             <tr>
                                 <th>destroy</th>
                                 <td>削除処理</td>
-                                <td style="text-align: center;">×<br>※formに@method('DELETE')、@csrfが必要</td>
+                                <td style="text-align: center;">×</td>
                                 <td>
-                                    <pre><code class="php">Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');</code></pre>
+                                    <pre
+                                        style="margin: 0;"><code class="php">Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');</code></pre>
+                                </td>
+                                <td>
+                                    <pre style="margin: 0;"><code class="php">&lt;form method="POST" action="{{ route('admin.students.destroy', $student) }}">
+    @csrf
+    @method('DELETE')
+    &lt;button>この生徒を削除&lt;/button>
+&lt;/form></code></pre>
                                 </td>
                             </tr>
                         </tbody>
@@ -422,6 +474,241 @@ return redirect()->route('admin.classes.index')->with('status', '削除しまし
                 <pre><code class="php">Route::resource('students', StudentController::class);</code></pre>
                 <p>※「except」を使うと特定のルーティングを除外できます</p>
                 <pre><code class="php">Route::resource('students', StudentController::class)->except('show');</code></pre>
+            </section>
+
+            <section>
+                <h3>indexの書き方</h3>
+                <p>一覧画面</p>
+                <pre><code class="php">Route::get('tests', [TestController::class, 'index'])->name('tests.index');</code></pre>
+                <pre><code class="php">public function index(): View
+{
+    // sunjectsテーブルのデータをコレクション形式で一括取得
+    $subjects = Subject::all();
+    $students = Student::all();
+
+    // resources/views/tests/tests/index.blade.phpのファイルを画面に表示
+    return view('tests.tests.index', compact('subjects', 'students'));
+}</code></pre>
+                <pre><code class="php">{{ $subjects->count() }}件
+
+@foreach($subjects as $subject)
+    &lt;a href="{{ route('tests.show', $subject) }}">{{ $subject->name }}&lt;/a>
+@endforeach</code></pre>
+            </section>
+
+            <section>
+                <h3>createの書き方</h3>
+                <p>新規登録画面</p>
+                <pre><code class="php">Route::get('tests/create', [TestController::class, 'create'])->name('tests.create');</code></pre>
+                <pre><code class="php">public function create(): View
+{
+    // まだデータベースに保存されていない中身が空のSubjectオブジェクトを生成
+    // old('入力項目名')だけでなく、old('入力項目名', $subject->カラム名)と書くことができるのでcreateとeditを同じ画面にまとめられる
+    return view('tests.tests.create', ['subject' => new Subject()]);
+}</code></pre>
+                <pre><code class="php">&lt;form method="POST" action="{{ route('tests.store') }}">
+    @csrf
+
+    &lt;div>
+        &lt;label for="name">授業名&lt;/label>
+        &lt;input id="name" name="name" value="{{ old('name', $subject->name) }}" required>
+    &lt;/div>
+
+    &lt;div>
+        &lt;label for="week">曜日&lt;/label>
+        &lt;select id="week" name="day_of_week" required>
+            &lt;option value="">選択してください&lt;/option>
+            @foreach (\App\Models\Subject::DAYS as $number => $label)
+                &lt;option value="{{ $number }}" @selected(old('day_of_week', $subject->day_of_week) == $number)>{{ $label }}曜日&lt;/option>
+            @endforeach
+        &lt;/select>
+    &lt;/div>
+
+    &lt;div>
+        &lt;label>時限&lt;/label>
+        &lt;select name="period_start" required>
+            @for ($p = 1; $p &lt;= \App\Models\Subject::MAX_PERIOD; $p++)
+                &lt;option value="{{ $p }}" @selected(old('period_start', $subject->period_start) == $p)>{{ $p }}限&lt;/option>
+            @endfor
+        &lt;/select>
+        ～
+        &lt;select name="period_end" required>
+            @for ($p = 1; $p &lt;= \App\Models\Subject::MAX_PERIOD; $p++)
+                &lt;option value="{{ $p }}" @selected(old('period_end', $subject->period_end) == $p)>{{ $p }}限&lt;/option>
+            @endfor
+        &lt;/select>
+    &lt;/div>
+
+    &lt;div>
+        &lt;label for="start">開始日&lt;/label>
+        &lt;input type="date" id="start" name="start_date" value="{{ old('start_date', $subject->start_date?->format('Y-m-d')) }}">
+    &lt;/div>
+
+    &lt;div>
+        &lt;label for="end">終了日&lt;/label>
+        &lt;input type="date" id="end" name="end_date" value="{{ old('end_date', $subject->end_date?->format('Y-m-d')) }}">
+    &lt;/div>
+
+    @if ($errors->any())
+        &lt;ul>
+            @foreach ($errors->all() as $error)
+                &lt;li>{{ $error }}&lt;/li>
+            @endforeach
+        &lt;/ul>
+    @endif
+
+    &lt;button>保存&lt;/button>
+&lt;/form></code></pre>
+            </section>
+
+            <section>
+                <h3>storeの書き方</h3>
+                <p>新規保存処理</p>
+                <pre><code class="php">Route::post('tests/store', [TestController::class, 'store'])->name('tests.store');</code></pre>
+                <pre><code class="php">public function store(Request $request): RedirectResponse
+{
+    // バリデーションチェック
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:100'],
+        'day_of_week' => ['required', 'integer', Rule::in(array_keys(Subject::DAYS))],
+        'period_start' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD],
+        'period_end' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD, 'gte:period_start'],
+        'start_date' => ['nullable', 'date'],
+        'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+    ], [], [
+        'name' => '授業名',
+        'day_of_week' => '曜日',
+        'period_start' => '開始時限',
+        'period_end' => '終了時限',
+        'start_date' => '開始日',
+        'end_date' => '終了日',
+    ]);
+
+    // subjectテーブルにデータを保存
+    $subject = Subject::create($validated);
+
+    // 処理が完了したらtests.indexにリダイレクト
+    // view()はビューファイルのパスだけど、route()はルート名を書く
+    return redirect()->route('tests.index');
+}</code></pre>
+            </section>
+
+            <section>
+                <h3>showの書き方</h3>
+                <p>詳細画面</p>
+                <pre><code class="php">Route::get('tests/show/{subject}', [TestController::class, 'show'])->name('tests.show');</code></pre>
+                <pre><code class="php">// 「Subject $subject」でURLからIDを受け取り、DBからそのIDのデータを取得し$subjectに代入
+public function show(Subject $subject): View
+{
+    return view('tests.tests.show', compact('subject'));
+}</code></pre>
+                <pre><code class="php">この画面の授業名は{{ $subject->name }}</code></pre>
+            </section>
+
+            <section>
+                <h3>editの書き方</h3>
+                <p>編集画面</p>
+                <pre><code class="php">Route::get('/tests/{subject}/edit', [TestController::class, 'edit'])->name('tests.edit');</code></pre>
+                <pre><code class="php">public function edit(Subject $subject): View
+{
+    return view('tests.tests.edit', compact('subject'));
+}</code></pre>
+                <pre><code class="php">&lt;form method="POST" action="{{ route('tests.update', $subject) }}">
+    @csrf
+    @method('PUT')
+
+    &lt;div>
+        &lt;label for="name">授業名&lt;/label>
+        &lt;input id="name" name="name" value="{{ old('name', $subject->name) }}" required>
+    &lt;/div>
+
+    &lt;div>
+        &lt;label for="week">曜日&lt;/label>
+        &lt;select id="week" name="day_of_week" required>
+            &lt;option value="">選択してください&lt;/option>
+            @foreach (\App\Models\Subject::DAYS as $number => $label)
+                &lt;option value="{{ $number }}" @selected(old('day_of_week', $subject->day_of_week) == $number)>{{ $label }}曜日&lt;/option>
+            @endforeach
+        &lt;/select>
+    &lt;/div>
+
+    &lt;div>
+        &lt;label>時限&lt;/label>
+        &lt;select name="period_start" required>
+            @for ($p = 1; $p &lt;= \App\Models\Subject::MAX_PERIOD; $p++)
+                &lt;option value="{{ $p }}" @selected(old('period_start', $subject->period_start) == $p)>{{ $p }}限&lt;/option>
+            @endfor
+        &lt;/select>
+        ～
+        &lt;select name="period_end" required>
+            @for ($p = 1; $p &lt;= \App\Models\Subject::MAX_PERIOD; $p++)
+                &lt;option value="{{ $p }}" @selected(old('period_end', $subject->period_end) == $p)>{{ $p }}限&lt;/option>
+            @endfor
+        &lt;/select>
+    &lt;/div>
+
+    &lt;div>
+        &lt;label for="start">開始日&lt;/label>
+        &lt;input type="date" id="start" name="start_date" value="{{ old('start_date', $subject->start_date?->format('Y-m-d')) }}">
+    &lt;/div>
+
+    &lt;div>
+        &lt;label for="end">終了日&lt;/label>
+        &lt;input type="date" id="end" name="end_date" value="{{ old('end_date', $subject->end_date?->format('Y-m-d')) }}">
+    &lt;/div>
+
+    @if ($errors->any())
+        &lt;ul>
+            @foreach ($errors->all() as $error)
+                &lt;li>{{ $error }}&lt;/li>
+            @endforeach
+        &lt;/ul>
+    @endif
+
+    &lt;button>保存&lt;/button>
+&lt;/form></code></pre>
+            </section>
+
+            <section>
+                <h3>updateの書き方</h3>
+                <p>編集登録処理</p>
+                <pre><code class="php">Route::put('/tests/{subject}', [TestController::class, 'update'])->name('tests.update');</code></pre>
+                <pre><code class="php">public function update(Request $request, Subject $subject): RedirectResponse
+{
+    // バリデーションチェック
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:100'],
+        'day_of_week' => ['required', 'integer', Rule::in(array_keys(Subject::DAYS))],
+        'period_start' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD],
+        'period_end' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD, 'gte:period_start'],
+        'start_date' => ['nullable', 'date'],
+        'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+    ], [], [
+        'name' => '授業名',
+        'day_of_week' => '曜日',
+        'period_start' => '開始時限',
+        'period_end' => '終了時限',
+        'start_date' => '開始日',
+        'end_date' => '終了日',
+    ]);
+
+    // subjectテーブルにデータを保存
+    $subject->update($validated);
+
+    return redirect()->route('tests.index');
+}</code></pre>
+            </section>
+
+            <section>
+                <h3>destroyの書き方</h3>
+                <p>削除処理</p>
+                <pre><code class="php">Route::delete('/tests/{subject}', [TestController::class, 'destroy'])->name('tests.destroy');</code></pre>
+                <pre><code class="php">public function destroy(Subject $subject): RedirectResponse
+{
+    $subject->delete();
+
+    return redirect()->route('tests.index');
+}</code></pre>
             </section>
         </div>
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Teacher;
+use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -20,6 +21,9 @@ Route::view('/design4', 'tests/design4');
 Route::view('/design5', 'tests/design5');
 Route::view('/design6', 'tests/design6');
 Route::view('/aaabbbccc', 'tests/aaa');
+
+// TestController
+Route::get('tests', [TestController::class, 'index'])->name('tests.index');
 
 // ドボンゲームのページ
 Route::get('/dobon', function () {
