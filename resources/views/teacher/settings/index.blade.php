@@ -3,7 +3,7 @@
 @section('content')
 
     <main>
-        ここに中身を書く
+        <a href="{{ route('teacher.settings.password.edit') }}">パスワード設定</a>
     </main>
 
 @endsection

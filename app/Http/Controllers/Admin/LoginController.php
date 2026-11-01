@@ -35,7 +35,8 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('admin.students.index'));
+        // ログイン前に開こうとしていた管理者の画面があればそこへ、なければ生徒一覧へ
+        return $this->redirectAfterLogin($request, 'admin', route('admin.students.index'));
     }
 
     public function logout(Request $request): RedirectResponse

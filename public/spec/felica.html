@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>Felica</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet" href="spec.css" />
+    <style>
+        .dump_wrapper {
+            overflow-x: auto;
+            max-width: 100%;
+            border: 1px solid var(--color-font);
+            margin-top: 10px;
+        }
+
+        .dump_wrapper>div {
+            display: flex;
+        }
+
+        .dump_wrapper>div>div {
+            display: grid;
+            gap: 5px;
+            padding: 15px;
+        }
+
+        .dump_wrapper>div>div+div {
+            border-left: 1px solid var(--color-font);
+        }
+
+        .dump_wrapper>div>div>div:nth-child(1) {
+            font-weight: bold;
+        }
+
+        .dump {
+            white-space: nowrap;
+        }
+
+        .diff {
+            background-color: var(--color-yellow);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Felica</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="folder.html">フォルダー</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="felica.html">Felica</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                    <li><a href="command.html">よく使うコマンド</a></li>
+                    <li><a href="directive.html">よく使うディレクティブ</a></li>
+                    <li><a href="route.html">ルーティング</a></li>
+                    <li><a href="css.html">css</a></li>
+                    <li><a href="controller.html">コントローラー</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <li><a href="#data">入校証のカード情報</a></li>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="data">入校証のカード情報</h2>
+            <section>
+                <h3>読み取れた情報</h3>
+                <p>IDm、WCNT以外は内部メモリに記録されているデータも全部一緒</p>
+                <table border="1">
+                    <tr>
+                        <td>カードリーダーの機種</td>
+                        <td>FeliCa Port/PaSoRi 4.0（RC-S300/P）</td>
+                    </tr>
+                    <tr>
+                        <td>VID</td>
+                        <td>0x054C（Sony）</td>
+                    </tr>
+                    <tr>
+                        <td>PID</td>
+                        <td>0x0DC9（RC-S300/P）</td>
+                    </tr>
+                    <tr>
+                        <td>IDm</td>
+                        <td>カードによって違う</td>
+                    </tr>
+                    <tr>
+                        <td>PMm</td>
+                        <td>00F1000000014300</td>
+                    </tr>
+                    <tr>
+                        <td>IC種別コード</td>
+                        <td>0xF1（FeliCa Lite-S）</td>
+                    </tr>
+                    <tr>
+                        <td>システムコード</td>
+                        <td>88B4（FeliCa Lite-S用）</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h3>内部メモリに記録されているデータ</h3>
+                <div class="dump_wrapper">
+                    <div>
+                        <div>
+                            <div>入校証１（IDm：012E5CE0E9CC4A88）</div>
+                            <div class="dump">
+                                00 S_PAD0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                01 S_PAD1 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                02 S_PAD2 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                03 S_PAD3 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                04 S_PAD4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                05 S_PAD5 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                06 S_PAD6 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                07 S_PAD7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                08 S_PAD8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                09 S_PAD9 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0A S_PAD10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0B S_PAD11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0C S_PAD12 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0D S_PAD13 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0E REG FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF ................<br>
+                                82 ID 01 2E 5C E0 E9 CC 4A 88 00 00 00 00 00 00 00 00 ..\...J.........<br>
+                                83 D_ID 01 2E 5C E0 E9 CC 4A 88 00 F1 00 00 00 01 43 00 ..\...J.......C.<br>
+                                84 SER_C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                85 SYS_C 88 B4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                86 CKV 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                88 MC FF FF FF 00 FF 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                90 WCNT 00 FE FF 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                92 STATE 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                A0 CRC_CHECK 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
+                            </div>
+                        </div>
+                        <div>
+                            <div>入校証２（IDm：012E58A65AD86E96）</div>
+                            <div class="dump">
+                                00 S_PAD0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                01 S_PAD1 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                02 S_PAD2 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                03 S_PAD3 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                04 S_PAD4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                05 S_PAD5 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                06 S_PAD6 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                07 S_PAD7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                08 S_PAD8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                09 S_PAD9 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0A S_PAD10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0B S_PAD11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0C S_PAD12 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0D S_PAD13 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0E REG FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF ................<br>
+                                82 ID 01 2E 58 A6 5A D8 6E 96 00 00 00 00 00 00 00 00 ..X.Z.n.........<br>
+                                83 D_ID 01 2E 58 A6 5A D8 6E 96 00 F1 00 00 00 01 43 00 ..X.Z.n.......C.<br>
+                                84 SER_C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                85 SYS_C 88 B4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                86 CKV 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                88 MC FF FF FF 00 07 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                90 WCNT 9C FE FF 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                92 STATE 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                A0 CRC_CHECK 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
+                            </div>
+                        </div>
+                        <div>
+                            <div>入校証３（IDm：012E5CE0E9CC4451）</div>
+                            <div class="dump">
+                                00 S_PAD0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                01 S_PAD1 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                02 S_PAD2 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                03 S_PAD3 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                04 S_PAD4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                05 S_PAD5 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                06 S_PAD6 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                07 S_PAD7 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                08 S_PAD8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                09 S_PAD9 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0A S_PAD10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0B S_PAD11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0C S_PAD12 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0D S_PAD13 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                0E REG FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF ................<br>
+                                82 ID 01 2E 5C E0 E9 CC 44 51 00 00 00 00 00 00 00 00 ..\...DQ........<br>
+                                83 D_ID 01 2E 5C E0 E9 CC 44 51 00 F1 00 00 00 01 43 00 ..\...DQ......C.<br>
+                                84 SER_C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                85 SYS_C 88 B4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                86 CKV 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                88 MC FF FF FF 00 FF 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                90 WCNT 00 FE FF 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                92 STATE 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................<br>
+                                A0 CRC_CHECK 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3>各行の意味</h3>
+                <p><a href="https://www.sony.co.jp/Products/felica/business/tech-support/">FeliCa
+                        Lite-Sユーザーズマニュアル</a>p.20～によると、</p>
+                <table border="1">
+                    <tr>
+                        <td>00h～0Dh</td>
+                        <td>S_PAD0-13</td>
+                        <td>ユーザーが自由に使用できる領域</td>
+                    </tr>
+                    <tr>
+                        <td>0Eh</td>
+                        <td>REG</td>
+                        <td>書き込み制限付きブロック</td>
+                    </tr>
+                    <tr>
+                        <td>80h</td>
+                        <td>RC</td>
+                        <td>MAC生成機能に使う乱数を書き込むブロック</td>
+                    </tr>
+                    <tr>
+                        <td>81h</td>
+                        <td>MAC</td>
+                        <td>MACの演算結果を読み出すブロック</td>
+                    </tr>
+                    <tr>
+                        <td>82h</td>
+                        <td>ID</td>
+                        <td>
+                            IDを格納するブロック<br>出荷時に前半8バイトにIDdの値、後半8バイトにALL_00hが格納<br>
+                            ID[8][9]にDFCを格納<br>DFCを使用しない場合は000h、残りの6バイトに任意の値を格納
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>83h</td>
+                        <td>D_ID</td>
+                        <td>IDdとPMmを格納するブロック<br>IDdとIDmの値は一致</td>
+                    </tr>
+                    <tr>
+                        <td>84h</td>
+                        <td>SER_C</td>
+                        <td>サービス番号を格納するブロック<br>出荷時にALL_00hが格納</td>
+                    </tr>
+                    <tr>
+                        <td>85h</td>
+                        <td>SYS_C</td>
+                        <td>システムコードブロック</td>
+                    </tr>
+                    <tr>
+                        <td>86h</td>
+                        <td>CKV</td>
+                        <td>カード鍵バージョンブロック<br>出荷時にALL_00hが格納</td>
+                    </tr>
+                    <tr>
+                        <td>87h</td>
+                        <td>CK</td>
+                        <td>カード鍵を格納するブロック</td>
+                    </tr>
+                    <tr>
+                        <td>88h</td>
+                        <td>MC</td>
+                        <td>
+                            メモリーコンフィグレーションブロック<br>
+                            ブロックのアクセス権限、NDEF設定、RFパラメーターを格納
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>90h</td>
+                        <td>WCNT</td>
+                        <td>ライトカウンター値を読み出すためのブロック</td>
+                    </tr>
+                    <tr>
+                        <td>91h</td>
+                        <td>MAC_A</td>
+                        <td>MAC値を読み出す・書き込むためのブロック</td>
+                    </tr>
+                    <tr>
+                        <td>92h</td>
+                        <td>STATE</td>
+                        <td>
+                            外部認証およびポーリングディセーブル機能に使用するブロック<br>
+                            このブロックに書き込んだデータは電源遮断により消失する
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>A0h</td>
+                        <td>CRC_CHECK</td>
+                        <td>
+                            すべてのブロックのCRC検証結果を読み出すブロック<br>
+                            CRCは不揮発性メモリー上に保存されている各ブロックのデータから計算される値で、CRCの検証は起動時に一度だけ行われる
+                        </td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+
+        // メモリダンプの差分ハイライト
+        (() => {
+            const dumps = [...document.querySelectorAll('.dump')];
+
+            // 各ダンプを行ごとに [番地, 名前] / 16バイト / ASCII列 に分解
+            const parsed = dumps.map(el =>
+                el.textContent.trim().split('\n').map(line => {
+                    const t = line.trim().split(/\s+/);
+                    return { head: t.slice(0, 2), bytes: t.slice(2, 18), ascii: t[18] ?? '' };
+                })
+            );
+
+            const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+            const mark = (s, on) => on ? `<span class="diff">${esc(s)}</span>` : esc(s);
+
+            parsed.forEach((rows, d) => {
+                dumps[d].innerHTML = rows.map((row, r) => {
+                    // 同じ行・同じ位置のバイトが全カードで一致しなければ差分
+                    const diff = row.bytes.map((b, i) => parsed.some(p => p[r]?.bytes[i] !== b));
+                    return [
+                        ...row.head,
+                        ...row.bytes.map((b, i) => mark(b, diff[i])),
+                        [...row.ascii].map((c, i) => mark(c, diff[i])).join('')
+                    ].join(' ');
+                }).join('<br>');
+            });
+        })();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

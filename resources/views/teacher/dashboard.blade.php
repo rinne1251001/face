@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.test')
 @section('title', '教師ホーム')
 
 @section('content')

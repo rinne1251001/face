@@ -37,4 +37,16 @@ class Student extends Model
     {
         return $this->hasMany(Attendance::class);
     }
+
+    // 入校証（紛失したものも含む）
+    public function cards(): HasMany
+    {
+        return $this->hasMany(StudentCard::class);
+    }
+
+    // 入校証をタッチした記録
+    public function cardReads(): HasMany
+    {
+        return $this->hasMany(CardRead::class);
+    }
 }

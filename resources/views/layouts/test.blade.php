@@ -57,8 +57,8 @@
             // メインメニュー（PC左側・スマホメニュー）
             $mainMenu = [
                 ['label' => 'home',   'url' => route('teacher.dashboard')],
+                ['label' => 'クラス',   'url' => route('teacher.classes.index')],
                 ['label' => '設定', 'url' => route('teacher.settings.index')],
- 
             ];
  
             // ユーザーメニュー（PC右側・スマホヘッダー）
@@ -176,14 +176,38 @@
         </nav>
     </div> 
 
-    @if (session('status'))
-        <p class="ok">{{ session('status') }}</p>
-    @endif
-    @if (session('error'))
-        <p class="error">{{ session('error') }}</p>
-    @endif
-
     @yield('content')
+
+    @if (session('status') || session('error'))
+        <dialog id="flash-modal" @class(['flash-modal', 'is-error' => session('error')])>
+            <div class="flash-modal-content" tabindex="-1" autofocus>
+                <form method="dialog">
+                    <button class="flash-modal-close" aria-label="閉じる">×</button>
+                </form>
+                @if (session('status'))
+                    <p>{{ session('status') }}</p>
+                @endif
+                @if (session('error'))
+                    <p>{{ session('error') }}</p>
+                @endif
+            </div>
+        </dialog>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const flashModal = document.getElementById('flash-modal');
+
+                // ページを開いたらすぐに表示する（showModal で開くと、背景が暗くなり Esc キーでも閉じられる）
+                flashModal.showModal();
+
+                // 背景を押したら閉じる（背景を押すと、中身ではなく dialog 自体がクリックされたことになる）
+                flashModal.addEventListener('click', (e) => {
+                    if (e.target === flashModal) {
+                        flashModal.close();
+                    }
+                });
+            });
+        </script>
+    @endif
  
     <script>
         document.addEventListener('DOMContentLoaded', () => {

@@ -13,6 +13,14 @@ use Illuminate\View\View;
 // 受け持ちクラスの出席状況（その日の授業ごと。見るだけで、変更は授業の画面から）
 class ClassController extends Controller
 {
+    public function index(Request $request): View
+    {
+        $teacher = $request->user('teacher');
+        $classes = $teacher->schoolClasses()->withCount('students')->orderBy('name')->get();
+
+        return view('teacher.classes.index', compact('classes'));
+    }
+
     public function show(Request $request, SchoolClass $schoolClass): View
     {
         $teacher = $request->user('teacher');

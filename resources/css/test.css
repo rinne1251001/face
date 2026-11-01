@@ -281,6 +281,47 @@ input {
     background: rgb(135 74 44 / 7%);
 }
 
+/* =========================
+    メッセージのモーダル（「保存しました。」「削除できません」など）
+========================= */
+.flash-modal {
+    margin: auto;
+    padding: 0;
+    width: min(90vw, 420px);
+    border-radius: 12px;
+    background: var(--color-bg);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.2);
+}
+
+.flash-modal::backdrop {
+    background: rgb(0 0 0 / 0.4);
+}
+
+.flash-modal-content {
+    position: relative;
+    padding: 48px 24px 36px;
+    text-align: center;
+    line-height: 1.7;
+    outline: none;
+}
+
+.flash-modal-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--color-font-light);
+    cursor: pointer;
+}
+
+.flash-modal-close:hover {
+    background: var(--color-sub);
+}
+
 
 /* =========================
     レイアウト

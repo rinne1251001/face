@@ -35,7 +35,8 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('teacher.dashboard'));
+        // ログイン前に開こうとしていた教師の画面があればそこへ、なければ教師ホームへ
+        return $this->redirectAfterLogin($request, 'teacher', route('teacher.dashboard'));
     }
 
     public function logout(Request $request): RedirectResponse

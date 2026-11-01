@@ -28,6 +28,7 @@
                     <li><a href="folder.html">フォルダー</a></li>
                     <li><a href="table.html">テーブル一覧</a></li>
                     <li><a href="human.html">顔認証</a></li>
+                    <li><a href="felica.html">Felica</a></li>
                     <li><a href="similary.html">類似製品</a></li>
                     <li><a href="command.html">よく使うコマンド</a></li>
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
@@ -59,6 +60,8 @@
             <li><a href="#subjects">subjects</a></li>
             <li><a href="#face_samples">face_samples</a></li>
             <li><a href="#match_logs">match_logs</a></li>
+            <li><a href="#student_cards">student_cards</a></li>
+            <li><a href="#card_reads">card_reads</a></li>
             <li><a href="#pivot">pivot</a></li>
             <li><a href="#attendances">attendances</a></li>
         </ol>
@@ -943,30 +946,37 @@ protected function termLabel(): Attribute
                     <tr>
                         <th>id</th>
                         <td>ID</td>
+                        <td>自動インクリメントの主キー</td>
                     </tr>
                     <tr>
                         <th>name</th>
                         <td>名前</td>
+                        <td>可変長文字列<br>100文字まで</td>
                     </tr>
                     <tr>
                         <th>student_number</th>
                         <td>学籍番号</td>
+                        <td>可変長文字列<br>20文字まで<br>一意の値</td>
                     </tr>
                     <tr>
                         <th>school_class_id</th>
                         <td>所属クラスのID</td>
+                        <td>school_classesテーブルを参照する外部キー<br>子レコードが存在する場合、親レコードの削除を禁止</td>
                     </tr>
                     <tr>
                         <th>is_active</th>
                         <td>照合の対象にするか（1=有効、0=停止）</td>
+                        <td>真偽値<br>初期値はtrue</td>
                     </tr>
                     <tr>
                         <th>created_at</th>
                         <td>作成日</td>
+                        <td>タイムスタンプ</td>
                     </tr>
                     <tr>
                         <th>updated_at</th>
                         <td>更新日</td>
+                        <td>タイムスタンプ</td>
                     </tr>
                 </table>
             </section>
@@ -1105,6 +1115,24 @@ protected function termLabel(): Attribute
                     ②システムの運用基準を最適化するデータとして活用できる<br>
                     ③どのモデルで照合した記録かを追える
                 </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="student_cards">student_cards</h2>
+            <section>
+                <p>入校証の情報をまとめたテーブル</p>
+                <table border="1">
+                </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="card_reads">card_reads</h2>
+            <section>
+                <p>入校証をタッチした記録をまとめたテーブル</p>
+                <table border="1">
+                </table>
             </section>
         </div>
 

@@ -103,6 +103,7 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
             ->middleware('throttle:120,1');
 
         // 受け持ちクラスの出席状況
+        Route::get('classes', [Teacher\ClassController::class, 'index'])->name('classes.index');
         Route::get('classes/{schoolClass}', [Teacher\ClassController::class, 'show'])->name('classes.show');
 
         // 設定（パスワードの変更）

@@ -28,6 +28,7 @@
                     <li><a href="folder.html">フォルダー</a></li>
                     <li><a href="table.html">テーブル一覧</a></li>
                     <li><a href="human.html">顔認証</a></li>
+                    <li><a href="felica.html">Felica</a></li>
                     <li><a href="similary.html">類似製品</a></li>
                     <li><a href="command.html">よく使うコマンド</a></li>
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
@@ -42,6 +43,7 @@
 
     <nav>
         <ol>
+            <li><a href="#clone">リポジトリのクローンの方法</a></li>
             <li><a href="#serve">起動時</a></li>
             <li><a href="#github">github</a></li>
             <li><a href="#database">データベース＆テーブル</a></li>
@@ -52,6 +54,22 @@
     </nav>
 
     <main>
+        <div class="content-wrapper">
+            <h2 id="clone">リポジトリのクローンの方法</h2>
+            <section>
+                <p>
+                    １．GitHubリポジトリページの「&lt;> Code」→「Clone」のURLをコピー<br>
+                    ２．VS Codeの「ソース管理」を開き、「リポジトリをクローンする」をクリックしてクローンを作成<br>
+                    ３．.env.exampleをコピペして.envにリネーム<br>
+                    ４．以下のコマンドをVS Codeのターミナルに打つ
+                </p>
+                <pre><code class="language-plaintext">composer install
+npm install
+php artisan migrate
+php artisan key:generate</code></pre>
+            </section>
+        </div>
+
         <div class="content-wrapper">
             <h2 id="serve">起動時</h2>
             <section>

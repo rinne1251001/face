@@ -28,6 +28,7 @@
                     <li><a href="folder.html">フォルダー</a></li>
                     <li><a href="table.html">テーブル一覧</a></li>
                     <li><a href="human.html">顔認証</a></li>
+                    <li><a href="felica.html">Felica</a></li>
                     <li><a href="similary.html">類似製品</a></li>
                     <li><a href="command.html">よく使うコマンド</a></li>
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
@@ -769,6 +770,63 @@ public function show(Subject $subject): View
 
     return redirect()->route('admin.subjects.index')->with('status', '保存しました。');
 }</code></pre>
+                <p>create.blade.php＆edit.blade.phpを削除して、form.blade.phpにまとめる</p>
+                <pre><code class="php">&lt;form method="POST" action="{{ $subject->exists ? route('tests.update', $subject) : route('tests.store') }}">
+    @csrf
+    @if ($subject->exists)
+        @method('PUT')
+    @endif
+
+    &lt;div>
+        &lt;label for="name">授業名&lt;/label>
+        &lt;input id="name" name="name" value="{{ old('name', $subject->name) }}" required>
+    &lt;/div>
+
+    &lt;div>
+        &lt;label for="week">曜日&lt;/label>
+        &lt;select id="week" name="day_of_week" required>
+            &lt;option value="">選択してください&lt;/option>
+            @foreach (\App\Models\Subject::DAYS as $number => $label)
+                &lt;option value="{{ $number }}" @selected(old('day_of_week', $subject->day_of_week) == $number)>{{ $label }}曜日&lt;/option>
+            @endforeach
+        &lt;/select>
+    &lt;/div>
+
+    &lt;div>
+        &lt;label>時限&lt;/label>
+        &lt;select name="period_start" required>
+            @for ($p = 1; $p &lt;= \App\Models\Subject::MAX_PERIOD; $p++)
+                &lt;option value="{{ $p }}" @selected(old('period_start', $subject->period_start) == $p)>{{ $p }}限&lt;/option>
+            @endfor
+        &lt;/select>
+        ～
+        &lt;select name="period_end" required>
+            @for ($p = 1; $p &lt;= \App\Models\Subject::MAX_PERIOD; $p++)
+                &lt;option value="{{ $p }}" @selected(old('period_end', $subject->period_end) == $p)>{{ $p }}限&lt;/option>
+            @endfor
+        &lt;/select>
+    &lt;/div>
+
+    &lt;div>
+        &lt;label for="start">開始日&lt;/label>
+        &lt;input type="date" id="start" name="start_date" value="{{ old('start_date', $subject->start_date?->format('Y-m-d')) }}">
+    &lt;/div>
+
+    &lt;div>
+        &lt;label for="end">終了日&lt;/label>
+        &lt;input type="date" id="end" name="end_date" value="{{ old('end_date', $subject->end_date?->format('Y-m-d')) }}">
+    &lt;/div>
+
+    @if ($errors->any())
+        &lt;ul>
+            @foreach ($errors->all() as $error)
+                &lt;li>{{ $error }}&lt;/li>
+            @endforeach
+        &lt;/ul>
+    @endif
+
+    &lt;button>保存&lt;/button>
+&lt;/form></code></pre>
             </section>
         </div>
 
@@ -795,8 +853,9 @@ public function show(Subject $subject): View
     ]
 );</code></pre>
 
-                <p>バリデーションに失敗した場合は$errorsと$messageを使ってエラー文を表示</p>
-                <pre><code class="php">@if ($errors->any())
+                <p>バリデーションに失敗した場合は$errorsや$messageを使ってエラー文を表示</p>
+                <pre><code class="php">{{-- 全てのエラーをまとめて表示 --}}
+@if ($errors->any())
     &lt;ul>
         @foreach ($errors->all() as $error)
             &lt;li>{{ $error }}&lt;/li>
@@ -804,9 +863,17 @@ public function show(Subject $subject): View
     &lt;/ul>
 @endif
 
+{{-- その項目のエラーをひとつだけ表示 --}}
 @error('students')
-    &lt;p style="color: red;">{{ $message }}&lt;/p>
-@enderror</code></pre>
+    &lt;p>{{ $message }}&lt;/p>
+@enderror
+
+{{-- その項目のエラーを複数表示 --}}
+@if ($errors->has('students'))
+    @foreach ($errors->get('students') as $message)
+        <p>{{ $message }}</p>
+    @endforeach
+@endif</code></pre>
             </section>
 
             <section>
@@ -1079,6 +1146,13 @@ $attendances = Attendance::latest()->get();</code></pre>
             </section>
 
             <section>
+                <h3>WHEN</h3>
+                <p></p>
+                <pre><code></code></pre>
+                <pre><code class="php"></code></pre>
+            </section>
+
+            <section>
                 <h3>->with()</h3>
                 <p>テーブルをくっつける</p>
                 <pre><code>SELECT * FROM students;
@@ -1100,6 +1174,19 @@ ORDER BY name ASC;</code></pre>
 $classes = SchoolClass::query()
             ->with(['teachers' => fn ($q) => $q->orderBy('name')])
             ->get();</code></pre>
+            </section>
+
+            <section>
+                <h3>->withCount()</h3>
+                <p>相関サブクエリを使ってリレーション先の件数を取得する</p>
+                <pre><code>SELECT 
+    school_classes.*, 
+    (SELECT COUNT(*) FROM students WHERE school_classes.id = students.school_class_id) AS students_count 
+FROM school_classes;</code></pre>
+                <pre><code class="php">$classes = SchoolClass::query()
+    // studentsテーブルからクラスに何人在籍しているか取得＆students_countで件数を表示できる
+    ->withCount('students')
+    ->get();</code></pre>
             </section>
 
             <section>

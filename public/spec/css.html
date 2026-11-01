@@ -28,6 +28,7 @@
                     <li><a href="folder.html">フォルダー</a></li>
                     <li><a href="table.html">テーブル一覧</a></li>
                     <li><a href="human.html">顔認証</a></li>
+                    <li><a href="felica.html">Felica</a></li>
                     <li><a href="similary.html">類似製品</a></li>
                     <li><a href="command.html">よく使うコマンド</a></li>
                     <li><a href="directive.html">よく使うディレクティブ</a></li>
@@ -1189,7 +1190,7 @@ place-items: center;    /* 個々のアイテムを縦横に中央 */</code></pr
             </section>
 
             <section>
-                <h3>教員用カレンダー</h3>
+                <h3>教員用カレンダー①</h3>
                 <p>受け持っている授業を表示したカレンダー</p>
                 <pre><code class="html">&lt;!DOCTYPE html>
 &lt;html lang="ja">
@@ -1278,6 +1279,145 @@ place-items: center;    /* 個々のアイテムを縦横に中央 */</code></pr
             @endfor
         &lt;/tbody>
     &lt;/table>
+
+&lt;/body>
+
+&lt;/html></code></pre>
+            </section>
+
+            <section>
+                <h3>教員用カレンダー②</h3>
+                <p>受け持っている授業を表示＆日付も考慮したカレンダー</p>
+                <pre><code class="html">&lt;!DOCTYPE html>
+&lt;html lang="ja">
+
+&lt;head>
+    &lt;meta charset="utf-8">
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1">
+    &lt;title>教員用カレンダー&lt;/title>
+    @vite(['resources/css/test.css', 'resources/js/app.js'])
+    &lt;style>
+        .calendar-container {
+            width: fit-content;
+        }
+
+        .week-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-block: 10px;
+        }
+
+        .week-container > a {
+            color: var(--color-accent);
+        }
+
+        .week-container > div {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: var(--color-accent);
+        }
+
+        .calendar {
+            display: inline-grid;
+            grid-template-columns: auto repeat(5, 1fr);
+            border-top: 1px solid var(--color-font);
+            border-left: 1px solid var(--color-font);
+        }
+
+        .calendar thead,
+        .calendar tbody,
+        .calendar tr {
+            display: contents;
+        }
+
+        .calendar th,
+        .calendar td {
+            padding: 10px;
+            border-right: 1px solid var(--color-font);
+            border-bottom: 1px solid var(--color-font);
+            text-align: center;
+        }
+
+        .calendar th {
+            color: var(--color-bg);
+            background-color: var(--color-accent);
+        }
+
+        .calendar th:first-child {
+            width: 3em;
+        }
+    &lt;/style>
+&lt;/head>
+
+&lt;body>
+
+    @php
+        // テスト用：ログイン中の教師、いなければ最初の1人
+        $teacher = auth('teacher')->user() ?? \App\Models\Teacher::first();
+        $subjects = $teacher->subjects()
+            ->whereNotNull('start_date')
+            ->whereNotNull('end_date')
+            ->get();
+
+        // 表示する週（0=今週、1=来週、-1=先週）とその月曜日
+        $week = (int) request('week', 0);
+        $monday = today()->startOfWeek(\Carbon\Carbon::MONDAY)->addWeeks($week);
+
+        // 月〜金だけ取り出す（[1 => '月', … 5 => '金']）
+        $days = array_slice(\App\Models\Subject::DAYS, 0, 5, true);
+
+        // $grid[時限][曜日] = その枠の授業
+        $grid = [];
+        foreach ($subjects as $subject) {
+            // この週の、その授業がある日
+            $date = $monday->copy()->addDays($subject->day_of_week - 1);
+
+            // 開始日より前、または終了日より後なら表示しない
+            if ($subject->start_date->gt($date) || $subject->end_date->lt($date)) {
+                continue;
+            }
+
+            foreach (range($subject->period_start, $subject->period_end) as $period) {
+                $grid[$period][$subject->day_of_week][] = $subject;
+            }
+        }
+
+        // 表示する行数（担当授業の最後の時限まで）
+        $maxPeriod = $subjects->max('period_end') ?? 1;
+    @endphp
+
+    &lt;div class="calendar-container">
+        &lt;div class="week-container">
+            &lt;a href="?week={{ $week - 1 }}">◀&lt;/a>
+            &lt;div>{{ $week === 0 ? '今週' : $monday->format('n月j日').'の週' }}&lt;/div>
+            &lt;a href="?week={{ $week + 1 }}">▶&lt;/a>
+        &lt;/div>
+        &lt;table class="calendar">
+            &lt;thead>
+                &lt;tr>
+                    &lt;th>&lt;/th>
+                    @foreach ($days as $label)
+                        &lt;th>{{ $label }}&lt;/th>
+                    @endforeach
+                &lt;/tr>
+            &lt;/thead>
+            &lt;tbody>
+                @for ($period = 1; $period &lt;= $maxPeriod; $period++)
+                    &lt;tr>
+                        &lt;th>{{ $period }}限&lt;/th>
+                        @foreach ($days as $day => $label)
+                            &lt;td>
+                                @foreach ($grid[$period][$day] ?? [] as $subject)
+                                    &lt;div>{{ $subject->name }}&lt;/div>
+                                @endforeach
+                            &lt;/td>
+                        @endforeach
+                    &lt;/tr>
+                @endfor
+            &lt;/tbody>
+        &lt;/table>
+    &lt;/div>
 
 &lt;/body>
 
@@ -1408,7 +1548,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 <p>
                     index、create、store、show、edit、update、destroyの７つはresourcesでまとめることができます<br>
                     この場合、ルート名は末尾の->name('')ではなく、URLのパス名と同じになります<br>
-                    詳しくは<a href="controller.html#method">コントローラーのCRUDメソッド</a>を参照
+                    詳しくは<a href="controller.html#crud">コントローラーのCRUDメソッド</a>を参照
                 </p>
                 <pre><code class="php">Route::resource('URL名＆ルート名', コントローラー名::class);
 
