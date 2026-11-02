@@ -13,13 +13,8 @@
 
 /* 全体 */
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.page-title { font-size: 24px; font-weight: bold; margin: 0; }
 
 /* ボタン */
-.btn-add { background: var(--color-main); color: var(--color-bg); padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold; }
-.btn-add:hover { background: var(--color-accent); }
-.btn-search { background: var(--color-main); color: var(--color-bg); border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; cursor: pointer; }
-.btn-search:hover { background: var(--color-accent); }
 .btn-action { color: var(--color-main); text-decoration: none; font-size: 13px; padding: 4px 8px; border: 1px solid var(--color-font-light); border-radius: 4px; background: var(--color-bg); }
 .btn-action:hover { background: var(--color-bg); }
 
@@ -66,10 +61,10 @@
 <main class="main">
     <div class="content-wrapper">
         <div class="page-header">
-            <h1 class="page-title">生徒一覧</h1>
+            <h1>生徒一覧</h1>
             <div>
-                <a href="{{ route('admin.students.create') }}" class="btn-add">＋ 生徒を追加</a>
-                <a href="{{ route('admin.students.bulk.create') }}" class="btn-add">＋ 一斉に追加</a>
+                <a class="btn" href="{{ route('admin.students.create') }}">＋ 生徒を追加</a>
+                <a class="btn" href="{{ route('admin.students.bulk.create') }}">＋ 一斉に追加</a>
             </div>
         </div>
 
@@ -95,7 +90,7 @@
                 {{-- 検索しても、いまの並び順のままにする（data-sync-query：並び替えたときに JS が値を書き換える） --}}
                 <input type="hidden" name="sort" value="{{ $sort }}" data-sync-query>
                 <input type="hidden" name="direction" value="{{ $direction }}" data-sync-query>
-                <button type="submit" class="btn-search">検索</button>
+                <button type="submit" class="btn">検索</button>
             </form>
         </div>
 

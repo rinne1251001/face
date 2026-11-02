@@ -21,13 +21,18 @@ class CheckinController extends Controller
         abort_unless($request->user('teacher')->teachesSubject($subject), 403, 'この授業の担当ではありません。');
 
         $today = today();
+        $period = $subject->periodOrFirst($request->query('period')); // ?period=4 で何限の受付かを指定
 
         return view('teacher.subjects.checkin', [
             'subject' => $subject,
             'today' => $today,
+            'period' => $period,
             'wrongDay' => $today->dayOfWeekIso !== $subject->day_of_week,
             'studentCount' => $subject->students()->count(),
-            'recordedCount' => $subject->attendances()->where('date', $today->toDateString())->count(),
+            'recordedCount' => $subject->attendances()
+                ->where('date', $today->toDateString())
+                ->where('period', $period)
+                ->count(),
         ]);
     }
 
@@ -40,7 +45,12 @@ class CheckinController extends Controller
         $request->validate([
             'model_version' => ['required', 'string', Rule::in([config('face.model_version')])],
             'embedding' => ['required', 'array'],
+            'embedding' => ['required', 'array'],
+            // 何限の出席か（受付画面の URL の ?period= で送られてくる）
+            'period' => ['required', 'integer', Rule::in($subject->periods())],
         ], ['model_version.in' => 'モデルのバージョンがサーバー設定と一致しません。']);
+
+        $period = $request->integer('period');
 
         // 照合は登録済みの全生徒を対象にする。
         // （受講者だけに絞ると、受講していない生徒が受講者のそっくりさんと間違えられることがあるため、
@@ -77,10 +87,10 @@ class CheckinController extends Controller
             ]);
         }
 
-        // 3. 出席を記録する。今日すでに記録があれば、上書きせずにそのまま返す
+        // 3. 出席を記録する。今日のこの時限にすでに記録があれば、上書きせずにそのまま返す
         //    （createOrFirst は、同時に2回送られて二重登録になりそうなときも1件にしてくれる）
         $attendance = Attendance::createOrFirst(
-            ['student_id' => $student->id, 'subject_id' => $subject->id, 'date' => today()->toDateString()],
+            ['student_id' => $student->id, 'subject_id' => $subject->id, 'date' => today()->toDateString(), 'period' => $period],
             ['status' => 'present', 'method' => 'face', 'match_log_id' => $log->id],
         );
 
@@ -89,7 +99,7 @@ class CheckinController extends Controller
                 'result' => 'already',
                 'student' => $summary,
                 'status_label' => $attendance->statusLabel(),
-                'message' => "{$student->name} さんは記録済みです（{$attendance->statusLabel()}）。",
+                'message' => "{$student->name} さんは{$period}限の記録済みです（{$attendance->statusLabel()}）。",
             ]);
         }
 
@@ -97,8 +107,11 @@ class CheckinController extends Controller
             'result' => 'recorded',
             'student' => $summary,
             'status_label' => $attendance->statusLabel(),
-            'message' => "{$student->name} さんの出席を記録しました。",
-            'recorded_count' => $subject->attendances()->where('date', today()->toDateString())->count(),
+            'message' => "{$student->name} さんの{$period}限の出席を記録しました。",
+            'recorded_count' => $subject->attendances()
+                ->where('date', today()->toDateString())
+                ->where('period', $period)
+                ->count(),
         ]);
     }
 }

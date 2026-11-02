@@ -26,14 +26,15 @@
         <tr>
             <th>学籍番号</th>
             <th>名前</th>
-            @foreach ($subjects as $subject)
+            {{-- 列は「授業 × 時限」（3〜5限の授業なら3列） --}}
+            @foreach ($columns as ['subject' => $subject, 'period' => $period])
                 <th>
                     @if (in_array($subject->id, $mySubjectIds, true))
-                        <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->toDateString()]) }}">{{ $subject->name }}</a>
+                        <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->toDateString(), 'period' => $period]) }}">{{ $subject->name }}</a>
                     @else
                         {{ $subject->name }}
                     @endif
-                    <br><span class="muted">{{ $subject->schedule_label }}</span>
+                    <br><span class="muted">{{ $period }}限</span>
                 </th>
             @endforeach
         </tr>
@@ -41,10 +42,10 @@
             <tr>
                 <td>{{ $student->student_number }}</td>
                 <td>{{ $student->name }}</td>
-                @foreach ($subjects as $subject)
+                @foreach ($columns as ['subject' => $subject, 'period' => $period])
                     <td>
                         @if ($student->subjects->contains('id', $subject->id))
-                            @include('partials.status-badge', ['attendance' => $attendances->get($student->id.'-'.$subject->id)])
+                            @include('partials.status-badge', ['attendance' => $attendances->get("{$student->id}-{$subject->id}-{$period}")])
                         @else
                             <span class="muted">－</span>
                         @endif

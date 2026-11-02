@@ -68,9 +68,9 @@ class SubjectController extends Controller
         return $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'day_of_week' => ['required', 'integer', Rule::in(array_keys(Subject::DAYS))],
-            'period_start' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD],
+            'period_start' => ['required', 'integer', 'between:1,'.Subject::maxPeriod()],
             // 終了時限は開始時限以上（1限だけなら開始と同じ）
-            'period_end' => ['required', 'integer', 'between:1,'.Subject::MAX_PERIOD, 'gte:period_start'],
+            'period_end' => ['required', 'integer', 'between:1,'.Subject::maxPeriod(), 'gte:period_start'],
             'start_date' => ['nullable', 'date'],
             // 終了日は開始日と同じか、それより後
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],

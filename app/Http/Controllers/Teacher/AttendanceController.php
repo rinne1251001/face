@@ -23,6 +23,7 @@ class AttendanceController extends Controller
 
         $request->validate(['date' => ['nullable', 'date_format:Y-m-d']]);
         $date = Carbon::parse($request->query('date', today()->toDateString()));
+        $period = $subject->periodOrFirst($request->query('period'));
 
         $students = $subject->students()
             ->with('schoolClass')
@@ -34,6 +35,7 @@ class AttendanceController extends Controller
         $attendances = $subject->attendances()
             ->with('teacher')
             ->where('date', $date->toDateString())
+            ->where('period', $period)
             ->get()
             ->keyBy('student_id');
 
@@ -44,6 +46,7 @@ class AttendanceController extends Controller
         return view('teacher.subjects.show', [
             'subject' => $subject,
             'date' => $date,
+            'period' => $period,
             'isToday' => $date->isToday(),
             'isFuture' => $date->isFuture(),
             // 指定した日がこの授業の曜日と違うとき、画面に注意を出す
@@ -64,15 +67,16 @@ class AttendanceController extends Controller
 
         $data = $request->validate([
             'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'period' => ['required', 'integer', Rule::in($subject->periods())],
             // none は「未記録に戻す」
             'status' => ['required', Rule::in([...array_keys(Attendance::STATUSES), 'none'])],
         ]);
 
-        $keys = ['student_id' => $student->id, 'subject_id' => $subject->id, 'date' => $data['date']];
+        $keys = ['student_id' => $student->id, 'subject_id' => $subject->id, 'date' => $data['date'], 'period' => (int) $data['period']];
 
         if ($data['status'] === 'none') {
             Attendance::where($keys)->delete();
-            $message = "{$student->name} さんの記録を取り消しました。";
+            $message = "{$student->name} さんの{$data['period']}限の記録を取り消しました。";
         } else {
             // あれば更新、なければ作成。顔認証の記録を変更した場合も「手動」になる（照合の記録 match_log_id は残る）
             Attendance::updateOrCreate($keys, [
@@ -80,11 +84,11 @@ class AttendanceController extends Controller
                 'method' => 'manual',
                 'teacher_id' => $teacher->id,
             ]);
-            $message = "{$student->name} さんを「".Attendance::STATUSES[$data['status']].'」にしました。';
+            $message = "{$student->name} さんの{$data['period']}限を「".Attendance::STATUSES[$data['status']].'」にしました。';
         }
 
         return redirect()
-            ->route('teacher.subjects.show', ['subject' => $subject, 'date' => $data['date']])
+            ->route('teacher.subjects.show', ['subject' => $subject, 'date' => $data['date'], 'period' => $data['period']])
             ->with('status', $message);
     }
 }

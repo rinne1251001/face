@@ -2,18 +2,33 @@
 @section('title', $subject->name.' の出席')
 
 @section('content')
-<h1>{{ $subject->name }}（{{ $subject->schedule_label }}）の出席</h1>
+<h1>{{ $subject->name }}（{{ $subject->schedule_label }}）{{ $period }}限の出席</h1>
 
 {{-- 日付の切り替え --}}
 <form method="GET" action="{{ route('teacher.subjects.show', $subject) }}">
-    <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->subWeek()->toDateString()]) }}">« 前の週</a>
+    <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->subWeek()->toDateString(), 'period' => $period]) }}">« 前の週</a>
     <input type="date" name="date" value="{{ $date->toDateString() }}">
+    <input type="hidden" name="period" value="{{ $period }}">
     <button>表示</button>
-    <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->addWeek()->toDateString()]) }}">次の週 »</a>
+    <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->addWeek()->toDateString(), 'period' => $period]) }}">次の週 »</a>
     @unless ($isToday)
-        | <a href="{{ route('teacher.subjects.show', $subject) }}">今日</a>
+        | <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'period' => $period]) }}">今日</a>
     @endunless
 </form>
+
+{{-- 2時限以上続く授業は、ここで表示する時限を切り替える --}}
+@if (count($subject->periods()) > 1)
+    <p>
+        時限：
+        @foreach ($subject->periods() as $p)
+            @if ($p === $period)
+                <strong>【{{ $p }}限】</strong>
+            @else
+                <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->toDateString(), 'period' => $p]) }}">{{ $p }}限</a>
+            @endif
+        @endforeach
+    </p>
+@endif
 
 <p>
     <strong>{{ $date->format('Y年n月j日') }}（{{ $dayLabel }}）</strong>
@@ -23,12 +38,12 @@
 </p>
 
 <p>
-    出席 {{ $counts['present'] }}人 ／ 遅刻 {{ $counts['late'] }}人 ／ 欠席 {{ $counts['absent'] }}人 ／
+    出席 {{ $counts['present'] }}人 ／ 遅刻 {{ $counts['late'] }}人 ／ 公欠 {{ $counts['excused'] }}人 ／欠席 {{ $counts['absent'] }}人 ／
     未記録 {{ $counts['none'] }}人（受講者 {{ $students->count() }}人）
 </p>
 
 @if ($isToday)
-    <p><a href="{{ route('teacher.checkin.show', $subject) }}">▶ 顔認証で出席を取る（今日）</a></p>
+    <p><a href="{{ route('teacher.checkin.show', [$subject, 'period' => $period]) }}">▶ 顔認証で{{ $period }}限の出席を取る（今日）</a></p>
 @endif
 
 @if ($isFuture)
@@ -61,6 +76,7 @@
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="date" value="{{ $date->toDateString() }}">
+                        <input type="hidden" name="period" value="{{ $period }}">
                         <select name="status">
                             @foreach (\App\Models\Attendance::STATUSES as $value => $label)
                                 <option value="{{ $value }}" @selected($attendance?->status === $value)>{{ $label }}</option>

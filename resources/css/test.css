@@ -14,7 +14,7 @@
     --color-ok: ;
     --color-ok-font: ;
     --color-error: ;
-    --color-error-font: ;
+    --color-error-font: red;
     --color-warn: ;
     --color-warn-font: ;
 }
@@ -51,6 +51,11 @@ input {
     outline: none;
 }
 
+select {
+    min-width: 0;
+    border: var(--color-font-light) 1px solid;
+    outline: none;
+}
 
 /* ↓クラス＆IDセレクタ */
 /* 成功、失敗、注意の文字色 */
@@ -342,7 +347,23 @@ input {
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 12px;
-    border-bottom: 2px solid var(--color-font-light);
+    border-bottom: 1.5px solid var(--color-font-light);
+}
+
+.page-header h1 { font-size: 24px; font-weight: bold; margin: 0; }
+
+.btn {
+    background: var(--color-main);
+    color: var(--color-bg);
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.btn:hover {
+    background: var(--color-accent);
 }
 
 

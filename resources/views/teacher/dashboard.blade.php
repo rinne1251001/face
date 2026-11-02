@@ -5,19 +5,19 @@
 <h1>{{ $today->format('Y年n月j日') }}（{{ $todayLabel }}）</h1>
 
 <h2>今日の授業</h2>
-@if ($todaySubjects->isEmpty())
+@if ($todayRows->isEmpty())
     <p class="muted">今日の担当授業はありません。</p>
 @else
     <table>
         <tr><th>時限</th><th>授業名</th><th>出席（遅刻を含む）</th><th>操作</th></tr>
-        @foreach ($todaySubjects as $subject)
+        @foreach ($todayRows as ['subject' => $subject, 'period' => $period])
             <tr>
-                <td>{{ $subject->schedule_label }}</td>
+                <td>{{ $period }}限</td>
                 <td>{{ $subject->name }}</td>
-                <td>{{ $presentCounts[$subject->id] ?? 0 }} / {{ $subject->students_count }}人</td>
+                <td>{{ $presentCounts["{$subject->id}-{$period}"] ?? 0 }} / {{ $subject->students_count }}人</td>
                 <td>
-                    <a href="{{ route('teacher.checkin.show', $subject) }}">顔認証で出席を取る</a> |
-                    <a href="{{ route('teacher.subjects.show', $subject) }}">出席一覧・手動登録</a>
+                    <a href="{{ route('teacher.checkin.show', [$subject, 'period' => $period]) }}">顔認証で出席を取る</a> |
+                    <a href="{{ route('teacher.subjects.show', [$subject, 'period' => $period]) }}">出席一覧・手動登録</a>
                 </td>
             </tr>
         @endforeach

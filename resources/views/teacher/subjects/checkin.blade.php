@@ -2,8 +2,23 @@
 @section('title', $subject->name.' の出席受付')
 
 @section('content')
-<div id="face-checkin" data-checkin-url="{{ route('teacher.checkin.store', $subject) }}">
-    <h1>出席受付：{{ $subject->name }}（{{ $subject->schedule_label }}）</h1>
+{{-- 何限の出席かは、送り先の URL（?period=）で伝える --}}
+<div id="face-checkin" data-checkin-url="{{ route('teacher.checkin.store', [$subject, 'period' => $period]) }}">
+    <h1>出席受付：{{ $subject->name }}（{{ $subject->schedule_label }}）{{ $period }}限</h1>
+
+    {{-- 2時限以上続く授業は、ここで受け付ける時限を切り替える --}}
+    @if (count($subject->periods()) > 1)
+        <p>
+            受け付ける時限：
+            @foreach ($subject->periods() as $p)
+                @if ($p === $period)
+                    <strong>【{{ $p }}限】</strong>
+                @else
+                    <a href="{{ route('teacher.checkin.show', [$subject, 'period' => $p]) }}">{{ $p }}限</a>
+                @endif
+            @endforeach
+        </p>
+    @endif
     <p>
         {{ $today->format('Y年n月j日') }}（{{ \App\Models\Subject::DAYS[$today->dayOfWeekIso] }}）
         ／ 記録済み <strong id="recordedCount">{{ $recordedCount }}</strong> / {{ $studentCount }}人
@@ -19,7 +34,7 @@
     </div>
     <p>
         <button id="toggleBtn" disabled>受付を一時停止</button>
-        <a href="{{ route('teacher.subjects.show', $subject) }}">出席一覧・手動登録へ</a>
+        <a href="{{ route('teacher.subjects.show', [$subject, 'period' => $period]) }}">出席一覧・手動登録へ</a>
     </p>
 
     <h2>この画面での受付記録</h2>

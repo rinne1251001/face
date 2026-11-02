@@ -354,14 +354,17 @@ php artisan cache:clear file　//古い特徴量キャッシュをクリア</cod
                     <tr>
                         <th>BelongsTo</th>
                         <td>多対1の関係<br>「〜に属している」</td>
+                        <td>子モデルに書く</td>
                     </tr>
                     <tr>
                         <th>BelongsToMany</th>
                         <td>多対多の関係</td>
+                        <td>親・子モデル両方に書く</td>
                     </tr>
                     <tr>
                         <th>HasMany</th>
                         <td>1対多の関係<br>「〜を複数持っている」</td>
+                        <td>親モデルに書く</td>
                     </tr>
                 </table>
                 <pre><code class="php">// 受け持ちクラス（0個以上）

@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-// 出席記録（1人の生徒 × 1つの授業 × 1日 で1件）
+// 出席記録（1人の生徒 × 1つの授業 × 1日 × 1時限 で1件）
 class Attendance extends Model
 {
     // 出席の状態（DBに入る値 => 画面に出す名前）
     public const STATUSES = [
         'present' => '出席',
         'late' => '遅刻',
+        'excused' => '公欠',
         'absent' => '欠席',
     ];
 
@@ -22,8 +23,8 @@ class Attendance extends Model
     ];
 
     // date は 'Y-m-d' の文字列のまま扱う（DB の date 型と比べやすくするため、日付型への変換はしない）
-    protected $fillable = ['student_id', 'subject_id', 'date', 'status', 'method', 'match_log_id', 'teacher_id'];
-
+    protected $fillable = ['student_id', 'subject_id', 'date', 'period', 'status', 'method', 'match_log_id', 'teacher_id'];
+    
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);

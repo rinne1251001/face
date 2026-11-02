@@ -30,15 +30,6 @@
     /* ------------------------------------------
         2. メインコンテンツ・テーブル
     ------------------------------------------ */
-        .btn-create {
-        background-color: var(--color-main);
-        color: var(--color-bg) !important;
-        padding: 9px 18px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: 600;
-    }
-
     .control-panel {
         display: flex;
         justify-content: space-between;
@@ -91,11 +82,7 @@
     <div class="content-wrapper">
         <div class="page-header">
             <h1>クラス一覧</h1>
-            @if (Route::has('admin.classes.create'))
-                <a href="{{ route('admin.classes.create') }}" class="btn-create">＋ クラスを追加</a>
-            @else
-                <a href="#" class="btn-create">＋ クラスを追加</a>
-            @endif
+            <a class="btn" href="{{ route('admin.classes.create') }}">＋ クラスを追加</a>
         </div>
 
         <div class="control-panel">

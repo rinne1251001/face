@@ -36,19 +36,23 @@ class ClassController extends Controller
             ->orderBy('student_number')
             ->get();
 
-        // 表の列：このクラスの誰かが受講している、その曜日の授業
-        $subjects = $students->flatMap->subjects
-            ->unique('id')
-            ->sortBy([['period_start', 'asc'], ['name', 'asc']])
+        // このクラスの誰かが受講している、その曜日の授業
+        $subjects = $students->flatMap->subjects->unique('id')->values();
+
+        // 表の列：「授業 × 時限」（3〜5限の授業なら3列）。時限の順に並べる
+        $columns = $subjects
+            ->flatMap(fn ($subject) => collect($subject->periods())
+                ->map(fn ($period) => ['subject' => $subject, 'period' => $period]))
+            ->sortBy([['period', 'asc'], [fn ($a, $b) => $a['subject']->name <=> $b['subject']->name]])
             ->values();
 
-        // 「生徒ID-授業ID」 => 出席記録
+        // 「生徒ID-授業ID-時限」 => 出席記録
         $attendances = Attendance::query()
             ->where('date', $date->toDateString())
             ->whereIn('student_id', $students->pluck('id'))
             ->whereIn('subject_id', $subjects->pluck('id'))
             ->get()
-            ->keyBy(fn ($a) => $a->student_id.'-'.$a->subject_id);
+            ->keyBy(fn ($a) => "{$a->student_id}-{$a->subject_id}-{$a->period}");
 
         return view('teacher.classes.show', [
             'schoolClass' => $schoolClass,
@@ -56,6 +60,7 @@ class ClassController extends Controller
             'dayLabel' => Subject::DAYS[$dayOfWeek],
             'students' => $students,
             'subjects' => $subjects,
+            'columns' => $columns, // ← これがなかったので $columns が未定義になっていた
             'attendances' => $attendances,
             // 自分の担当授業なら、列の見出しから授業の画面へ移動できるようにする
             'mySubjectIds' => array_map('intval', $teacher->subjects()->pluck('subjects.id')->all()),
