@@ -70,8 +70,8 @@ input {
     PCヘッダー
 ========================= */
 .pc-header {
-    min-height: 150px;
-    padding: 20px 4.5%;
+    min-height: 100px;
+    padding: 0px 4.5%;
     display: grid;
     grid-template-columns: 1fr 150px 1fr;
     align-items: center;
@@ -334,6 +334,15 @@ input {
     width: min(1000px, 100% - clamp(16px, 4vw, 32px) * 2);
     margin-inline: auto;
     display: flow-root;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--color-font-light);
 }
 
 

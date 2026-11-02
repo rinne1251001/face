@@ -11,7 +11,9 @@
 
 <main class="main">
     <div class="content-wrapper">
-        <h1>生徒を一斉に追加</h1>
+        <div class="page-header">
+            <h1>生徒を一斉に追加</h1>
+        </div>
 
         @if ($classes->isEmpty())
             <p class="warn">先に<a href="{{ route('admin.classes.index') }}">クラス</a>を1つ以上登録してください。</p>

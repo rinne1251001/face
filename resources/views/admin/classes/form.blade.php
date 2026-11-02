@@ -4,7 +4,9 @@
 @section('content')
 <main class="main">
     <div class="content-wrapper">
-        <h1>{{ $schoolClass->exists ? 'クラスの編集' : 'クラスの追加' }}</h1>
+        <div class="page-header">
+            <h1>{{ $schoolClass->exists ? 'クラスの編集' : 'クラスの追加' }}</h1>
+        </div>
 
         <form method="POST" action="{{ $schoolClass->exists ? route('admin.classes.update', $schoolClass) : route('admin.classes.store') }}">
             @csrf

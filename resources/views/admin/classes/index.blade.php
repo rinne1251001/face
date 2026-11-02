@@ -30,16 +30,7 @@
     /* ------------------------------------------
         2. メインコンテンツ・テーブル
     ------------------------------------------ */
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 12px;
-        border-bottom: 2px solid var(--color-font-light);
-    }
-
-    .btn-create {
+        .btn-create {
         background-color: var(--color-main);
         color: var(--color-bg) !important;
         padding: 9px 18px;
