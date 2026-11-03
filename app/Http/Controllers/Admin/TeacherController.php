@@ -20,7 +20,7 @@ class TeacherController extends Controller
         $teachers = Teacher::query()
             ->with([
                 'schoolClasses' => fn ($q) => $q->orderBy('name'),
-                'subjects' => fn ($q) => $q->orderBy('day_of_week')->orderBy('period_start'),
+                'subjects' => fn ($q) => $q->with('schedules')->orderBySchedule(),
             ])
             ->orderBy('name')
             ->get();
@@ -85,7 +85,7 @@ class TeacherController extends Controller
         return [
             'teacher' => $teacher,
             'classes' => SchoolClass::orderBy('name')->get(),
-            'subjects' => Subject::orderBy('day_of_week')->orderBy('period_start')->orderBy('name')->get(),
+            'subjects' => Subject::with('schedules')->orderBySchedule()->get(),
             'selectedClassIds' => array_map('intval', $hasOld
                 ? old('class_ids', [])
                 : ($teacher->exists ? $teacher->schoolClasses->pluck('id')->all() : [])),

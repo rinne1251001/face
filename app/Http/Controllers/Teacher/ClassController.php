@@ -32,7 +32,7 @@ class ClassController extends Controller
 
         // クラスの生徒と、それぞれがその曜日に受講している授業
         $students = $schoolClass->students()
-            ->with(['subjects' => fn ($q) => $q->where('day_of_week', $dayOfWeek)])
+            ->with(['subjects' => fn ($q) => $q->onDay($dayOfWeek)->with('schedules')])
             ->orderBy('student_number')
             ->get();
 
@@ -41,8 +41,8 @@ class ClassController extends Controller
 
         // 表の列：「授業 × 時限」（3〜5限の授業なら3列）。時限の順に並べる
         $columns = $subjects
-            ->flatMap(fn ($subject) => collect($subject->periods())
-                ->map(fn ($period) => ['subject' => $subject, 'period' => $period]))
+            ->flatMap(fn ($subject) => collect($subject->periodsOn($date))
+            ->map(fn ($period) => ['subject' => $subject, 'period' => $period]))
             ->sortBy([['period', 'asc'], [fn ($a, $b) => $a['subject']->name <=> $b['subject']->name]])
             ->values();
 

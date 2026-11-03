@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>命名規則</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>命名規則</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="naming.html">命名規則</a></li>
+                    <li><a href="folder.html">フォルダー</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="felica.html">Felica</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                    <li><a href="command.html">よく使うコマンド</a></li>
+                    <li><a href="directive.html">よく使うディレクティブ</a></li>
+                    <li><a href="route.html">ルーティング</a></li>
+                    <li><a href="css.html">css</a></li>
+                    <li><a href="controller.html">コントローラー</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <li><a href="#naming-rules">Laravelの命名規則一覧</a></li>
+            <li><a href="#crud">CRUDメソッド</a></li>
+            <li><a href="#column">カラムの命名規則</a></li>
+            <li><a href="#css">Tailwind CSS</a></li>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="naming-rules">Laravelの命名規則一覧</h2>
+            <section>
+                <table border="1">
+                    <tr>
+                        <th>コントローラー</th>
+                        <td>先頭大文字・単数形</td>
+                        <td>StudentController.php<br>TeacherController.php</td>
+                    </tr>
+                    <tr>
+                        <th>モデル</th>
+                        <td>先頭大文字・単数形</td>
+                        <td>Student.php<br>Teacher.php</td>
+                    </tr>
+                    <tr>
+                        <th>マイグレーション</th>
+                        <td>先頭小文字・複数形</td>
+                        <td>日付_create_students_table.php<br>日付_create_teachers_table.php</td>
+                    </tr>
+                    <tr>
+                        <th>ビューのフォルダ</th>
+                        <td>先頭小文字・複数形</td>
+                        <td>students<br>teachers</td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="crud">CRUDメソッド</h2>
+            <section>
+                <h3>基本的なメソッド名一覧</h3>
+                <p>基本的に「画面」はビューはあるけど、「処理」はビューはない</p>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>コントローラーのメソッド名</th>
+                            <th>ビューのファイル名</th>
+                            <th>HTTPメソッド</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>一覧画面</td>
+                            <td>index()</td>
+                            <td>index.blade.php</td>
+                            <td>get</td>
+                        </tr>
+                        <tr>
+                            <td>新規登録画面</td>
+                            <td>create()</td>
+                            <td>create.blade.php</td>
+                            <td>get</td>
+                        </tr>
+                        <tr>
+                            <td>新規保存処理</td>
+                            <td>store()</td>
+                            <td style="text-align: center;">-</td>
+                            <td>post</td>
+                        </tr>
+                        <tr>
+                            <td>詳細画面</td>
+                            <td>show()</td>
+                            <td style="text-align: center;">show.blade.php</td>
+                            <td>get</td>
+                        </tr>
+                        <tr>
+                            <td>編集画面</td>
+                            <td>edit()</td>
+                            <td>edit.blade.php</td>
+                            <td>get</td>
+                        </tr>
+                        <tr>
+                            <td>編集登録処理</td>
+                            <td>update()</td>
+                            <td style="text-align: center;">-</td>
+                            <td>patch</td>
+                        </tr>
+                        <tr>
+                            <td>削除処理</td>
+                            <td>destroy()</td>
+                            <td style="text-align: center;">-</td>
+                            <td>delete</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3>ルーティング</h3>
+                <pre><code class="php">Route::HTTPメソッド('/URL名', [コントローラー名::class, 'メソッド名'])->name('名前付きルート');  // ひとつずつ書く
+Route::resource('URL名', コントローラー名::class);  // まとめて書く
+
+// indexのとき、どちらもURLはhttp://127.0.0.1:8000/studentsで、ルート名はstudents.indexになる
+Route::get('/students', [StudentController::class, 'index'])->name('students.index');
+Route::resource('students', StudentController::class);</code></pre>
+            </section>
+        </div>
+
+
+        <div class="content-wrapper">
+            <h2 id="column">カラムの命名規則</h2>
+            <section>
+                <h3>基本的な命名規則</h3>
+                <p>
+                    カラム名は小文字単数形<br>
+                    例）name、login_id、student_number
+                </p>
+            </section>
+
+            <section>
+                <h3>カラムの命名規則一覧</h3>
+                <p></p>
+                <table border="1">
+                    <tr>
+                        <th>主キー</th>
+                        <td>$table->id();でオートインクリメント</td>
+                        <td>id</td>
+                    </tr>
+                    <tr>
+                        <th>外部キー</th>
+                        <td>単数形のテーブル名_id</td>
+                        <td>teacher_id(teachersテーブルの外部キー)<br>school_class_id(school_classesテーブルの外部キー)</td>
+                    </tr>
+                    <tr>
+                        <th>作成・更新日時</th>
+                        <td>$table->timestamps();で作成</td>
+                        <td>created_at<br>updated_at</td>
+                    </tr>
+                    <tr>
+                        <th>イベント日時</th>
+                        <td>イベント_at</td>
+                        <td>cancelled_at<br>failed_at</td>
+                    </tr>
+                    <tr>
+                        <th>真偽値</th>
+                        <td>is_状態、has_機能、can_状態</td>
+                        <td>is_active</td>
+                    </tr>
+                    <tr>
+                        <th>カウント</th>
+                        <td>対象_count、対象_num、対象_price、対象_amount</td>
+                        <td>student_count</td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="css">Tailwind CSS</h2>
+            <section>
+                <h3>基本的な命名規則</h3>
+                <p>
+                    「--カテゴリ-変数」<br>
+                    例）--color-bg、--font-sans
+                </p>
+                <p>
+                    使うときは「var(--カテゴリ-変数名)」<br>
+                    例）var(--color-bg)、var(--font-sans)
+                </p>
+            </section>
+
+            <section>
+                <h3>主なCSSカスタムプロパティ一覧</h3>
+                <p></p>
+                <table>
+                    <tr>
+                        <th>--color-*</th>
+                        <td>色</td>
+                        <td>color、backgound-color</td>
+                    </tr>
+                    <tr>
+                        <th>--spacing-*</th>
+                        <td>長さ・サイズ</td>
+                        <td>width、height、margin、padding、gap</td>
+                    </tr>
+                    <tr>
+                        <th>--z-*</th>
+                        <td>重なり順</td>
+                        <td>z-index</td>
+                    </tr>
+                    <tr>
+                        <th>--font-*</th>
+                        <td>フォントファミリー</td>
+                        <td>font-family</td>
+                    </tr>
+                    <tr>
+                        <th>--text-*</th>
+                        <td>文字サイズ</td>
+                        <td>font-size</td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

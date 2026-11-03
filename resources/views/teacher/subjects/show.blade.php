@@ -17,10 +17,10 @@
 </form>
 
 {{-- 2時限以上続く授業は、ここで表示する時限を切り替える --}}
-@if (count($subject->periods()) > 1)
+@if (count($periods) > 1)
     <p>
         時限：
-        @foreach ($subject->periods() as $p)
+        @foreach ($periods as $p)
             @if ($p === $period)
                 <strong>【{{ $p }}限】</strong>
             @else
@@ -33,7 +33,7 @@
 <p>
     <strong>{{ $date->format('Y年n月j日') }}（{{ $dayLabel }}）</strong>
     @if ($wrongDay)
-        <span class="warn">※ この授業は{{ \App\Models\Subject::DAYS[$subject->day_of_week] }}曜日です。日付を確認してください。</span>
+        <span class="warn">※ この授業は{{ $subject->days_label }}曜日です。日付を確認してください。</span>
     @endif
 </p>
 

@@ -21,13 +21,13 @@ class CheckinController extends Controller
         abort_unless($request->user('teacher')->teachesSubject($subject), 403, 'この授業の担当ではありません。');
 
         $today = today();
-        $period = $subject->periodOrFirst($request->query('period')); // ?period=4 で何限の受付かを指定
+        $period = $subject->periodOrFirst($request->query('period'), $today); // ?period=数字 で何限の受付かを指定
 
         return view('teacher.subjects.checkin', [
             'subject' => $subject,
             'today' => $today,
-            'period' => $period,
-            'wrongDay' => $today->dayOfWeekIso !== $subject->day_of_week,
+            'periods' => $subject->periodsFor($today), // 切り替えられる時限
+            'wrongDay' => $subject->scheduleOn($today) === null, // 今日はこの授業の曜日ではない
             'studentCount' => $subject->students()->count(),
             'recordedCount' => $subject->attendances()
                 ->where('date', $today->toDateString())
@@ -47,7 +47,7 @@ class CheckinController extends Controller
             'embedding' => ['required', 'array'],
             'embedding' => ['required', 'array'],
             // 何限の出席か（受付画面の URL の ?period= で送られてくる）
-            'period' => ['required', 'integer', Rule::in($subject->periods())],
+            'period' => ['required', 'integer', Rule::in($subject->periodsFor(today()))],
         ], ['model_version.in' => 'モデルのバージョンがサーバー設定と一致しません。']);
 
         $period = $request->integer('period');

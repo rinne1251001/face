@@ -17,26 +17,23 @@ class DashboardController extends Controller
         $today = today();
 
         $subjects = $teacher->subjects()
+            ->with('schedules')
             ->withCount('students')
-            ->orderBy('day_of_week')
-            ->orderBy('period_start')
-            ->orderBy('name')
+            ->orderBySchedule()
             ->get();
 
-        // 今日の曜日の授業（Carbon の dayOfWeekIso は 1=月 … 7=日 で、subjects.day_of_week と同じ）
-        $todaySubjects = $subjects->where('day_of_week', $today->dayOfWeekIso)->values();
-
-        // 今日の授業を時限ごとの行にする（3〜5限の授業なら3行）
-        $todayRows = $todaySubjects
-            ->flatMap(fn ($subject) => collect($subject->periods())
+        // 今日の授業を時限ごとの行にする（今日の曜日に時間割がある授業だけ。3〜5限なら3行）
+        $todayRows = $subjects
+            ->flatMap(fn ($subject) => collect($subject->periodsOn($today))
                 ->map(fn ($period) => ['subject' => $subject, 'period' => $period]))
             ->sortBy('period')
             ->values();
+        $todaySubjectIds = $todayRows->pluck('subject.id')->unique();
 
         // 「授業ID-時限」 => 出席＋遅刻の人数
         $presentCounts = Attendance::query()
             ->where('date', $today->toDateString())
-            ->whereIn('subject_id', $todaySubjects->pluck('id'))
+            ->whereIn('subject_id', $todaySubjectIds)
             ->whereIn('status', ['present', 'late'])
             ->selectRaw('subject_id, period, count(*) as total')
             ->groupBy('subject_id', 'period')

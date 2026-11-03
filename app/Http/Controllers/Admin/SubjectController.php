@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Subject;
+use App\Models\SubjectSchedule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -16,11 +19,9 @@ class SubjectController extends Controller
     public function index(): View
     {
         $subjects = Subject::query()
-            ->with(['teachers' => fn ($q) => $q->orderBy('name')])
+            ->with(['schedules', 'teachers' => fn ($q) => $q->orderBy('name')])
             ->withCount('students')
-            ->orderBy('day_of_week')
-            ->orderBy('period_start')
-            ->orderBy('name')
+            ->orderBySchedule()
             ->get();
 
         return view('admin.subjects.index', compact('subjects'));
@@ -28,12 +29,19 @@ class SubjectController extends Controller
 
     public function create(): View
     {
-        return view('admin.subjects.form', ['subject' => new Subject(['period_start' => 1, 'period_end' => 1])]);
+        return view('admin.subjects.form', ['subject' => new Subject]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $subject = Subject::create($this->validated($request));
+        [$data, $schedules] = $this->validated($request);
+
+        $subject = DB::transaction(function () use ($data, $schedules) {
+            $subject = Subject::create($data);
+            $subject->schedules()->createMany($schedules);
+
+            return $subject;
+        });
 
         return redirect()->route('admin.subjects.index')
             ->with('status', "「{$subject->name}（{$subject->schedule_label}）」を追加しました。");
@@ -46,7 +54,14 @@ class SubjectController extends Controller
 
     public function update(Request $request, Subject $subject): RedirectResponse
     {
-        $subject->update($this->validated($request));
+        [$data, $schedules] = $this->validated($request);
+
+        DB::transaction(function () use ($subject, $data, $schedules) {
+            $subject->update($data);
+            // 曜日・時限は、いったん全部消して作り直す（出席記録は「授業・日付・時限」で残っているので消えない）
+            SubjectSchedule::where('subject_id', $subject->id)->delete();
+            $subject->schedules()->createMany($schedules);
+        });
 
         return redirect()->route('admin.subjects.index')->with('status', '保存しました。');
     }
@@ -63,24 +78,50 @@ class SubjectController extends Controller
         return redirect()->route('admin.subjects.index')->with('status', '削除しました。');
     }
 
+    // [授業の項目, 曜日・時限の配列] を返す
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $max = Subject::maxPeriod();
+
+        $rules = [
             'name' => ['required', 'string', 'max:100'],
-            'day_of_week' => ['required', 'integer', Rule::in(array_keys(Subject::DAYS))],
-            'period_start' => ['required', 'integer', 'between:1,'.Subject::maxPeriod()],
-            // 終了時限は開始時限以上（1限だけなら開始と同じ）
-            'period_end' => ['required', 'integer', 'between:1,'.Subject::maxPeriod(), 'gte:period_start'],
+            'days' => ['required', 'array', 'min:1'], // チェックした曜日（1つ以上）
+            'days.*' => ['integer', 'distinct', Rule::in(array_keys(Subject::DAYS))],
             'start_date' => ['nullable', 'date'],
             // 終了日は開始日と同じか、それより後
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-        ], [], [
+        ];
+        $attributes = [
             'name' => '授業名',
-            'day_of_week' => '曜日',
-            'period_start' => '開始時限',
-            'period_end' => '終了時限',
+            'days' => '曜日',
             'start_date' => '開始日',
             'end_date' => '終了日',
-        ]);
+        ];
+
+        // チェックした曜日の時限だけをチェックする（チェックしていない曜日の時限は使わない）
+        $checkedDays = array_map('intval', array_filter((array) $request->input('days'), 'is_numeric'));
+        foreach (Subject::DAYS as $day => $label) {
+            if (in_array($day, $checkedDays, true)) {
+                $rules["schedules.$day.period_start"] = ['required', 'integer', "between:1,$max"];
+                // 終了時限は開始時限以上（1限だけなら開始と同じ）
+                $rules["schedules.$day.period_end"] = ['required', 'integer', "between:1,$max", "gte:schedules.$day.period_start"];
+            }
+            $attributes["schedules.$day.period_start"] = "{$label}曜日の開始時限";
+            $attributes["schedules.$day.period_end"] = "{$label}曜日の終了時限";
+        }
+
+        $data = $request->validate($rules, [], $attributes);
+
+        $schedules = collect($data['days'])
+            ->map(fn ($day) => [
+                'day_of_week' => (int) $day,
+                'period_start' => (int) $data['schedules'][$day]['period_start'],
+                'period_end' => (int) $data['schedules'][$day]['period_end'],
+            ])
+            ->sortBy('day_of_week')
+            ->values()
+            ->all();
+
+        return [Arr::only($data, ['name', 'start_date', 'end_date']), $schedules];
     }
 }

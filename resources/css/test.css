@@ -57,6 +57,10 @@ select {
     outline: none;
 }
 
+button {
+    cursor: pointer;
+}
+
 /* ↓クラス＆IDセレクタ */
 /* 成功、失敗、注意の文字色 */
 .ok {
@@ -350,7 +354,11 @@ select {
     border-bottom: 1.5px solid var(--color-font-light);
 }
 
-.page-header h1 { font-size: 24px; font-weight: bold; margin: 0; }
+.page-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
 
 .btn {
     background: var(--color-main);

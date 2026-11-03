@@ -7,10 +7,10 @@
     <h1>出席受付：{{ $subject->name }}（{{ $subject->schedule_label }}）{{ $period }}限</h1>
 
     {{-- 2時限以上続く授業は、ここで受け付ける時限を切り替える --}}
-    @if (count($subject->periods()) > 1)
+    @if (count($periods) > 1)
         <p>
             受け付ける時限：
-            @foreach ($subject->periods() as $p)
+            @foreach ($periods as $p)
                 @if ($p === $period)
                     <strong>【{{ $p }}限】</strong>
                 @else
@@ -24,7 +24,7 @@
         ／ 記録済み <strong id="recordedCount">{{ $recordedCount }}</strong> / {{ $studentCount }}人
     </p>
     @if ($wrongDay)
-        <p class="warn">※ この授業は{{ \App\Models\Subject::DAYS[$subject->day_of_week] }}曜日です。今日の日付で記録されるので注意してください。</p>
+        <p class="warn">※ この授業は{{ $subject->days_label }}曜日です。今日の日付で記録されるので注意してください。</p>
     @endif
 
     <p id="status">画面を準備しています…</p>

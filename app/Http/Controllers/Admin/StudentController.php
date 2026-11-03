@@ -109,7 +109,7 @@ class StudentController extends Controller
     {
         return view('admin.students.bulk', [
             'classes' => SchoolClass::orderBy('name')->get(),
-            'subjects' => Subject::orderBy('day_of_week')->orderBy('period_start')->orderBy('name')->get(),
+            'subjects' => Subject::with('schedules')->orderBySchedule()->get(),
         ]);
     }
 
@@ -202,7 +202,7 @@ class StudentController extends Controller
         return [
             'student' => $student,
             'classes' => SchoolClass::orderBy('name')->get(),
-            'subjects' => Subject::orderBy('day_of_week')->orderBy('period_start')->orderBy('name')->get(),
+            'subjects' => Subject::with('schedules')->orderBySchedule()->get(),
             'selectedSubjectIds' => array_map('intval', $hasOld
                 ? old('subject_ids', [])
                 : ($student->exists ? $student->subjects->pluck('id')->all() : [])),

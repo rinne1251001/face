@@ -25,6 +25,7 @@
                 <ul>
                     <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
                     <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="naming.html">命名規則</a></li>
                     <li><a href="folder.html">フォルダー</a></li>
                     <li><a href="table.html">テーブル一覧</a></li>
                     <li><a href="human.html">顔認証</a></li>
@@ -496,6 +497,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Validation\Rule;</code></pre>
+                <p>
+                    ↓いじるファイル<br>
+                    routes/web.php、app/Http/Controllers/TestController.php、resources/views/tests/tests/*.blade.php
+                </p>
             </section>
 
             <section>
@@ -1146,8 +1151,8 @@ $attendances = Attendance::latest()->get();</code></pre>
             </section>
 
             <section>
-                <h3>WHEN</h3>
-                <p></p>
+                <h3>->when()</h3>
+                <p>条件が真の場合のときにクエリに条件を追加する</p>
                 <pre><code></code></pre>
                 <pre><code class="php"></code></pre>
             </section>

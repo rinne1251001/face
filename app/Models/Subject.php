@@ -3,28 +3,32 @@
 namespace App\Models;
 
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 
+// 授業。曜日と時限は subject_schedules に分けてあるので、週に何回あっても1つの授業として扱える
 class Subject extends Model
 {
     // 曜日の番号（Carbon の dayOfWeekIso と同じ：1=月 … 7=日）
     public const DAYS = [1 => '月', 2 => '火', 3 => '水', 4 => '木', 5 => '金', 6 => '土', 7 => '日'];
 
-    protected $fillable = ['name', 'day_of_week', 'period_start', 'period_end', 'start_date', 'end_date'];
+    protected $fillable = ['name', 'start_date', 'end_date'];
 
     protected function casts(): array
     {
         return [
-            'day_of_week' => 'integer',
-            'period_start' => 'integer',
-            'period_end' => 'integer',
             'start_date' => 'date', // Carbon（日付）として扱える
             'end_date' => 'date',
         ];
+    }
+
+    // 授業を行う曜日と時限（月曜→日曜の順）
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(SubjectSchedule::class)->orderBy('day_of_week');
     }
 
     public function students(): BelongsToMany
@@ -48,61 +52,69 @@ class Subject extends Model
         return count(config('school.periods'));
     }
 
-    // 授業の開始時刻（例：'09:15'）。3〜5限のように続く授業は、最初の時限の開始時刻
-    protected function startTime(): Attribute
+    // 時間割の順（いちばん早い曜日・時限の順 → 授業名の順）に並べる
+    // 使い方：Subject::orderBySchedule()->get()
+    public function scopeOrderBySchedule(Builder $query): void
     {
-        return Attribute::get(fn () => config("school.periods.{$this->period_start}.start"));
+        $query->orderBy(
+            SubjectSchedule::selectRaw('min(day_of_week * 100 + period_start)')
+                ->whereColumn('subject_schedules.subject_id', 'subjects.id')
+        )->orderBy('name');
     }
 
-    // 授業の終了時刻（例：'18:30'）。続く授業は、最後の時限の終了時刻
-    protected function endTime(): Attribute
+    // ある曜日に授業がある授業だけ
+    // 使い方：Subject::onDay(today()->dayOfWeekIso)->get()
+    public function scopeOnDay(Builder $query, int $dayOfWeek): void
     {
-        return Attribute::get(fn () => config("school.periods.{$this->period_end}.end"));
+        $query->whereHas('schedules', fn ($q) => $q->where('day_of_week', $dayOfWeek));
     }
 
-    // ある日の、授業の開始・終了の日時（遅刻の判定や「いま行われている授業」を探すのに使う）
-    public function startsAt(CarbonInterface $date): Carbon
+    // ある日の曜日・時限（その曜日に授業がなければ null）
+    public function scheduleOn(CarbonInterface $date): ?SubjectSchedule
     {
-        return Carbon::parse($date->toDateString().' '.$this->timeOrFail($this->start_time, $this->period_start));
+        return $this->schedules->firstWhere('day_of_week', $date->dayOfWeekIso);
     }
 
-    public function endsAt(CarbonInterface $date): Carbon
+    // ある日の時限の一覧（例：水曜なら [3, 4, 5]）。授業のない曜日なら空
+    public function periodsOn(CarbonInterface $date): array
     {
-        return Carbon::parse($date->toDateString().' '.$this->timeOrFail($this->end_time, $this->period_end));
+        return $this->scheduleOn($date)?->periods() ?? [];
     }
 
-    // config に時刻が書かれていない時限なら、すぐにエラーにする
-    // （そのままだと「0時0分」として扱われ、遅刻の判定などが黙って間違うため）
-    private function timeOrFail(?string $time, int $period): string
+    // 出席を取れる時限の一覧
+    // その日が授業の曜日ならその日の時限。違う曜日（振替など）なら、この授業のどれかの時限を選べるようにする
+    public function periodsFor(CarbonInterface $date): array
     {
-        return $time ?? throw new \LogicException("{$period}限の時刻が config/school.php にありません。");
+        $periods = $this->periodsOn($date);
+        if ($periods === []) {
+            $periods = $this->schedules->flatMap->periods()->unique()->sort()->values()->all();
+        }
+
+        return $periods;
     }
 
-    // この授業の時限の一覧（例：3〜5限の授業なら [3, 4, 5]）
-    public function periods(): array
+    // 画面の ?period= の値を、その日の時限にそろえる（おかしな値や指定なしなら最初の時限）
+    public function periodOrFirst(mixed $period, CarbonInterface $date): int
     {
-        return range($this->period_start, $this->period_end);
+        $periods = $this->periodsFor($date);
+
+        return in_array((int) $period, $periods, true) ? (int) $period : ($periods[0] ?? 1);
     }
 
-    // 画面の ?period= の値を、この授業の時限にそろえる（おかしな値や指定なしなら最初の時限）
-    public function periodOrFirst(mixed $period): int
-    {
-        return in_array((int) $period, $this->periods(), true) ? (int) $period : $this->period_start;
-    }
-
-    // 画面表示用：「月曜 1限」「水曜 3〜5限」（$subject->schedule_label で使える）
+    // 画面表示用：「月曜 1限・水曜 3〜5限」（$subject->schedule_label で使える）
     protected function scheduleLabel(): Attribute
     {
-        return Attribute::get(function () {
-            $day = self::DAYS[$this->day_of_week] ?? '?';
-            $period = $this->period_start === $this->period_end
-                ? "{$this->period_start}限"
-                : "{$this->period_start}〜{$this->period_end}限";
-
-            return "{$day}曜 {$period}";
-        });
+        return Attribute::get(fn () => $this->schedules->pluck('label')->implode('・'));
     }
-    
+
+    // 画面表示用：「月・水」（$subject->days_label で使える）
+    protected function daysLabel(): Attribute
+    {
+        return Attribute::get(fn () => $this->schedules
+            ->map(fn ($schedule) => self::DAYS[$schedule->day_of_week] ?? '?')
+            ->implode('・'));
+    }
+
     // 画面表示用：「4月1日〜7月31日」（$subject->term_label で使える。未設定なら null）
     protected function termLabel(): Attribute
     {

@@ -23,7 +23,7 @@ class AttendanceController extends Controller
 
         $request->validate(['date' => ['nullable', 'date_format:Y-m-d']]);
         $date = Carbon::parse($request->query('date', today()->toDateString()));
-        $period = $subject->periodOrFirst($request->query('period'));
+        $period = $subject->periodOrFirst($request->query('period'), $date);
 
         $students = $subject->students()
             ->with('schoolClass')
@@ -46,7 +46,8 @@ class AttendanceController extends Controller
         return view('teacher.subjects.show', [
             'subject' => $subject,
             'date' => $date,
-            'period' => $period,
+            'periods' => $subject->periodsFor($date), // 切り替えられる時限
+            'wrongDay' => $subject->scheduleOn($date) === null,
             'isToday' => $date->isToday(),
             'isFuture' => $date->isFuture(),
             // 指定した日がこの授業の曜日と違うとき、画面に注意を出す
@@ -67,9 +68,13 @@ class AttendanceController extends Controller
 
         $data = $request->validate([
             'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
-            'period' => ['required', 'integer', Rule::in($subject->periods())],
             // none は「未記録に戻す」
             'status' => ['required', Rule::in([...array_keys(Attendance::STATUSES), 'none'])],
+        ]);
+
+        // 時限は、日付が決まってから「その日の時限か」をチェックする
+        $data += $request->validate([
+            'period' => ['required', 'integer', Rule::in($subject->periodsFor(Carbon::parse($data['date'])))],
         ]);
 
         $keys = ['student_id' => $student->id, 'subject_id' => $subject->id, 'date' => $data['date'], 'period' => (int) $data['period']];

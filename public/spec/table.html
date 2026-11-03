@@ -25,6 +25,7 @@
                 <ul>
                     <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
                     <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="naming.html">命名規則</a></li>
                     <li><a href="folder.html">フォルダー</a></li>
                     <li><a href="table.html">テーブル一覧</a></li>
                     <li><a href="human.html">顔認証</a></li>
@@ -988,6 +989,7 @@ protected function termLabel(): Attribute
         <div class="content-wrapper">
             <h2 id="subjects">subjects</h2>
             <section>
+                <h3>subjects</h3>
                 <p>授業の情報をまとめたテーブル</p>
                 <table border="1">
                     <tr>
@@ -997,6 +999,37 @@ protected function termLabel(): Attribute
                     <tr>
                         <th>name</th>
                         <td>授業名</td>
+                    </tr>
+                    <tr>
+                        <th>start_date</th>
+                        <td>開始日</td>
+                    </tr>
+                    <tr>
+                        <th>end_date</th>
+                        <td>終了日</td>
+                    </tr>
+                    <tr>
+                        <th>created_at</th>
+                        <td>作成日</td>
+                    </tr>
+                    <tr>
+                        <th>updated_at</th>
+                        <td>更新日</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h3>subject_schedules</h3>
+                <p>授業のスケジュールをまとめたテーブル</p>
+                <table border="1">
+                    <tr>
+                        <th>id</th>
+                        <td>ID</td>
+                    </tr>
+                    <tr>
+                        <th>subject_id</th>
+                        <td>授業のID</td>
                     </tr>
                     <tr>
                         <th>day_of_week</th>
@@ -1126,6 +1159,30 @@ protected function termLabel(): Attribute
             <section>
                 <p>入校証の情報をまとめたテーブル</p>
                 <table border="1">
+                    <tr>
+                        <th>id</th>
+                        <td>ID</td>
+                    </tr>
+                    <tr>
+                        <th>student_id</th>
+                        <td>学生のID</td>
+                    </tr>
+                    <tr>
+                        <th>idm</th>
+                        <td>IDm</td>
+                    </tr>
+                    <tr>
+                        <th>is_active</th>
+                        <td>入校証が有効か</td>
+                    </tr>
+                    <tr>
+                        <th>created_at</th>
+                        <td>作成日</td>
+                    </tr>
+                    <tr>
+                        <th>updated_at</th>
+                        <td>更新日</td>
+                    </tr>
                 </table>
             </section>
         </div>
@@ -1135,6 +1192,22 @@ protected function termLabel(): Attribute
             <section>
                 <p>入校証をタッチした記録をまとめたテーブル</p>
                 <table border="1">
+                    <tr>
+                        <th>id</th>
+                        <td>ID</td>
+                    </tr>
+                    <tr>
+                        <th>student_card_id</th>
+                        <td>入校証のID</td>
+                    </tr>
+                    <tr>
+                        <th>student_id</th>
+                        <td>学生のID</td>
+                    </tr>
+                    <tr>
+                        <th>created_at</th>
+                        <td>作成日</td>
+                    </tr>
                 </table>
             </section>
         </div>

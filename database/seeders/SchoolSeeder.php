@@ -14,10 +14,13 @@ class SchoolSeeder extends Seeder
             SchoolClass::firstOrCreate(['name' => $name]);
         }
 
-        Subject::firstOrCreate(
-            ['name' => '数学', 'day_of_week' => 1, 'period_start' => 1, 'period_end' => 1],
-            ['start_date' => '2026-04-01', 'end_date' => '2026-07-31'],
-        );
-        Subject::firstOrCreate(['name' => '情報実習', 'day_of_week' => 3, 'period_start' => 3, 'period_end' => 5]);
+        // 数学：月曜1限と木曜2限（週2回でも1つの授業）
+        $math = Subject::firstOrCreate(['name' => '数学'], ['start_date' => '2026-04-01', 'end_date' => '2026-07-31']);
+        $math->schedules()->firstOrCreate(['day_of_week' => 1], ['period_start' => 1, 'period_end' => 1]);
+        $math->schedules()->firstOrCreate(['day_of_week' => 4], ['period_start' => 2, 'period_end' => 2]);
+
+        // 情報実習：水曜3〜5限
+        $it = Subject::firstOrCreate(['name' => '情報実習']);
+        $it->schedules()->firstOrCreate(['day_of_week' => 3], ['period_start' => 3, 'period_end' => 5]);
     }
 }
