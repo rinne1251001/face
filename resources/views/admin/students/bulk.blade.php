@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.test')
 @section('title', '生徒を一斉に追加')
 
 @section('content')
@@ -106,6 +106,7 @@
         </form>
     </div>
 </main>
+
 @endsection
 
 @push('scripts')
