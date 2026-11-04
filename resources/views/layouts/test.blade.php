@@ -22,7 +22,7 @@
         $userMenu = [];
     @endphp
  
-    @auth('admin')
+    @if (request()->routeIs('admin.*') && auth('admin')->check())
         @php
             // =========================
             // adminのメニュー定義（ここを編集すれば全ヘッダーに反映されます）
@@ -48,7 +48,7 @@
                 ['label' => 'ログアウト', 'url' => route('admin.logout'), 'logout' => true],
             ];
         @endphp
-    @elseauth('teacher')
+    @elseif (request()->routeIs('teacher.*') && auth('teacher')->check())
         @php
             // =========================
             // teacherのメニュー定義（ここを編集すれば全ヘッダーに反映されます）
@@ -67,7 +67,7 @@
                 ['label' => 'ログアウト', 'url' => route('teacher.logout'), 'logout' => true],
             ];
         @endphp
-    @endauth
+    @endif
  
  
     <!-- =========================
