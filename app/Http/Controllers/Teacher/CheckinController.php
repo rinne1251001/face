@@ -7,6 +7,7 @@ use App\Models\Attendance;
 use App\Models\MatchLog;
 use App\Models\Subject;
 use App\Services\FaceMatcher;
+use App\Services\SchoolCalendar;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,7 @@ use Illuminate\View\View;
 class CheckinController extends Controller
 {
     // カメラの画面
-    public function show(Request $request, Subject $subject): View
+    public function show(Request $request, Subject $subject, SchoolCalendar $calendar): View
     {
         abort_unless($request->user('teacher')->teachesSubject($subject), 403, 'この授業の担当ではありません。');
 
@@ -27,7 +28,8 @@ class CheckinController extends Controller
             'subject' => $subject,
             'today' => $today,
             'periods' => $subject->periodsFor($today), // 切り替えられる時限
-            'wrongDay' => $subject->scheduleOn($today) === null, // 今日はこの授業の曜日ではない
+            'wrongDay' => $subject->periodsOn($today) === [], // 今日はこの授業がない（祝日・休校・曜日違い）
+            'dayNote' => $calendar->dayNote($today),            // 例：祝日（文化の日）
             'studentCount' => $subject->students()->count(),
             'recordedCount' => $subject->attendances()
                 ->where('date', $today->toDateString())

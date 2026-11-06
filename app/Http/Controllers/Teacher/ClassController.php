@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\SchoolClass;
 use App\Models\Subject;
+use App\Services\SchoolCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -21,7 +22,7 @@ class ClassController extends Controller
         return view('teacher.classes.index', compact('classes'));
     }
 
-    public function show(Request $request, SchoolClass $schoolClass): View
+    public function show(Request $request, SchoolClass $schoolClass, SchoolCalendar $calendar): View
     {
         $teacher = $request->user('teacher');
         abort_unless($teacher->hasSchoolClass($schoolClass), 403, 'このクラスの受け持ちではありません。');
@@ -32,12 +33,15 @@ class ClassController extends Controller
 
         // クラスの生徒と、それぞれがその曜日に受講している授業
         $students = $schoolClass->students()
-            ->with(['subjects' => fn ($q) => $q->onDay($dayOfWeek)->with('schedules')])
+            ->with('subjects.schedules')
             ->orderBy('student_number')
             ->get();
 
         // このクラスの誰かが受講している、その曜日の授業
-        $subjects = $students->flatMap->subjects->unique('id')->values();
+        $subjects = $students->flatMap->subjects
+            ->unique('id')
+            ->filter(fn ($subject) => $subject->periodsOn($date) !== []) // その日に授業があるものに絞る
+            ->values();
 
         // 表の列：「授業 × 時限」（3〜5限の授業なら3列）。時限の順に並べる
         $columns = $subjects
@@ -58,6 +62,7 @@ class ClassController extends Controller
             'schoolClass' => $schoolClass,
             'date' => $date,
             'dayLabel' => Subject::DAYS[$dayOfWeek],
+            'dayNote' => $calendar->dayNote($date),
             'students' => $students,
             'subjects' => $subjects,
             'columns' => $columns, // ← これがなかったので $columns が未定義になっていた

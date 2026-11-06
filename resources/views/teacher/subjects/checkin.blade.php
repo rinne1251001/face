@@ -27,7 +27,7 @@
             ／ 記録済み <strong id="recordedCount">{{ $recordedCount }}</strong> / {{ $studentCount }}人
         </p>
         @if ($wrongDay)
-            <p class="warn">※ この授業は{{ $subject->days_label }}曜日です。今日の日付で記録されるので注意してください。</p>
+            <p>※ 今日はこの授業の日ではありません（{{ $subject->schedule_label }}{{ $dayNote ? "／今日は{$dayNote}" : '' }}）。今日の日付で記録されるので注意してください。</p>
         @endif
 
         <p id="status">画面を準備しています…</p>

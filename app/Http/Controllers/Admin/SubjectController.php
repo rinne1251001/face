@@ -85,7 +85,7 @@ class SubjectController extends Controller
 
         $rules = [
             'name' => ['required', 'string', 'max:100'],
-            'days' => ['required', 'array', 'min:1'], // チェックした曜日（1つ以上）
+            'days' => ['array', 'min:1'], // チェックした曜日（1つ以上）
             'days.*' => ['integer', 'distinct', Rule::in(array_keys(Subject::DAYS))],
             'start_date' => ['nullable', 'date'],
             // 終了日は開始日と同じか、それより後

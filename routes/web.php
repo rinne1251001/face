@@ -67,6 +67,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('subjects', Admin\SubjectController::class)->except('show');
         Route::resource('teachers', Admin\TeacherController::class)->except('show');
 
+        // 時間割（祝日は自動。休校・振替・変則授業はここで登録する）
+        Route::get('schedules', [Admin\ScheduleController::class, 'index'])->name('schedules.index');
+        Route::get('schedules/create', [Admin\ScheduleController::class, 'create'])->name('schedules.create');
+        Route::post('schedule/days', [Admin\ScheduleController::class, 'storeDay'])->name('schedules.days.store');
+        Route::delete('schedules/days/{calendarDay}', [Admin\ScheduleController::class, 'destroyDay'])->name('schedules.days.destroy');
+        Route::post('schedules/special-classes', [Admin\ScheduleController::class, 'storeSpecialClass'])->name('schedules.special-classes.store');
+        Route::delete('schedules/special-classes/{specialClass}', [Admin\ScheduleController::class, 'destroySpecialClass'])->name('schedules.special-classes.destroy');
+
         // 照合テスト（しきい値の調整用）
         Route::get('match', [Admin\FaceMatchController::class, 'show'])->name('match.show');
         Route::post('match', [Admin\FaceMatchController::class, 'match'])->name('match.run')->middleware('throttle:60,1');
@@ -112,5 +120,8 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
         Route::put('settings/password', [Teacher\SettingController::class, 'updatePassword'])
             ->name('settings.password.update')
             ->middleware('throttle:5,1'); // 今のパスワードを総当たりで試されないように、1分に5回まで
+
+        // 分析
+        Route::get('analyses', [Teacher\AnalysisController::class, 'index'])->name('analyses.index');
     });
 });

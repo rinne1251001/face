@@ -15,7 +15,7 @@ class SchoolSeeder extends Seeder
         }
 
         // 数学：月曜1限と木曜2限（週2回でも1つの授業）
-        $math = Subject::firstOrCreate(['name' => '数学'], ['start_date' => '2026-04-01', 'end_date' => '2026-07-31']);
+        $math = Subject::firstOrCreate(['name' => '数学'], ['start_date' => '2026-09-01', 'end_date' => '2027-01-31']);
         $math->schedules()->firstOrCreate(['day_of_week' => 1], ['period_start' => 1, 'period_end' => 1]);
         $math->schedules()->firstOrCreate(['day_of_week' => 4], ['period_start' => 2, 'period_end' => 2]);
 

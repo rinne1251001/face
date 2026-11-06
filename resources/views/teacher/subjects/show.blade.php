@@ -35,7 +35,7 @@
         <p>
             <strong>{{ $date->format('Y年n月j日') }}（{{ $dayLabel }}）</strong>
             @if ($wrongDay)
-                <span class="warn">※ この授業は{{ $subject->days_label }}曜日です。日付を確認してください。</span>
+                <span>※ この日はこの授業の日ではありません（{{ $subject->schedule_label }}{{ $dayNote ? "／この日は{$dayNote}" : '' }}）。日付を確認してください。</span>
             @endif
         </p>
 

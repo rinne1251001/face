@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\SchoolCalendar; 
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -69,16 +70,48 @@ class Subject extends Model
         $query->whereHas('schedules', fn ($q) => $q->where('day_of_week', $dayOfWeek));
     }
 
-    // ある日の曜日・時限（その曜日に授業がなければ null）
-    public function scheduleOn(CarbonInterface $date): ?SubjectSchedule
+        // 変則授業（日付を指定して行う授業）
+    public function specialClasses(): HasMany
     {
-        return $this->schedules->firstWhere('day_of_week', $date->dayOfWeekIso);
+        return $this->hasMany(SpecialClass::class)->orderBy('date');
     }
 
-    // ある日の時限の一覧（例：水曜なら [3, 4, 5]）。授業のない曜日なら空
+    // 授業の期間（開始日〜終了日）の中の日か。開始日・終了日が未設定なら制限なし
+    public function isInTerm(CarbonInterface $date): bool
+    {
+        return ($this->start_date === null || $date->gte($this->start_date))
+            && ($this->end_date === null || $date->lte($this->end_date));
+    }
+
+    // ある日の、毎週の時間割（授業がない日は null）
+    // 祝日・休校の日は null、振替の日は振替先の曜日の時間割になる（SchoolCalendar が決める）
+    public function scheduleOn(CarbonInterface $date): ?SubjectSchedule
+    {
+        if (! $this->isInTerm($date)) {
+            return null;
+        }
+
+        $day = app(SchoolCalendar::class)->timetableDay($date);
+
+        return $day === null ? null : $this->schedules->firstWhere('day_of_week', $day);
+    }
+
+    // ある日の変則授業（なければ null）
+    public function specialClassOn(CarbonInterface $date): ?SpecialClass
+    {
+        return app(SchoolCalendar::class)->specialClassesOn($date)->get($this->id);
+    }
+
+    // ある日の時限の一覧（毎週の時間割 ＋ 変則授業。例：水曜なら [3, 4, 5]）。授業がない日は空
     public function periodsOn(CarbonInterface $date): array
     {
-        return $this->scheduleOn($date)?->periods() ?? [];
+        $periods = array_unique([
+            ...($this->scheduleOn($date)?->periods() ?? []),
+            ...($this->specialClassOn($date)?->periods() ?? []),
+        ]);
+        sort($periods);
+
+        return $periods;
     }
 
     // 出席を取れる時限の一覧
@@ -87,7 +120,7 @@ class Subject extends Model
     {
         $periods = $this->periodsOn($date);
         if ($periods === []) {
-            $periods = $this->schedules->flatMap->periods()->unique()->sort()->values()->all();
+            $periods = range(1, self::maxPeriod()); // 変則授業だけの授業は、どの時限でも選べる
         }
 
         return $periods;
@@ -104,7 +137,7 @@ class Subject extends Model
     // 画面表示用：「月曜 1限・水曜 3〜5限」（$subject->schedule_label で使える）
     protected function scheduleLabel(): Attribute
     {
-        return Attribute::get(fn () => $this->schedules->pluck('label')->implode('・'));
+        return Attribute::get(fn () => $this->schedules->pluck('label')->implode('・') ?: '不定期');
     }
 
     // 画面表示用：「月・水」（$subject->days_label で使える）

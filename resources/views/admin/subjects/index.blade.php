@@ -24,50 +24,11 @@
         --color-shadow: rgba(40, 38, 62, 0.05);
     }
 
-    .subjects-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-bottom: 28px;
-    }
-
-    .subjects-heading {
-        margin: 0 0 8px;
-        font-size: 28px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-    }
-
     .subjects-description {
         margin: 0;
         color: var(--color-font-light);
         font-size: 14px;
         line-height: 1.7;
-    }
-
-    .subject-add-button {
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        min-height: 46px;
-        padding: 12px 20px;
-        border-radius: 10px;
-        background: var(--color-main);
-        color: var(--color-bg);
-        font-size: 14px;
-        font-weight: 700;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-        transition: opacity 0.2s, transform 0.2s;
-    }
-
-    .subject-add-button:hover {
-        opacity: 0.85;
-        transform: translateY(-2px);
     }
 
     .subjects-card {
@@ -244,20 +205,6 @@
             padding: 20px 14px;
         }
 
-        .subjects-header {
-            align-items: stretch;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .subjects-heading {
-            font-size: 24px;
-        }
-
-        .subject-add-button {
-            width: 100%;
-        }
-
         .subjects-card {
             border-radius: 12px;
         }
@@ -286,15 +233,13 @@
 <main class="main">
     <div class="content-wrapper">
 
-        <header class="subjects-header">
+        <div class="page-header">
+            <h1>授業一覧</h1>
             <div>
-                <h1 class="subjects-heading">授業一覧</h1>
-                <p class="subjects-description">
-                    登録されている授業や担当教師、受講生徒数を確認できます。
-                </p>
+                <a class="btn" href="{{ route('admin.subjects.create') }}">＋ 授業を追加</a>
+                <a class="btn" href="{{ route('admin.schedules.index') }}">スケジュールを確認</a>
             </div>
-            <a class="subject-add-button" href="{{ route('admin.subjects.create') }}">＋ 授業を追加</a>
-        </header>
+        </div>
 
         <section class="subjects-card" aria-label="授業一覧">
 
