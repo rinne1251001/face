@@ -41,7 +41,7 @@ class AttendanceController extends Controller
             ->keyBy('student_id');
 
         // 状態ごとの人数（未記録は全員から記録済みを引く）
-        $counts = collect(Attendance::STATUSES)->map(fn ($label, $status) => $attendances->where('status', $status)->count());
+        $counts = collect(Attendance::STATUSES)->map(fn ($label, $status) => $attendances->where('status', $status)->count())->all();
         $counts['none'] = $students->count() - $attendances->count();
 
         return view('teacher.subjects.show', [

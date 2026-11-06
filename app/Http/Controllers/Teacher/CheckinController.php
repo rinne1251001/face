@@ -47,7 +47,6 @@ class CheckinController extends Controller
         $request->validate([
             'model_version' => ['required', 'string', Rule::in([config('face.model_version')])],
             'embedding' => ['required', 'array'],
-            'embedding' => ['required', 'array'],
             // 何限の出席か（受付画面の URL の ?period= で送られてくる）
             'period' => ['required', 'integer', Rule::in($subject->periodsFor(today()))],
         ], ['model_version.in' => 'モデルのバージョンがサーバー設定と一致しません。']);

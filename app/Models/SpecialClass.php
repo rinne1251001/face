@@ -27,12 +27,14 @@ class SpecialClass extends Model
         static::deleted(fn () => app(SchoolCalendar::class)->flush());
     }
 
+    /** @return BelongsTo<Subject, $this> */
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
     // 時限の一覧（例：3〜5限なら [3, 4, 5]）
+    /** @return list<int> */
     public function periods(): array
     {
         return range($this->period_start, $this->period_end);

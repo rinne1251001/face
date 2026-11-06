@@ -79,13 +79,16 @@ class SubjectController extends Controller
     }
 
     // [授業の項目, 曜日・時限の配列] を返す
+    /** @return array{array<mixed>, array<int, array{day_of_week: int, period_start: int, period_end: int}>} */
     private function validated(Request $request): array
     {
         $max = Subject::maxPeriod();
 
         $rules = [
             'name' => ['required', 'string', 'max:100'],
-            'days' => ['array', 'min:1'], // チェックした曜日（1つ以上）
+            // チェックした曜日（1つ以上）
+            // required がないと、1つもチェックしなかったときに $data['days'] がなくてエラー画面になる
+            'days' => ['required', 'array', 'min:1'],
             'days.*' => ['integer', 'distinct', Rule::in(array_keys(Subject::DAYS))],
             'start_date' => ['nullable', 'date'],
             // 終了日は開始日と同じか、それより後
@@ -112,7 +115,7 @@ class SubjectController extends Controller
 
         $data = $request->validate($rules, [], $attributes);
 
-        $schedules = collect($data['days'])
+        $schedules = collect(Arr::array($data, 'days')) // Arr::array … 配列として取り出す（配列でなければ例外）
             ->map(fn ($day) => [
                 'day_of_week' => (int) $day,
                 'period_start' => (int) $data['schedules'][$day]['period_start'],

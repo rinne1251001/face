@@ -11,12 +11,14 @@ class SchoolClass extends Model
 {
     protected $fillable = ['name'];
 
+    /** @return HasMany<Student, $this> */
     public function students(): HasMany
     {
         return $this->hasMany(Student::class);
     }
 
     // 受け持ちの教師（0人以上）
+    /** @return BelongsToMany<Teacher, $this> */
     public function teachers(): BelongsToMany
     {
         return $this->belongsToMany(Teacher::class);

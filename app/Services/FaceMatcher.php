@@ -17,6 +17,8 @@ class FaceMatcher
      * 明るい部屋は数値が大きくなり暗い部屋では小さくなるので、1に揃えることで比較しやすくする
      * 1に揃えるとコサイン類似度（2つのベクトルの方向の近さを表す指標）をかけ算で求められるようになる
      * $raw（顔の特徴を入れたデータ配列）が正しい配列か検証するためにmixedというデータ型で受け取っている
+     *
+     * @return list<float>
      */
     public static function toUnitVector(mixed $raw, string $field = 'embedding'): array
     {
@@ -48,6 +50,8 @@ class FaceMatcher
     /**
      * 画面に返す生徒の情報（特徴量などは含めない）
      * 照合テストと出席受付の両方で使う
+     *
+     * @return array{id: int, name: string, student_number: string, class_name: string|null}|null
      */
     public static function summary(?Student $student): ?array
     {
@@ -66,6 +70,16 @@ class FaceMatcher
     /**
      * 登録データと照合し、最も近い人物と判定結果を返す
      * 正規化済み同士なので、ドット積 = コサイン類似度
+     *
+     * @param  list<float>  $unitQuery  toUnitVector() で正規化した特徴量
+     * @return array{
+     *     accepted: bool,
+     *     student: Student|null,
+     *     best_student_id: int|null,
+     *     similarity: float|null,
+     *     margin: float|null,
+     *     candidates: list<array{student: Student|null, similarity: float}>
+     * }
      */
     public function match(array $unitQuery, string $modelVersion): array
     {
@@ -79,6 +93,10 @@ class FaceMatcher
          * なお、キーは1始まりになる
          */
         $q = unpack('g*', pack('g*', ...$unitQuery));
+        // unpack() は失敗すると false を返す（ふつうは起きないが、起きたら計算せずに止める）
+        if ($q === false) {
+            throw new \RuntimeException('特徴量を32bitに変換できませんでした。');
+        }
         $dim = count($q);
         $scores = [];
 
@@ -90,7 +108,8 @@ class FaceMatcher
             $best = null;
             foreach ($vectors as $packed) {
                 $v = unpack('g*', $packed);
-                if (count($v) !== $dim) {
+                // 読み取れないデータ（false）や、次元数が違うデータは飛ばす
+                if ($v === false || count($v) !== $dim) {
                     continue;
                 }
                 $s = 0.0;
@@ -147,6 +166,8 @@ class FaceMatcher
     /**
      * 照合用データ（人物ID => float32バイナリの配列）
      * バイナリを含むので file キャッシュに保存する
+     *
+     * @return array<int, list<string>>
      */
     public function index(string $modelVersion): array
     {

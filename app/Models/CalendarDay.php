@@ -27,9 +27,10 @@ class CalendarDay extends Model
     }
 
     // 画面表示用：「休校」「水曜の時間割」
+    /** @return Attribute<string, never> */
     protected function label(): Attribute
     {
-        return Attribute::get(fn () => $this->day_of_week === null
+        return Attribute::make(get: fn () => $this->day_of_week === null
             ? '休校'
             : Subject::DAYS[$this->day_of_week].'曜の時間割');
     }

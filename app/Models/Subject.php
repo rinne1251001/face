@@ -27,21 +27,25 @@ class Subject extends Model
     }
 
     // 授業を行う曜日と時限（月曜→日曜の順）
+    /** @return HasMany<SubjectSchedule, $this> */
     public function schedules(): HasMany
     {
         return $this->hasMany(SubjectSchedule::class)->orderBy('day_of_week');
     }
 
+    /** @return BelongsToMany<Student, $this> */
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class);
     }
 
+    /** @return BelongsToMany<Teacher, $this> */
     public function teachers(): BelongsToMany
     {
         return $this->belongsToMany(Teacher::class);
     }
 
+    /** @return HasMany<Attendance, $this> */
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
@@ -55,6 +59,7 @@ class Subject extends Model
 
     // 時間割の順（いちばん早い曜日・時限の順 → 授業名の順）に並べる
     // 使い方：Subject::orderBySchedule()->get()
+    /** @param Builder<Subject> $query */
     public function scopeOrderBySchedule(Builder $query): void
     {
         $query->orderBy(
@@ -65,12 +70,14 @@ class Subject extends Model
 
     // ある曜日に授業がある授業だけ
     // 使い方：Subject::onDay(today()->dayOfWeekIso)->get()
+    /** @param Builder<Subject> $query */
     public function scopeOnDay(Builder $query, int $dayOfWeek): void
     {
         $query->whereHas('schedules', fn ($q) => $q->where('day_of_week', $dayOfWeek));
     }
 
         // 変則授業（日付を指定して行う授業）
+    /** @return HasMany<SpecialClass, $this> */
     public function specialClasses(): HasMany
     {
         return $this->hasMany(SpecialClass::class)->orderBy('date');
@@ -103,6 +110,7 @@ class Subject extends Model
     }
 
     // ある日の時限の一覧（毎週の時間割 ＋ 変則授業。例：水曜なら [3, 4, 5]）。授業がない日は空
+    /** @return list<int> */
     public function periodsOn(CarbonInterface $date): array
     {
         $periods = array_unique([
@@ -116,6 +124,7 @@ class Subject extends Model
 
     // 出席を取れる時限の一覧
     // その日が授業の曜日ならその日の時限。違う曜日（振替など）なら、この授業のどれかの時限を選べるようにする
+    /** @return list<int> */
     public function periodsFor(CarbonInterface $date): array
     {
         $periods = $this->periodsOn($date);
@@ -135,23 +144,26 @@ class Subject extends Model
     }
 
     // 画面表示用：「月曜 1限・水曜 3〜5限」（$subject->schedule_label で使える）
+    /** @return Attribute<string, never> */
     protected function scheduleLabel(): Attribute
     {
-        return Attribute::get(fn () => $this->schedules->pluck('label')->implode('・') ?: '不定期');
+        return Attribute::make(get: fn () => $this->schedules->pluck('label')->implode('・') ?: '不定期');
     }
 
     // 画面表示用：「月・水」（$subject->days_label で使える）
+    /** @return Attribute<string, never> */
     protected function daysLabel(): Attribute
     {
-        return Attribute::get(fn () => $this->schedules
+        return Attribute::make(get: fn () => $this->schedules
             ->map(fn ($schedule) => self::DAYS[$schedule->day_of_week] ?? '?')
             ->implode('・'));
     }
 
     // 画面表示用：「4月1日〜7月31日」（$subject->term_label で使える。未設定なら null）
+    /** @return Attribute<string|null, never> */
     protected function termLabel(): Attribute
     {
-        return Attribute::get(fn () => $this->start_date && $this->end_date
+        return Attribute::make(get: fn () => $this->start_date && $this->end_date
             ? $this->start_date->format('n月j日').'〜'.$this->end_date->format('n月j日')
             : null);
     }

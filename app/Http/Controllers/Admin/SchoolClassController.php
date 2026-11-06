@@ -60,6 +60,7 @@ class SchoolClassController extends Controller
         return redirect()->route('admin.classes.index')->with('status', '削除しました。');
     }
 
+    /** @return array<string, mixed> */
     private function validated(Request $request, ?SchoolClass $schoolClass = null): array
     {
         return $request->validate([

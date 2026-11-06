@@ -17,12 +17,14 @@ class Teacher extends Authenticatable
     }
 
     // 受け持ちクラス（0個以上）
+    /** @return BelongsToMany<SchoolClass, $this> */
     public function schoolClasses(): BelongsToMany
     {
         return $this->belongsToMany(SchoolClass::class);
     }
 
     // 担当授業（1つ以上）
+    /** @return BelongsToMany<Subject, $this> */
     public function subjects(): BelongsToMany
     {
         return $this->belongsToMany(Subject::class);

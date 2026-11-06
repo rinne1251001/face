@@ -38,6 +38,7 @@ class DashboardController extends Controller
             ->whereIn('status', ['present', 'late'])
             ->selectRaw('subject_id, period, count(*) as total')
             ->groupBy('subject_id', 'period')
+            ->toBase() // 集計した行は Attendance のモデルではないので、素の行（stdClass）として受け取る
             ->get()
             ->mapWithKeys(fn ($row) => ["{$row->subject_id}-{$row->period}" => $row->total]);
 

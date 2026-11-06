@@ -48,6 +48,7 @@
             <li><a href="#database">データベース関連</a></li>
             <li><a href="#cache">キャッシュクリア</a></li>
             <li><a href="#composer">composer関連</a></li>
+            <li><a href="#phpstan">phpstan</a></li>
             <li><a href="#env">.env関連</a></li>
             <li><a href="#version">Laravelバージョン</a></li>
             <li><a href="#create">プロジェクト作成</a></li>
@@ -127,6 +128,26 @@ Remove-Item -Recurse -Force storage/app/private/faces -ErrorAction SilentlyConti
                 </p>
                 <pre><code class="language-plaintext">composer install
 npm install</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="phpstan">phpstan</h2>
+            <section>
+                <h3>phpstan導入</h3>
+                <pre><code class="language-plaintext">composer require --dev larastan/larastan</code></pre>
+            </section>
+
+            <section>
+                <h3>解析実行</h3>
+                <pre><code class="language-plaintext">./vendor/bin/phpstan analyse
+
+// 上限引き上げ
+./vendor/bin/phpstan analyse --memory-limit=2G</code></pre>
+
+                <p>composer.jsonのscriptsに以下のコードがあるなら、</p>
+                <pre><code class="php">"phpstan": "phpstan analyse --memory-limit=2G"</code></pre>
+                <pre><code class="language-plaintext">composer phpstan</code></pre>
             </section>
         </div>
 

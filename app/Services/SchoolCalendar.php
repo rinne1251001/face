@@ -21,7 +21,7 @@ class SchoolCalendar
     /** @var array<string, CalendarDay|null> 日付 => 日付ごとの設定 */
     private array $days = [];
 
-    /** @var array<string, Collection> 日付 => その日の変則授業（授業ID => SpecialClass） */
+    /** @var array<string, Collection<int|string, SpecialClass>> 日付 => その日の変則授業（授業ID => SpecialClass） */
     private array $specialClasses = [];
 
     // 祝日の名前（祝日でなければ null）。振替休日・国民の休日も含む
@@ -74,6 +74,7 @@ class SchoolCalendar
     }
 
     // その日の変則授業（授業ID => SpecialClass）
+    /** @return Collection<int|string, SpecialClass> */
     public function specialClassesOn(CarbonInterface $date): Collection
     {
         $key = $date->toDateString();

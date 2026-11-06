@@ -19,12 +19,14 @@ class StudentCard extends Model
     }
 
     // 持ち主の生徒（まだ決まっていなければ null）
+    /** @return BelongsTo<Student, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
     // このカードをタッチした記録
+    /** @return HasMany<CardRead, $this> */
     public function reads(): HasMany
     {
         return $this->hasMany(CardRead::class);
@@ -32,6 +34,7 @@ class StudentCard extends Model
 
     // 本人確認に使えるカードだけ（使用中 かつ 持ち主が決まっている）
     // 使い方：StudentCard::usable()->where('idm', $idm)->first()
+    /** @param Builder<StudentCard> $query */
     public function scopeUsable(Builder $query): void
     {
         $query->where('is_active', true)->whereNotNull('student_id');
@@ -46,8 +49,10 @@ class StudentCard extends Model
     }
 
     // 保存するときは、必ずそろえた形にする
+    // （読むときはそのまま：Attribute<読むときの型, 保存するときに受け取る型>）
+    /** @return Attribute<string, string|null> */
     protected function idm(): Attribute
     {
-        return Attribute::set(fn (?string $value) => self::normalizeIdm($value));
+        return Attribute::make(set: fn (?string $value) => self::normalizeIdm($value));
     }
 }

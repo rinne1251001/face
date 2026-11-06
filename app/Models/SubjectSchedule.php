@@ -22,21 +22,24 @@ class SubjectSchedule extends Model
         ];
     }
 
+    /** @return BelongsTo<Subject, $this> */
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
     // この曜日の時限の一覧（例：3〜5限なら [3, 4, 5]）
+    /** @return list<int> */
     public function periods(): array
     {
         return range($this->period_start, $this->period_end);
     }
 
     // 画面表示用：「月曜 1限」「水曜 3〜5限」
+    /** @return Attribute<string, never> */
     protected function label(): Attribute
     {
-        return Attribute::get(function () {
+        return Attribute::make(get: function () {
             $day = Subject::DAYS[$this->day_of_week] ?? '?';
             $period = $this->period_start === $this->period_end
                 ? "{$this->period_start}限"
@@ -47,14 +50,16 @@ class SubjectSchedule extends Model
     }
 
     // 開始・終了時刻（例：'09:00'）。続く時限は、最初の時限の開始〜最後の時限の終了
+    /** @return Attribute<string|null, never> */
     protected function startTime(): Attribute
     {
-        return Attribute::get(fn () => config("school.periods.{$this->period_start}.start"));
+        return Attribute::make(get: fn () => config("school.periods.{$this->period_start}.start"));
     }
 
+    /** @return Attribute<string|null, never> */
     protected function endTime(): Attribute
     {
-        return Attribute::get(fn () => config("school.periods.{$this->period_end}.end"));
+        return Attribute::make(get: fn () => config("school.periods.{$this->period_end}.end"));
     }
 
     // ある日の、開始・終了の日時（遅刻の判定や「いま行われている授業」を探すのに使う）

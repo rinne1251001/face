@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\Subject;
 use App\Services\SchoolCalendar;
 use Illuminate\Http\Request;
@@ -38,7 +39,8 @@ class ClassController extends Controller
             ->get();
 
         // このクラスの誰かが受講している、その曜日の授業
-        $subjects = $students->flatMap->subjects
+        // （flatMap->subjects と同じ意味。こう書くと、中身が Subject だと PHPStan に伝わる）
+        $subjects = $students->flatMap(fn (Student $student) => $student->subjects)
             ->unique('id')
             ->filter(fn ($subject) => $subject->periodsOn($date) !== []) // その日に授業があるものに絞る
             ->values();
@@ -47,7 +49,8 @@ class ClassController extends Controller
         $columns = $subjects
             ->flatMap(fn ($subject) => collect($subject->periodsOn($date))
             ->map(fn ($period) => ['subject' => $subject, 'period' => $period]))
-            ->sortBy([['period', 'asc'], [fn ($a, $b) => $a['subject']->name <=> $b['subject']->name]])
+            // 時限の順 → 同じ時限なら授業名の順（2つ目は2つの列を比べる関数。[...] で囲まずにそのまま渡す）
+            ->sortBy([['period', 'asc'], fn (array $a, array $b) => $a['subject']->name <=> $b['subject']->name])
             ->values();
 
         // 「生徒ID-授業ID-時限」 => 出席記録
