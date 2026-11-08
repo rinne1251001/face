@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 // 授業。曜日と時限は subject_schedules に分けてあるので、週に何回あっても1つの授業として扱える
 class Subject extends Model
@@ -109,14 +110,73 @@ class Subject extends Model
         return app(SchoolCalendar::class)->specialClassesOn($date)->get($this->id);
     }
 
-    // ある日の時限の一覧（毎週の時間割 ＋ 変則授業。例：水曜なら [3, 4, 5]）。授業がない日は空
+    // ある日の、予定どおりの時限の一覧（毎週の時間割 ＋ 変則授業。クラスごとの授業変更は入れない）
+    /** @return list<int> */
+    public function plannedPeriodsOn(CarbonInterface $date): array
+    {
+        $periods = array_values(array_unique([
+            ...($this->scheduleOn($date)?->periods() ?? []),
+            ...($this->specialClassOn($date)?->periods() ?? []),
+        ]));
+        sort($periods);
+
+        return $periods;
+    }
+
+    // この授業を受けている生徒のクラス（クラスIDの一覧）
+    /** @return list<int> */
+    public function classIds(): array
+    {
+        $ids = array_values(array_unique(array_map('intval', $this->students->pluck('school_class_id')->all())));
+        sort($ids);
+
+        return $ids;
+    }
+
+    // ある日の、この授業に関係するクラスごとの授業変更
+    /** @return Collection<int, ClassLessonChange> */
+    public function lessonChangesOn(CarbonInterface $date): Collection
+    {
+        return app(SchoolCalendar::class)->lessonChangesOn($date)
+            ->filter(fn (ClassLessonChange $change) => $change->from_subject_id === $this->id || $change->to_subject_id === $this->id)
+            ->values();
+    }
+
+    // ある日・ある時限に、この授業を受けるクラス（クラスごとの授業変更を反映したもの）
+    //   予定どおりの時限なら、受講生のクラスから「やめた」クラスを除き、「代わりにする」クラスを加える
+    /** @return list<int> */
+    public function classIdsOn(CarbonInterface $date, int $period): array
+    {
+        $changes = $this->lessonChangesOn($date)->filter(fn (ClassLessonChange $change) => $change->coversPeriod($period));
+        $removed = $changes->where('from_subject_id', $this->id)->pluck('school_class_id')->all();
+        $added = $changes->where('to_subject_id', $this->id)->pluck('school_class_id')->all();
+        $planned = in_array($period, $this->plannedPeriodsOn($date), true) ? $this->classIds() : [];
+
+        $ids = array_values(array_unique(array_map('intval', [...array_diff($planned, $removed), ...$added])));
+        sort($ids);
+
+        return $ids;
+    }
+
+    // ある日の時限の一覧（例：水曜なら [3, 4, 5]）。授業がない日は空
+    // 毎週の時間割 ＋ 変則授業 に、クラスごとの授業変更を反映する
+    //   ・受けている全てのクラスがやめた時限は、なくなる
+    //   ・どこかのクラスが代わりにこの授業をする時限は、増える
     /** @return list<int> */
     public function periodsOn(CarbonInterface $date): array
     {
-        $periods = array_unique([
-            ...($this->scheduleOn($date)?->periods() ?? []),
-            ...($this->specialClassOn($date)?->periods() ?? []),
-        ]);
+        $periods = [];
+        foreach ($this->plannedPeriodsOn($date) as $period) {
+            // 受講生がいない授業は、どのクラスの授業か決められないので、予定どおり残す
+            if ($this->classIds() === [] || $this->classIdsOn($date, $period) !== []) {
+                $periods[] = $period;
+            }
+        }
+        foreach ($this->lessonChangesOn($date)->where('to_subject_id', $this->id) as $change) {
+            array_push($periods, ...$change->periods());
+        }
+
+        $periods = array_values(array_unique($periods));
         sort($periods);
 
         return $periods;

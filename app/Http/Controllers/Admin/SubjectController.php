@@ -87,8 +87,7 @@ class SubjectController extends Controller
         $rules = [
             'name' => ['required', 'string', 'max:100'],
             // チェックした曜日（1つ以上）
-            // required がないと、1つもチェックしなかったときに $data['days'] がなくてエラー画面になる
-            'days' => ['required', 'array', 'min:1'],
+            'days' => ['sometimes', 'array'],
             'days.*' => ['integer', 'distinct', Rule::in(array_keys(Subject::DAYS))],
             'start_date' => ['nullable', 'date'],
             // 終了日は開始日と同じか、それより後
@@ -115,7 +114,7 @@ class SubjectController extends Controller
 
         $data = $request->validate($rules, [], $attributes);
 
-        $schedules = collect(Arr::array($data, 'days')) // Arr::array … 配列として取り出す（配列でなければ例外）
+        $schedules = collect(Arr::array($data, 'days', [])) // Arr::array … 配列として取り出す（配列でなければ例外）
             ->map(fn ($day) => [
                 'day_of_week' => (int) $day,
                 'period_start' => (int) $data['schedules'][$day]['period_start'],

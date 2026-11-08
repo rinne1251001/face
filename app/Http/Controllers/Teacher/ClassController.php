@@ -46,8 +46,10 @@ class ClassController extends Controller
             ->values();
 
         // 表の列：「授業 × 時限」（3〜5限の授業なら3列）。時限の順に並べる
+        // （クラスの授業変更で、このクラスが受けない時限は出さない）
         $columns = $subjects
             ->flatMap(fn ($subject) => collect($subject->periodsOn($date))
+            ->filter(fn ($period) => in_array($schoolClass->id, $subject->classIdsOn($date, $period), true))
             ->map(fn ($period) => ['subject' => $subject, 'period' => $period]))
             // 時限の順 → 同じ時限なら授業名の順（2つ目は2つの列を比べる関数。[...] で囲まずにそのまま渡す）
             ->sortBy([['period', 'asc'], fn (array $a, array $b) => $a['subject']->name <=> $b['subject']->name])

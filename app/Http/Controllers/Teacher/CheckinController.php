@@ -27,10 +27,14 @@ class CheckinController extends Controller
         return view('teacher.subjects.checkin', [
             'subject' => $subject,
             'today' => $today,
+            'period' => $period, // ← これがないと受付画面が「Undefined variable $period」になる
             'periods' => $subject->periodsFor($today), // 切り替えられる時限
             'wrongDay' => $subject->periodsOn($today) === [], // 今日はこの授業がない（祝日・休校・曜日違い）
             'dayNote' => $calendar->dayNote($today),            // 例：祝日（文化の日）
-            'studentCount' => $subject->students()->count(),
+            // 受講者の人数（クラスの授業変更で、この時限に受けないクラスの生徒は数えない）
+            'studentCount' => $subject->periodsOn($today) !== [] && $subject->classIdsOn($today, $period) !== []
+                ? $subject->students()->whereIn('school_class_id', $subject->classIdsOn($today, $period))->count()
+                : $subject->students()->count(),
             'recordedCount' => $subject->attendances()
                 ->where('date', $today->toDateString())
                 ->where('period', $period)
@@ -85,6 +89,16 @@ class CheckinController extends Controller
                 'result' => 'not_enrolled',
                 'student' => $summary,
                 'message' => "{$student->name} さんはこの授業の受講者ではありません。",
+            ]);
+        }
+
+        // 2-2. 受講者だが、クラスの授業変更で、この時限はこの授業を受けないクラスの生徒
+        $classIds = $subject->classIdsOn(today(), $period);
+        if ($subject->periodsOn(today()) !== [] && $classIds !== [] && ! in_array((int) $student->school_class_id, $classIds, true)) {
+            return response()->json([
+                'result' => 'not_enrolled',
+                'student' => $summary,
+                'message' => "{$student->name} さんのクラスは、授業変更のため、この時限はこの授業がありません。",
             ]);
         }
 

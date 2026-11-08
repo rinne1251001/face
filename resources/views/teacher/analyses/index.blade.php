@@ -130,6 +130,81 @@
             color: var(--color);
             font-weight: 900;
         }
+
+        /* =========================================================
+            ドーナツグラフ（CSSのみ / JavaScript不使用）
+            - 件数を CSS 変数（--attend など）で渡すだけで描画されます
+            - 割合（%）は CSS の calc() で自動計算します
+        ========================================================= */
+        .donut-chart {
+            /* 色 */
+            --color-attend:   var(--color-main); /* 出席 */
+            --color-late:     color-mix(var(--color-main), var(--color-bg) 15%); /* 遅刻 */
+            --color-official: color-mix(var(--color-main), var(--color-bg) 30%); /* 公欠 */
+            --color-absent:   var(--color-accent); /* 欠席 */
+        
+            /* サイズ */
+            --size: 305px;       /* 外側の直径 */
+            --hole: 50%;         /* 穴の大きさ（直径に対する割合） */
+        
+            /* 合計と、各区切り位置（累積%）を計算 */
+            --total: calc(var(--attend) + var(--late) + var(--official) + var(--absent));
+            --stop1: calc(var(--attend) / var(--total) * 100%);
+            --stop2: calc((var(--attend) + var(--late)) / var(--total) * 100%);
+            --stop3: calc((var(--attend) + var(--late) + var(--official)) / var(--total) * 100%);
+        
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+            max-width: 520px;
+        }
+        
+        /* 円グラフ本体 */
+        .donut-chart__ring {
+            width: var(--size);
+            max-width: 100%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            /* 12時の位置から時計回りに塗り分け（「0」で前の位置から始める＝境界がくっきり） */
+            background: conic-gradient(
+            var(--color-attend)   0 var(--stop1),
+            var(--color-late)     0 var(--stop2),
+            var(--color-official) 0 var(--stop3),
+            var(--color-absent)   0
+            );
+            /* 中央をくり抜いてドーナツにする（背景色に関係なく透明な穴になる） */
+            -webkit-mask: radial-gradient(circle closest-side, transparent var(--hole), #000 calc(var(--hole) + 0.5px));
+                    mask: radial-gradient(circle closest-side, transparent var(--hole), #000 calc(var(--hole) + 0.5px));
+        }
+        
+        /* 凡例 */
+        .donut-chart__legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px 34px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            color: #595959;
+            font-size: 16px;
+        }
+        .donut-chart__legend li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .donut-chart__legend li::before {
+            content: "";
+            width: 11px;
+            height: 11px;
+            background: var(--color);
+        }
+        .donut-chart__legend .is-attend   { --color: var(--color-attend); }
+        .donut-chart__legend .is-late     { --color: var(--color-late); }
+        .donut-chart__legend .is-official { --color: var(--color-official); }
+        .donut-chart__legend .is-absent   { --color: var(--color-absent); }
     </style>
 @endpush
 @section('content')
@@ -200,6 +275,20 @@
                     </ul>
 
                 </div>
+            </figure>
+
+            <figure class="donut-chart" style="--attend: 112; --late: 50; --official: 14; --absent: 24;">
+                <div style="position: relative;">
+                    <div class="donut-chart__ring" role="img" aria-label="出欠の内訳：出席 112件、遅刻 50件、公欠 14件、欠席 24件"></div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--color-main); font-weight: bold; display: flex; gap: 5px; align-items: baseline;"><span style="font-size: 2em;">56</span><span style="font-size: 1.5em;">%</span></div>
+                </div>
+            
+                <ul class="donut-chart__legend">
+                <li class="is-attend">出席</li>
+                <li class="is-late">遅刻></li>
+                <li class="is-official">公欠</li>
+                <li class="is-absent">欠席</li>
+                </ul>
             </figure>
 
         </div>

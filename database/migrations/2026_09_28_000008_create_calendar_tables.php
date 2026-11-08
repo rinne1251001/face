@@ -32,10 +32,28 @@ return new class extends Migration
             $table->unique(['subject_id', 'date']); // 同じ授業は1日に1回まで（毎週の時間割と同じ考え方）
             $table->index('date');
         });
+
+        // クラスごとの授業変更
+        Schema::create('class_lesson_changes', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('group_id');            // 一緒に登録した変更のまとまり（取り消しもまとめて行う）
+            $table->string('type', 10);          // change / cancel / move / swap / add
+            $table->foreignId('school_class_id')->constrained()->cascadeOnDelete();
+            $table->date('date');
+            $table->unsignedTinyInteger('period_start');
+            $table->unsignedTinyInteger('period_end');
+            $table->foreignId('from_subject_id')->nullable()->constrained('subjects')->cascadeOnDelete();
+            $table->foreignId('to_subject_id')->nullable()->constrained('subjects')->cascadeOnDelete();
+            $table->string('note', 100)->nullable();
+            $table->timestamps();
+            $table->index(['date', 'school_class_id']);
+            $table->index('group_id');
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('class_lesson_changes');
         Schema::dropIfExists('special_classes');
         Schema::dropIfExists('calendar_days');
     }

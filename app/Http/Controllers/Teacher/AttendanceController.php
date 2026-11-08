@@ -32,6 +32,13 @@ class AttendanceController extends Controller
             ->orderBy('student_number')
             ->get();
 
+        // クラスの授業変更で、この時限にこの授業を受けないクラスの生徒は出さない
+        // （この日に授業がないときは、手動で記録できるように全員を出す）
+        $classIds = $subject->classIdsOn($date, $period);
+        if ($subject->periodsOn($date) !== [] && $classIds !== []) {
+            $students = $students->whereIn('school_class_id', $classIds)->values();
+        }
+
         // 生徒ID => 出席記録
         $attendances = $subject->attendances()
             ->with('teacher')

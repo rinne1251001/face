@@ -3,7 +3,7 @@
 @push('styles')
     <style>
         .calendar-container {
-            width: clamp(100px, 100%, 600px);;
+            width: clamp(100px, 100%, 600px);
         }
 
         .week-container {
@@ -125,7 +125,6 @@
                             @foreach ($days as $day)
                                 <th>
                                     {{ $day['label'] }} ({{ $day['date']->format('n/j') }})
-                                    {{-- 祝日・休校・振替の日は、その説明を出す --}}
                                     @if ($day['note'])
                                         <small>{{ $day['note'] }}</small>
                                     @endif
@@ -153,6 +152,25 @@
             </div>
 
             <div class="schedule-list">
+                <h2>クラスの授業変更（今日以降）</h2>
+                <ul>
+                    @forelse ($lessonChanges as $change)
+                        <li>
+                            <span>
+                                {{ $change['text'] }}
+                                @if ($change['note'])<span>{{ $change['note'] }}</span>@endif
+                            </span>
+                            <form method="POST" action="{{ route('admin.schedules.lesson-changes.destroy', $change['group_id']) }}" onsubmit="return confirm('この授業変更を取り消しますか？')">
+                                @csrf
+                                @method('DELETE')
+                                <button>取り消す</button>
+                            </form>
+                        </li>
+                    @empty
+                        <li>登録はありません。</li>
+                    @endforelse
+                </ul>
+
                 <h2>休校・振替（今日以降）</h2>
                 <ul>
                     @forelse ($calendarDays as $calendarDay)
@@ -181,7 +199,7 @@
                                 {{ $special->date->format('n月j日') }}（{{ \App\Models\Subject::DAYS[$special->date->dayOfWeekIso] }}）
                                 {{ $special->period_start === $special->period_end ? "{$special->period_start}限" : "{$special->period_start}〜{$special->period_end}限" }}
                                 <strong>{{ $special->subject->name }}</strong>
-                                @if ($special->note)<span class="muted">{{ $special->note }}</span>@endif
+                                @if ($special->note)<span>{{ $special->note }}</span>@endif
                             </span>
                             <form method="POST" action="{{ route('admin.schedules.special-classes.destroy', $special) }}" onsubmit="return confirm('この変則授業を取り消しますか？')">
                                 @csrf
@@ -190,7 +208,7 @@
                             </form>
                         </li>
                     @empty
-                        <li class="muted">登録はありません。</li>
+                        <li>登録はありません。</li>
                     @endforelse
                 </ul>
             </div>

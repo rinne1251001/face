@@ -75,6 +75,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('schedules/special-classes', [Admin\ScheduleController::class, 'storeSpecialClass'])->name('schedules.special-classes.store');
         Route::delete('schedules/special-classes/{specialClass}', [Admin\ScheduleController::class, 'destroySpecialClass'])->name('schedules.special-classes.destroy');
 
+        // クラスごとの授業変更
+        Route::get('schedules/lessons', [Admin\ScheduleController::class, 'lessons'])->name('schedules.lessons');
+        Route::post('schedules/lesson-changes', [Admin\ScheduleController::class, 'storeLessonChange'])->name('schedules.lesson-changes.store');
+        Route::delete('schedules/lesson-changes/{group}', [Admin\ScheduleController::class, 'destroyLessonChange'])->name('schedules.lesson-changes.destroy')->whereUuid('group');
+
         // 照合テスト（しきい値の調整用）
         Route::get('match', [Admin\FaceMatchController::class, 'show'])->name('match.show');
         Route::post('match', [Admin\FaceMatchController::class, 'match'])->name('match.run')->middleware('throttle:60,1');

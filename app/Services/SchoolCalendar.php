@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\CalendarDay;
+use App\Models\ClassLessonChange;
 use App\Models\SpecialClass;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -23,6 +24,9 @@ class SchoolCalendar
 
     /** @var array<string, Collection<int|string, SpecialClass>> 日付 => その日の変則授業（授業ID => SpecialClass） */
     private array $specialClasses = [];
+
+    /** @var array<string, Collection<int, ClassLessonChange>> 日付 => その日のクラスごとの授業変更 */
+    private array $lessonChanges = [];
 
     // 祝日の名前（祝日でなければ null）。振替休日・国民の休日も含む
     public function holidayName(CarbonInterface $date): ?string
@@ -82,10 +86,20 @@ class SchoolCalendar
         return $this->specialClasses[$key] ??= SpecialClass::whereDate('date', $key)->get()->keyBy('subject_id');
     }
 
-    // 覚えている内容を捨てる（CalendarDay・SpecialClass を保存・削除したときに呼ばれる）
+    // その日のクラスごとの授業変更
+    /** @return Collection<int, ClassLessonChange> */
+    public function lessonChangesOn(CarbonInterface $date): Collection
+    {
+        $key = $date->toDateString();
+
+        return $this->lessonChanges[$key] ??= ClassLessonChange::whereDate('date', $key)->get();
+    }
+
+    // 覚えている内容を捨てる（CalendarDay・SpecialClass・ClassLessonChange を保存・削除したときに呼ばれる）
     public function flush(): void
     {
         $this->days = [];
         $this->specialClasses = [];
+        $this->lessonChanges = [];
     }
 }

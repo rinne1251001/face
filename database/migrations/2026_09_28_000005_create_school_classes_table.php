@@ -10,7 +10,9 @@ return new class extends Migration
     {
         Schema::create('school_classes', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50)->unique(); // クラス名（例：1年A組）
+            $table->string('name', 50)->unique();
+            // ホームルームの教室（決まっていなくてもよい。教室を削除したら「未設定」に戻す）
+            $table->foreignId('classroom_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }
