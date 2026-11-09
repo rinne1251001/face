@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 // 教室（例：301教室・3階）
@@ -21,6 +22,20 @@ class Classroom extends Model
     public function camera(): HasOne
     {
         return $this->hasOne(Camera::class);
+    }
+
+    // この教室をホームルームにしているクラス
+    /** @return HasMany<SchoolClass, $this> */
+    public function schoolClasses(): HasMany
+    {
+        return $this->hasMany(SchoolClass::class);
+    }
+
+    // この教室で行う時間割（曜日・時限）
+    /** @return HasMany<SubjectSchedule, $this> */
+    public function subjectSchedules(): HasMany
+    {
+        return $this->hasMany(SubjectSchedule::class);
     }
 
     // 画面表示用：「3階」「地下1階」（$classroom->floor_label で使える）

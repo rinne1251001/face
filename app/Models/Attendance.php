@@ -44,6 +44,13 @@ class Attendance extends Model
         return $this->belongsTo(Teacher::class);
     }
 
+    // 顔認証で記録したときの照合ログ（手動で登録したときは null）
+    /** @return BelongsTo<MatchLog, $this> */
+    public function matchLog(): BelongsTo
+    {
+        return $this->belongsTo(MatchLog::class);
+    }
+
     public function statusLabel(): string
     {
         return self::STATUSES[$this->status] ?? $this->status;

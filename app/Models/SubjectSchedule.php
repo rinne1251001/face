@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 // 授業を行う曜日と時限（例：月曜 1限、水曜 3〜5限）
 class SubjectSchedule extends Model
 {
-    protected $fillable = ['day_of_week', 'period_start', 'period_end'];
+    protected $fillable = ['day_of_week', 'period_start', 'period_end', 'classroom_id'];
 
     protected function casts(): array
     {
@@ -19,6 +19,7 @@ class SubjectSchedule extends Model
             'day_of_week' => 'integer',
             'period_start' => 'integer',
             'period_end' => 'integer',
+            'classroom_id' => 'integer',
         ];
     }
 
@@ -26,6 +27,13 @@ class SubjectSchedule extends Model
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    // 授業をする教室（未設定なら null）
+    /** @return BelongsTo<Classroom, $this> */
+    public function classroom(): BelongsTo
+    {
+        return $this->belongsTo(Classroom::class);
     }
 
     // この曜日の時限の一覧（例：3〜5限なら [3, 4, 5]）

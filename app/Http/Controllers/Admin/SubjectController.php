@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Classroom;
 use App\Models\Subject;
 use App\Models\SubjectSchedule;
 use Illuminate\Http\RedirectResponse;
@@ -20,6 +21,7 @@ class SubjectController extends Controller
     {
         $subjects = Subject::query()
             ->with(['schedules', 'teachers' => fn ($q) => $q->orderBy('name')])
+            ->with(['schedules.classroom', 'teachers' => fn ($q) => $q->orderBy('name')])
             ->withCount('students')
             ->orderBySchedule()
             ->get();
@@ -29,7 +31,7 @@ class SubjectController extends Controller
 
     public function create(): View
     {
-        return view('admin.subjects.form', ['subject' => new Subject]);
+        return view('admin.subjects.form', $this->formData(new Subject));
     }
 
     public function store(Request $request): RedirectResponse
@@ -49,7 +51,7 @@ class SubjectController extends Controller
 
     public function edit(Subject $subject): View
     {
-        return view('admin.subjects.form', compact('subject'));
+        return view('admin.subjects.form', $this->formData($subject));
     }
 
     public function update(Request $request, Subject $subject): RedirectResponse
@@ -78,8 +80,18 @@ class SubjectController extends Controller
         return redirect()->route('admin.subjects.index')->with('status', '削除しました。');
     }
 
+    // フォーム画面に渡すデータ（授業と、教室の選択肢）
+    /** @return array<string, mixed> */
+    private function formData(Subject $subject): array
+    {
+        return [
+            'subject' => $subject,
+            'classrooms' => Classroom::orderBy('floor')->orderBy('name')->get(), // 階 → 教室名の順
+        ];
+    }
+
     // [授業の項目, 曜日・時限の配列] を返す
-    /** @return array{array<mixed>, array<int, array{day_of_week: int, period_start: int, period_end: int}>} */
+    /** @return array{array<mixed>, array<int, array{day_of_week: int, period_start: int, period_end: int, classroom_id: int|null}>} */
     private function validated(Request $request): array
     {
         $max = Subject::maxPeriod();
@@ -105,11 +117,13 @@ class SubjectController extends Controller
         foreach (Subject::DAYS as $day => $label) {
             if (in_array($day, $checkedDays, true)) {
                 $rules["schedules.$day.period_start"] = ['required', 'integer', "between:1,$max"];
-                // 終了時限は開始時限以上（1限だけなら開始と同じ）
                 $rules["schedules.$day.period_end"] = ['required', 'integer', "between:1,$max", "gte:schedules.$day.period_start"];
+                // 教室（「未設定」なら空 → null）
+                $rules["schedules.$day.classroom_id"] = ['nullable', 'integer', 'exists:classrooms,id'];
             }
             $attributes["schedules.$day.period_start"] = "{$label}曜日の開始時限";
             $attributes["schedules.$day.period_end"] = "{$label}曜日の終了時限";
+            $attributes["schedules.$day.classroom_id"] = "{$label}曜日の教室";
         }
 
         $data = $request->validate($rules, [], $attributes);
@@ -119,6 +133,9 @@ class SubjectController extends Controller
                 'day_of_week' => (int) $day,
                 'period_start' => (int) $data['schedules'][$day]['period_start'],
                 'period_end' => (int) $data['schedules'][$day]['period_end'],
+                'classroom_id' => isset($data['schedules'][$day]['classroom_id'])
+                    ? (int) $data['schedules'][$day]['classroom_id']
+                    : null,
             ])
             ->sortBy('day_of_week')
             ->values()

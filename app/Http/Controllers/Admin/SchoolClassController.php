@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Classroom;
 use App\Models\SchoolClass;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class SchoolClassController extends Controller
     public function index(): View
     {
         $classes = SchoolClass::query()
-            ->with(['teachers' => fn ($q) => $q->orderBy('name')])
+            ->with(['classroom', 'teachers' => fn ($q) => $q->orderBy('name')]) // 教室も一緒に読み込む
             ->withCount('students')
             ->orderBy('name')
             ->get();
@@ -26,7 +27,7 @@ class SchoolClassController extends Controller
 
     public function create(): View
     {
-        return view('admin.classes.form', ['schoolClass' => new SchoolClass]);
+        return view('admin.classes.form', $this->formData(new SchoolClass));
     }
 
     public function store(Request $request): RedirectResponse
@@ -38,7 +39,7 @@ class SchoolClassController extends Controller
 
     public function edit(SchoolClass $schoolClass): View
     {
-        return view('admin.classes.form', compact('schoolClass'));
+        return view('admin.classes.form', $this->formData($schoolClass));
     }
 
     public function update(Request $request, SchoolClass $schoolClass): RedirectResponse
@@ -60,11 +61,25 @@ class SchoolClassController extends Controller
         return redirect()->route('admin.classes.index')->with('status', '削除しました。');
     }
 
+    // フォーム画面に渡すデータ（クラスと、教室の選択肢）
+    /** @return array<string, mixed> */
+    private function formData(SchoolClass $schoolClass): array
+    {
+        return [
+            'schoolClass' => $schoolClass,
+            'classrooms' => Classroom::orderBy('floor')->orderBy('name')->get(), // 階 → 教室名の順
+        ];
+    }
+
     /** @return array<string, mixed> */
     private function validated(Request $request, ?SchoolClass $schoolClass = null): array
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:50', Rule::unique('school_classes')->ignore($schoolClass)],
+            // ホームルームの教室（「未設定」を選ぶと空 → null で保存される）
+            'classroom_id' => ['nullable', 'integer', 'exists:classrooms,id'],
+        ], [], [
+            'classroom_id' => 'ホームルームの教室',
         ]);
     }
 }
