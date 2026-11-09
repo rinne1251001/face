@@ -13,7 +13,7 @@
             @if ($schoolClass->exists)
                 @method('PUT')
             @endif
-            <p><label>クラス名<br><input name="name" value="{{ old('name', $schoolClass->name) }}" placeholder="例：1年A組" required></label></p>
+            <p><label>クラス名<br><input name="name" value="{{ old('name', $schoolClass->name) }}" placeholder="例：1T1" required></label></p>
             <p>
                 <label>ホームルームの教室<br>
                     <select name="classroom_id">

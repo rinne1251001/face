@@ -1162,6 +1162,7 @@ $attendances = Attendance::latest()->get();</code></pre>
             <section>
                 <h3>->with()</h3>
                 <p>テーブルをくっつける</p>
+                <p>※モデルのメソッドがhasManyやbelongsToManyの時は複数形、hasOneやbelongsToは単数形</p>
                 <pre><code>SELECT * FROM students;
 SELECT * FROM school_classes WHERE id IN (1, 2);</code></pre>
                 <pre><code class="php">$students = Student::query()

@@ -237,7 +237,6 @@
             <h1>授業一覧</h1>
             <div>
                 <a class="btn" href="{{ route('admin.subjects.create') }}">＋ 授業を追加</a>
-                <a class="btn" href="{{ route('admin.schedules.index') }}">スケジュールを確認</a>
             </div>
         </div>
 

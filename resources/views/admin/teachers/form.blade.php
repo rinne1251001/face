@@ -6,10 +6,6 @@
     <div class="content-wrapper">
         <h1>{{ $teacher->exists ? '教師の編集' : '教師の追加' }}</h1>
 
-        @if ($subjects->isEmpty())
-            <p class="warn">教師には担当授業が1つ以上必要です。先に<a href="{{ route('admin.subjects.create') }}">授業を登録</a>してください。</p>
-        @endif
-
         <form method="POST" action="{{ $teacher->exists ? route('admin.teachers.update', $teacher) : route('admin.teachers.store') }}">
             @csrf
             @if ($teacher->exists)
@@ -40,14 +36,16 @@
             </fieldset>
 
             <fieldset>
-                <legend>担当授業（1つ以上）</legend>
-                @foreach ($subjects as $subject)
+                <legend>担当授業（なしでも可）</legend>
+                @forelse ($subjects as $subject)
                     <label style="display:block">
                         <input type="checkbox" name="subject_ids[]" value="{{ $subject->id }}"
                             @checked(in_array($subject->id, $selectedSubjectIds, true))>
                         {{ $subject->name }}（{{ $subject->schedule_label }}）
                     </label>
-                @endforeach
+                @empty
+                    <p>授業が登録されていません。担当授業は、授業を登録したあとで設定できます。</p>
+                @endforelse
             </fieldset>
 
             @if ($errors->any())

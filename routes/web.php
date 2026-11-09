@@ -60,11 +60,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('face-samples/{faceSample}/image', [Admin\FaceSampleController::class, 'image'])->name('faces.image');
         Route::delete('face-samples/{faceSample}', [Admin\FaceSampleController::class, 'destroy'])->name('faces.destroy');
 
-        // クラス・授業・教師
+        // クラス・授業・教室・教師
         Route::resource('classes', Admin\SchoolClassController::class)
             ->except('show')
             ->parameters(['classes' => 'schoolClass']);
         Route::resource('subjects', Admin\SubjectController::class)->except('show');
+        Route::resource('rooms', Admin\ClassroomController::class);
         Route::resource('teachers', Admin\TeacherController::class)->except('show');
 
         // 時間割（祝日は自動。休校・振替・変則授業はここで登録する）

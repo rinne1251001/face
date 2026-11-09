@@ -278,6 +278,8 @@
             </figure>
 
             <figure class="donut-chart" style="--attend: 112; --late: 50; --official: 14; --absent: 24;">
+                <div style="color: var(--color-main); font-weight: bold; font-size: 1.4em; transform: translateY(40%);">今日の出席率</div>
+
                 <div style="position: relative;">
                     <div class="donut-chart__ring" role="img" aria-label="出欠の内訳：出席 112件、遅刻 50件、公欠 14件、欠席 24件"></div>
                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--color-main); font-weight: bold; display: flex; gap: 5px; align-items: baseline;"><span style="font-size: 2em;">56</span><span style="font-size: 1.5em;">%</span></div>
@@ -285,7 +287,7 @@
             
                 <ul class="donut-chart__legend">
                 <li class="is-attend">出席</li>
-                <li class="is-late">遅刻></li>
+                <li class="is-late">遅刻</li>
                 <li class="is-official">公欠</li>
                 <li class="is-absent">欠席</li>
                 </ul>

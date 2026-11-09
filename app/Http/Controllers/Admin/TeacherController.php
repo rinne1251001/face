@@ -15,16 +15,36 @@ use Illuminate\View\View;
 // 教師の一覧・追加・編集・削除と、受け持ちクラス・担当授業の設定（管理者のみ）
 class TeacherController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        // リレーションごとに with() を分ける（1つの配列にまとめると、$q がどちらのリレーションか PHPStan が区別できない）
-        $teachers = Teacher::query()
-            ->with('schoolClasses', fn ($q) => $q->orderBy('name'))
-            ->with('subjects', fn ($q) => $q->with('schedules')->orderBySchedule())
-            ->orderBy('name')
-            ->get();
+        // 検索の文字（空のときや、URL をいじって文字以外が送られてきたときは絞り込まない）
+        $input = $request->query('q');
+        $q = is_string($input) ? trim($input) : '';
 
-        return view('admin.teachers.index', compact('teachers'));
+        // 空白（全角の空白も）で区切って、キーワードごとに分ける
+        // 例：「山田 数学」→ ['山田', '数学']（両方に当てはまる教師だけを出す）
+        $keywords = preg_split('/[\s　]+/u', $q, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        // リレーションごとに with() を分ける（1つの配列にまとめると、引数がどちらのリレーションか PHPStan が区別できない）
+        $query = Teacher::query()
+            ->with('schoolClasses', fn ($c) => $c->orderBy('name'))
+            ->with('subjects', fn ($s) => $s->with('schedules')->orderBySchedule());
+
+        // キーワードが、名前・ログインID・受け持ちクラス名・担当授業名のどれかに含まれる教師
+        foreach ($keywords as $keyword) {
+            $like = "%{$keyword}%";
+            $query->where(fn ($w) => $w
+                ->where('name', 'like', $like)
+                ->orWhere('login_id', 'like', $like)
+                ->orWhereHas('schoolClasses', fn ($c) => $c->where('name', 'like', $like))
+                ->orWhereHas('subjects', fn ($s) => $s->where('name', 'like', $like)));
+        }
+
+        return view('admin.teachers.index', [
+            'teachers' => $query->orderBy('name')->get(),
+            'q' => $q,
+            'total' => Teacher::count(), // 検索に関係なく、登録されている教師の人数
+        ]);
     }
 
     public function create(): View
@@ -107,12 +127,12 @@ class TeacherController extends Controller
             'password' => [$teacher ? 'nullable' : 'required', 'string', 'min:8', 'max:100'],
             'class_ids' => ['nullable', 'array'],             // 受け持ちクラスは0個でもよい
             'class_ids.*' => ['integer', 'distinct', 'exists:school_classes,id'],
-            'subject_ids' => ['required', 'array', 'min:1'],  // 担当授業は1つ以上
+            'subject_ids' => ['nullable', 'array'],           // 担当授業も0個でもよい（あとから授業の画面でも設定できる）
             'subject_ids.*' => ['integer', 'distinct', 'exists:subjects,id'],
         ]);
 
         $classIds = $data['class_ids'] ?? [];
-        $subjectIds = $data['subject_ids'];
+        $subjectIds = $data['subject_ids'] ?? []; // 1つもチェックしていなければ送られてこないので、空の配列にする
         unset($data['class_ids'], $data['subject_ids']);
 
         if (blank($data['password'] ?? null)) {

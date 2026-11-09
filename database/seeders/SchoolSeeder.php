@@ -17,7 +17,7 @@ class SchoolSeeder extends Seeder
         $pcRoom = Classroom::firstOrCreate(['name' => 'PC室'], ['floor' => 4]);
 
         // クラス => ホームルームの教室
-        foreach (['1年A組' => $room301, '1年B組' => $room302] as $name => $room) {
+        foreach (['1T1' => $room301, '1T2' => $room302] as $name => $room) {
             SchoolClass::firstOrCreate(['name' => $name], ['classroom_id' => $room->id]);
         }
 

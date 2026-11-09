@@ -25,7 +25,8 @@ class StudentController extends Controller
 
     public function index(Request $request): Response
     {
-        $q = trim((string) $request->query('q', ''));
+        $input = $request->query('q');
+        $q = is_string($input) ? trim($input) : '';
         $classId = $request->integer('class_id');   // 選ばれていなければ 0
         $faces = $request->query('faces');           // 'registered'（登録済）か 'unregistered'（未登録）
         if (! in_array($faces, ['registered', 'unregistered'], true)) {
