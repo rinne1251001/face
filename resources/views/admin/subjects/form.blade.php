@@ -213,6 +213,12 @@
                                             <option value="{{ $p }}" @selected(old("schedules.$day.period_end", $schedule?->period_end ?? 1) == $p)>{{ $p }}限</option>
                                         @endfor
                                     </select>
+                                    <select name="schedules[{{ $day }}][classroom_id]" aria-label="{{ $label }}曜日の教室">
+                                        <option value="">教室：未設定</option>
+                                        @foreach ($classrooms as $classroom)
+                                            <option value="{{ $classroom->id }}" @selected(old("schedules.$day.classroom_id", $schedule?->classroom_id) == $classroom->id)>{{ $classroom->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         @endforeach
@@ -279,7 +285,7 @@
 
             // 時限を変えたとき：チェックが入っていれば、全ての曜日にコピーする
             list.addEventListener('change', (e) => {
-                if (same.checked && e.target.matches('select')) {
+                if (same.checked && e.target.matches('.period-start, .period-end')) {
                     copyFrom(e.target.closest('.schedule-row'));
                 }
             });

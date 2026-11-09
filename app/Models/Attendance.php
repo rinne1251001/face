@@ -25,20 +25,30 @@ class Attendance extends Model
     // date は 'Y-m-d' の文字列のまま扱う（DB の date 型と比べやすくするため、日付型への変換はしない）
     protected $fillable = ['student_id', 'subject_id', 'date', 'period', 'status', 'method', 'match_log_id', 'teacher_id'];
     
+    /** @return BelongsTo<Student, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
     }
 
+    /** @return BelongsTo<Subject, $this> */
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
     }
 
     // 手動で登録した教師（顔認証のときは null）
+    /** @return BelongsTo<Teacher, $this> */
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(Teacher::class);
+    }
+
+    // 顔認証で記録したときの照合ログ（手動で登録したときは null）
+    /** @return BelongsTo<MatchLog, $this> */
+    public function matchLog(): BelongsTo
+    {
+        return $this->belongsTo(MatchLog::class);
     }
 
     public function statusLabel(): string

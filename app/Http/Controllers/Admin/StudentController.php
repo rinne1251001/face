@@ -68,6 +68,7 @@ class StudentController extends Controller
 
     // 一覧で並び替えできる列（URL の ?sort= に使うキー => 並び替えに使う列）
     // 並び替えを増やすときは、ここに1行足して、ビューの見出しを partials.sort-header にするだけ
+    /** @return array<string, mixed> */
     private function sortColumns(): array
     {
         return [
@@ -117,7 +118,7 @@ class StudentController extends Controller
     public function bulkStore(Request $request): RedirectResponse
     {
         // 名前も学籍番号も空の行は無視する（クラスだけ選ばれている行も無視）
-        $rows = collect($request->input('students', []))
+        $rows = $request->collect('students')
             ->filter(fn ($row) => is_array($row) && (filled($row['name'] ?? null) || filled($row['student_number'] ?? null)))
             ->values()
             ->all();
@@ -194,6 +195,7 @@ class StudentController extends Controller
     }
 
     // フォーム画面に渡すデータ（クラスと授業の選択肢）
+    /** @return array<string, mixed> */
     private function formData(Student $student): array
     {
         // 入力エラーで戻ってきたときは、さっき選んでいたチェック状態を使う
@@ -204,12 +206,13 @@ class StudentController extends Controller
             'classes' => SchoolClass::orderBy('name')->get(),
             'subjects' => Subject::with('schedules')->orderBySchedule()->get(),
             'selectedSubjectIds' => array_map('intval', $hasOld
-                ? old('subject_ids', [])
+                ? (array) old('subject_ids', []) // 前回の入力は文字列や null のこともあるので、必ず配列にする
                 : ($student->exists ? $student->subjects->pluck('id')->all() : [])),
         ];
     }
 
     // [生徒の項目, 授業IDの配列] を返す
+    /** @return array{array<string, mixed>, array<mixed>} */
     private function validated(Request $request, ?Student $student = null): array
     {
         $data = $request->validate([

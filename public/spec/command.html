@@ -48,11 +48,13 @@
             <li><a href="#database">データベース関連</a></li>
             <li><a href="#cache">キャッシュクリア</a></li>
             <li><a href="#composer">composer関連</a></li>
+            <li><a href="#phpstan">phpstan</a></li>
             <li><a href="#env">.env関連</a></li>
             <li><a href="#version">Laravelバージョン</a></li>
             <li><a href="#create">プロジェクト作成</a></li>
             <li><a href="#human">Humanをインストール</a></li>
             <li><a href="#japanese">日本語ファイル追加</a></li>
+            <li><a href="#yasumi">祝日判定ライブラリ追加</a></li>
             <li><a href="#image">storageフォルダに入れた画像を一般公開</a></li>
         </ol>
     </nav>
@@ -130,6 +132,26 @@ npm install</code></pre>
         </div>
 
         <div class="content-wrapper">
+            <h2 id="phpstan">phpstan</h2>
+            <section>
+                <h3>phpstan導入</h3>
+                <pre><code class="language-plaintext">composer require --dev larastan/larastan</code></pre>
+            </section>
+
+            <section>
+                <h3>解析実行</h3>
+                <pre><code class="language-plaintext">./vendor/bin/phpstan analyse
+
+// 上限引き上げ
+./vendor/bin/phpstan analyse --memory-limit=2G</code></pre>
+
+                <p>composer.jsonのscriptsに以下のコードがあるなら、</p>
+                <pre><code class="php">"phpstan": "phpstan analyse --memory-limit=2G"</code></pre>
+                <pre><code class="language-plaintext">composer phpstan</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
             <h2 id="version">Laravelバージョン</h2>
             <section>
                 <h3>Laravelのバージョンを確認</h3>
@@ -185,6 +207,13 @@ Copy-Item node_modules/@vladmandic/human/models/blazeface.*, node_modules/@vladm
                 <pre><code class="language-plaintext">composer require laravel-lang/common --dev
 php artisan lang:add ja
 php artisan lang:update</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="yasumi">祝日判定ライブラリ追加</h2>
+            <section>
+                <pre><code class="language-plaintext">composer require azuyalabs/yasumi</code></pre>
             </section>
         </div>
 

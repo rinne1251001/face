@@ -17,7 +17,10 @@
                 @endunless
             </form>
 
-            <p><strong>{{ $date->format('Y年n月j日') }}（{{ $dayLabel }}）</strong></p>
+            <p>
+                <strong>{{ $date->format('Y年n月j日') }}（{{ $dayLabel }}）</strong>
+                @if ($dayNote)<span class="warn">{{ $dayNote }}</span>@endif
+            </p>
 
             @if ($students->isEmpty())
                 <p class="muted">このクラスには生徒がいません。</p>

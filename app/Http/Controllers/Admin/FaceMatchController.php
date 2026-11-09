@@ -60,18 +60,10 @@ class FaceMatchController extends Controller
     // 照合ログの表の中身（新しい順に30件）。画面の JavaScript から読み込む
     public function logs(): View
     {
-        $logs = MatchLog::query()
-            ->leftJoin('students', 'students.id', '=', 'match_logs.student_id')
-            ->orderByDesc('match_logs.id')
+        $logs = MatchLog::with('student') // 生徒は MatchLog の student() リレーションで一緒に読み込む
+            ->latest('id')
             ->limit(30)
-            ->get([
-                'match_logs.id',
-                'students.name as student_name',
-                'match_logs.similarity',
-                'match_logs.margin',
-                'match_logs.accepted',
-                'match_logs.created_at',
-            ]);
+            ->get();
 
         return view('admin.faces.match-logs', compact('logs'));
     }

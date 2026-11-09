@@ -7,6 +7,7 @@ use App\Models\Attendance;
 use App\Models\MatchLog;
 use App\Models\Subject;
 use App\Services\FaceMatcher;
+use App\Services\SchoolCalendar;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,7 @@ use Illuminate\View\View;
 class CheckinController extends Controller
 {
     // カメラの画面
-    public function show(Request $request, Subject $subject): View
+    public function show(Request $request, Subject $subject, SchoolCalendar $calendar): View
     {
         abort_unless($request->user('teacher')->teachesSubject($subject), 403, 'この授業の担当ではありません。');
 
@@ -26,9 +27,14 @@ class CheckinController extends Controller
         return view('teacher.subjects.checkin', [
             'subject' => $subject,
             'today' => $today,
+            'period' => $period, // ← これがないと受付画面が「Undefined variable $period」になる
             'periods' => $subject->periodsFor($today), // 切り替えられる時限
-            'wrongDay' => $subject->scheduleOn($today) === null, // 今日はこの授業の曜日ではない
-            'studentCount' => $subject->students()->count(),
+            'wrongDay' => $subject->periodsOn($today) === [], // 今日はこの授業がない（祝日・休校・曜日違い）
+            'dayNote' => $calendar->dayNote($today),            // 例：祝日（文化の日）
+            // 受講者の人数（クラスの授業変更で、この時限に受けないクラスの生徒は数えない）
+            'studentCount' => $subject->periodsOn($today) !== [] && $subject->classIdsOn($today, $period) !== []
+                ? $subject->students()->whereIn('school_class_id', $subject->classIdsOn($today, $period))->count()
+                : $subject->students()->count(),
             'recordedCount' => $subject->attendances()
                 ->where('date', $today->toDateString())
                 ->where('period', $period)
@@ -44,7 +50,6 @@ class CheckinController extends Controller
 
         $request->validate([
             'model_version' => ['required', 'string', Rule::in([config('face.model_version')])],
-            'embedding' => ['required', 'array'],
             'embedding' => ['required', 'array'],
             // 何限の出席か（受付画面の URL の ?period= で送られてくる）
             'period' => ['required', 'integer', Rule::in($subject->periodsFor(today()))],
@@ -84,6 +89,16 @@ class CheckinController extends Controller
                 'result' => 'not_enrolled',
                 'student' => $summary,
                 'message' => "{$student->name} さんはこの授業の受講者ではありません。",
+            ]);
+        }
+
+        // 2-2. 受講者だが、クラスの授業変更で、この時限はこの授業を受けないクラスの生徒
+        $classIds = $subject->classIdsOn(today(), $period);
+        if ($subject->periodsOn(today()) !== [] && $classIds !== [] && ! in_array((int) $student->school_class_id, $classIds, true)) {
+            return response()->json([
+                'result' => 'not_enrolled',
+                'student' => $summary,
+                'message' => "{$student->name} さんのクラスは、授業変更のため、この時限はこの授業がありません。",
             ]);
         }
 

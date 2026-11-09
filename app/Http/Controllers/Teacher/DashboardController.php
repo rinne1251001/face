@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Subject;
+use App\Services\SchoolCalendar;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 // 教師のホーム：今日の授業・担当授業・受け持ちクラスの一覧
 class DashboardController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, SchoolCalendar $calendar): View
     {
         $teacher = $request->user('teacher');
         $today = today();
@@ -37,6 +38,7 @@ class DashboardController extends Controller
             ->whereIn('status', ['present', 'late'])
             ->selectRaw('subject_id, period, count(*) as total')
             ->groupBy('subject_id', 'period')
+            ->toBase() // 集計した行は Attendance のモデルではないので、素の行（stdClass）として受け取る
             ->get()
             ->mapWithKeys(fn ($row) => ["{$row->subject_id}-{$row->period}" => $row->total]);
 
@@ -45,6 +47,7 @@ class DashboardController extends Controller
         return view('teacher.dashboard', [
             'today' => $today,
             'todayLabel' => Subject::DAYS[$today->dayOfWeekIso],
+            'todayNote' => $calendar->dayNote($today),
             'todayRows' => $todayRows,
             'presentCounts' => $presentCounts,
             'subjects' => $subjects,

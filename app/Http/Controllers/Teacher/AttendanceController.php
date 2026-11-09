@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Student;
 use App\Models\Subject;
+use App\Services\SchoolCalendar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -16,7 +17,7 @@ use Illuminate\View\View;
 class AttendanceController extends Controller
 {
     // 授業の出席一覧（?date=2026-10-05 で日付を指定。省略すると今日）
-    public function show(Request $request, Subject $subject): View
+    public function show(Request $request, Subject $subject, SchoolCalendar $calendar): View
     {
         $teacher = $request->user('teacher');
         abort_unless($teacher->teachesSubject($subject), 403, 'この授業の担当ではありません。');
@@ -31,6 +32,13 @@ class AttendanceController extends Controller
             ->orderBy('student_number')
             ->get();
 
+        // クラスの授業変更で、この時限にこの授業を受けないクラスの生徒は出さない
+        // （この日に授業がないときは、手動で記録できるように全員を出す）
+        $classIds = $subject->classIdsOn($date, $period);
+        if ($subject->periodsOn($date) !== [] && $classIds !== []) {
+            $students = $students->whereIn('school_class_id', $classIds)->values();
+        }
+
         // 生徒ID => 出席記録
         $attendances = $subject->attendances()
             ->with('teacher')
@@ -40,18 +48,19 @@ class AttendanceController extends Controller
             ->keyBy('student_id');
 
         // 状態ごとの人数（未記録は全員から記録済みを引く）
-        $counts = collect(Attendance::STATUSES)->map(fn ($label, $status) => $attendances->where('status', $status)->count());
+        $counts = collect(Attendance::STATUSES)->map(fn ($label, $status) => $attendances->where('status', $status)->count())->all();
         $counts['none'] = $students->count() - $attendances->count();
 
         return view('teacher.subjects.show', [
             'subject' => $subject,
             'date' => $date,
+            'period' => $period,
             'periods' => $subject->periodsFor($date), // 切り替えられる時限
-            'wrongDay' => $subject->scheduleOn($date) === null,
             'isToday' => $date->isToday(),
             'isFuture' => $date->isFuture(),
-            // 指定した日がこの授業の曜日と違うとき、画面に注意を出す
-            'wrongDay' => $date->dayOfWeekIso !== $subject->day_of_week,
+            // その日にこの授業がない（祝日・休校・曜日違い）とき、画面に注意を出す
+            'wrongDay' => $subject->periodsOn($date) === [],
+            'dayNote' => $calendar->dayNote($date),
             'dayLabel' => Subject::DAYS[$date->dayOfWeekIso],
             'students' => $students,
             'attendances' => $attendances,

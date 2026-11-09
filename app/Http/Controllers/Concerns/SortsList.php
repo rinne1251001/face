@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 trait SortsList
 {
     /**
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query  並び替えるクエリ（どのモデルのクエリでも使える）
      * @param  array<string, mixed>  $columns  並び替えできる列（キー => 列名 または サブクエリ）
      * @return array{0: string, 1: string}  [実際に使った列のキー, 'asc' か 'desc']
      */

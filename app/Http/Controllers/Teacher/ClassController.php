@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\Subject;
+use App\Services\SchoolCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -21,7 +23,7 @@ class ClassController extends Controller
         return view('teacher.classes.index', compact('classes'));
     }
 
-    public function show(Request $request, SchoolClass $schoolClass): View
+    public function show(Request $request, SchoolClass $schoolClass, SchoolCalendar $calendar): View
     {
         $teacher = $request->user('teacher');
         abort_unless($teacher->hasSchoolClass($schoolClass), 403, 'このクラスの受け持ちではありません。');
@@ -32,18 +34,25 @@ class ClassController extends Controller
 
         // クラスの生徒と、それぞれがその曜日に受講している授業
         $students = $schoolClass->students()
-            ->with(['subjects' => fn ($q) => $q->onDay($dayOfWeek)->with('schedules')])
+            ->with('subjects.schedules')
             ->orderBy('student_number')
             ->get();
 
         // このクラスの誰かが受講している、その曜日の授業
-        $subjects = $students->flatMap->subjects->unique('id')->values();
+        // （flatMap->subjects と同じ意味。こう書くと、中身が Subject だと PHPStan に伝わる）
+        $subjects = $students->flatMap(fn (Student $student) => $student->subjects)
+            ->unique('id')
+            ->filter(fn ($subject) => $subject->periodsOn($date) !== []) // その日に授業があるものに絞る
+            ->values();
 
         // 表の列：「授業 × 時限」（3〜5限の授業なら3列）。時限の順に並べる
+        // （クラスの授業変更で、このクラスが受けない時限は出さない）
         $columns = $subjects
             ->flatMap(fn ($subject) => collect($subject->periodsOn($date))
+            ->filter(fn ($period) => in_array($schoolClass->id, $subject->classIdsOn($date, $period), true))
             ->map(fn ($period) => ['subject' => $subject, 'period' => $period]))
-            ->sortBy([['period', 'asc'], [fn ($a, $b) => $a['subject']->name <=> $b['subject']->name]])
+            // 時限の順 → 同じ時限なら授業名の順（2つ目は2つの列を比べる関数。[...] で囲まずにそのまま渡す）
+            ->sortBy([['period', 'asc'], fn (array $a, array $b) => $a['subject']->name <=> $b['subject']->name])
             ->values();
 
         // 「生徒ID-授業ID-時限」 => 出席記録
@@ -58,6 +67,7 @@ class ClassController extends Controller
             'schoolClass' => $schoolClass,
             'date' => $date,
             'dayLabel' => Subject::DAYS[$dayOfWeek],
+            'dayNote' => $calendar->dayNote($date),
             'students' => $students,
             'subjects' => $subjects,
             'columns' => $columns, // ← これがなかったので $columns が未定義になっていた

@@ -95,7 +95,7 @@
 
                 <div class="form-group">
                     <label class="checkbox-item">
-                        <input type="checkbox" name="is_target" value="1" @checked(session()->hasOldInput() ? old('is_active') : $student->is_active)>
+                        <input type="checkbox" name="is_active" value="1" @checked(session()->hasOldInput() ? old('is_active') : $student->is_active)>
                         <span style="font-weight: 600;">照会の対象にする</span>
                     </label>
                 </div>

@@ -17,6 +17,7 @@ class FaceSample extends Model
         return ['embedding' => 'array'];
     }
 
+    /** @return BelongsTo<Student, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);

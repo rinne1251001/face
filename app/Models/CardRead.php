@@ -13,12 +13,14 @@ class CardRead extends Model
     protected $fillable = ['student_card_id', 'student_id'];
 
     // タッチしたカード
+    /** @return BelongsTo<StudentCard, $this> */
     public function card(): BelongsTo
     {
         return $this->belongsTo(StudentCard::class, 'student_card_id');
     }
 
     // タッチした時点でカードを持っていた生徒
+    /** @return BelongsTo<Student, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);

@@ -17,11 +17,10 @@ class TeacherController extends Controller
 {
     public function index(): View
     {
+        // リレーションごとに with() を分ける（1つの配列にまとめると、$q がどちらのリレーションか PHPStan が区別できない）
         $teachers = Teacher::query()
-            ->with([
-                'schoolClasses' => fn ($q) => $q->orderBy('name'),
-                'subjects' => fn ($q) => $q->with('schedules')->orderBySchedule(),
-            ])
+            ->with('schoolClasses', fn ($q) => $q->orderBy('name'))
+            ->with('subjects', fn ($q) => $q->with('schedules')->orderBySchedule())
             ->orderBy('name')
             ->get();
 
@@ -77,9 +76,11 @@ class TeacherController extends Controller
         return redirect()->route('admin.teachers.index')->with('status', '削除しました。');
     }
 
+    /** @return array<string, mixed> */
     private function formData(Teacher $teacher): array
     {
         // 入力エラーで戻ってきたときは、さっき選んでいたチェック状態を使う
+        // （前回の入力は文字列や null のこともあるので、(array) で必ず配列にする）
         $hasOld = session()->hasOldInput();
 
         return [
@@ -87,15 +88,16 @@ class TeacherController extends Controller
             'classes' => SchoolClass::orderBy('name')->get(),
             'subjects' => Subject::with('schedules')->orderBySchedule()->get(),
             'selectedClassIds' => array_map('intval', $hasOld
-                ? old('class_ids', [])
+                ? (array) old('class_ids', [])
                 : ($teacher->exists ? $teacher->schoolClasses->pluck('id')->all() : [])),
             'selectedSubjectIds' => array_map('intval', $hasOld
-                ? old('subject_ids', [])
+                ? (array) old('subject_ids', [])
                 : ($teacher->exists ? $teacher->subjects->pluck('id')->all() : [])),
         ];
     }
 
     // [教師の項目, クラスIDの配列, 授業IDの配列] を返す
+    /** @return array{array<string, mixed>, array<mixed>, array<mixed>} */
     private function validated(Request $request, ?Teacher $teacher = null): array
     {
         $data = $request->validate([

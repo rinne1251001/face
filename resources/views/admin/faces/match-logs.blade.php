@@ -1,6 +1,6 @@
 @forelse ($logs as $log)
     <tr>
-        <td>{{ $log->student_name ?? '（なし）' }}</td>
+        <td>{{ $log->student?->name ?? '（なし）' }}</td>
         <td class="{{ $log->accepted ? 'ok' : 'error' }}">{{ $log->accepted ? '本人と判定' : '不合格' }}</td>
         <td>{{ $log->similarity === null ? '-' : number_format($log->similarity, 3) }}</td>
         <td>{{ $log->margin === null ? '-' : number_format($log->margin, 3) }}</td>
