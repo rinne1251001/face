@@ -54,7 +54,9 @@
                     <tr>
                         <th></th>
                         <th>名前</th>
+                        <th>フリガナ</th>
                         <th>学籍番号</th>
+                        <th>出席番号</th>
                         <th>クラス</th>
                         <th></th>
                     </tr>
@@ -68,8 +70,16 @@
                                     @class(['invalid' => $errors->has("students.$i.name")])>
                             </td>
                             <td>
+                                <input name="students[{{ $i }}][furigana]" value="{{ $row['furigana'] ?? '' }}" maxlength="300"
+                                    @class(['invalid' => $errors->has("students.$i.furigana")])>
+                            </td>
+                            <td>
                                 <input name="students[{{ $i }}][student_number]" value="{{ $row['student_number'] ?? '' }}" maxlength="20"
                                     @class(['invalid' => $errors->has("students.$i.student_number")])>
+                            </td>
+                            <td>
+                                <input name="students[{{ $i }}][attend_number]" value="{{ $row['attend_number'] ?? '' }}" maxlength="20"
+                                    @class(['invalid' => $errors->has("students.$i.attend_number")])>
                             </td>
                             <td>
                                 <select name="students[{{ $i }}][school_class_id]"
@@ -113,7 +123,7 @@
 <script>
 (() => {
     const MAX_ROWS = 200;
-    const COLS = ['name', 'student_number', 'school_class_id']; // 貼り付けるときの列の順番
+    const COLS = ['name', 'furigana', 'student_number', 'attend_number', 'school_class_id']; // 貼り付けるときの列の順番
     const tbody = document.getElementById('rows');
 
     // name="students[3][name]" → "name"

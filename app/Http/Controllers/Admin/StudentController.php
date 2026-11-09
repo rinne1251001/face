@@ -35,10 +35,12 @@ class StudentController extends Controller
         $query = Student::query()
             ->with('schoolClass')
             ->withCount('faceSamples')
-            // キーワード（空なら絞り込まない）
+            // キーワード（空なら絞り込まない：名前・フリガナ・学籍番号・出席番号・クラス名）
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
                 ->where('name', 'like', "%{$q}%")
+                ->orWhere('furigana', 'like', "%{$q}%")
                 ->orWhere('student_number', 'like', "%{$q}%")
+                ->orWhere('attend_number', 'like', "%{$q}%")
                 ->orWhereHas('schoolClass', fn ($c) => $c->where('name', 'like', "%{$q}%"))))
             // クラス（「すべてのクラス」なら絞り込まない）
             ->when($classId > 0, fn ($query) => $query->where('school_class_id', $classId))
@@ -73,9 +75,10 @@ class StudentController extends Controller
     {
         return [
             'student_number' => 'student_number',
-            'name' => 'name',
+            'attend_number'  => 'attend_number',
+            'name'           => 'furigana',
             // クラス名は別のテーブルにあるので、クラス名を取り出すサブクエリで並び替える
-            'class' => SchoolClass::select('name')->whereColumn('school_classes.id', 'students.school_class_id'),
+            'class'          => SchoolClass::select('name')->whereColumn('school_classes.id', 'students.school_class_id'),
         ];
     }
 
@@ -109,7 +112,7 @@ class StudentController extends Controller
     public function bulkCreate(): View
     {
         return view('admin.students.bulk', [
-            'classes' => SchoolClass::orderBy('name')->get(),
+            'classes'  => SchoolClass::orderBy('name')->get(),
             'subjects' => Subject::with('schedules')->orderBySchedule()->get(),
         ]);
     }
@@ -125,25 +128,31 @@ class StudentController extends Controller
         $request->merge(['students' => $rows]);
 
         $data = $request->validate([
-            'students' => ['required', 'array', 'max:200'],
-            'students.*.name' => ['required', 'string', 'max:100'],
+            'students'                  => ['required', 'array', 'max:200'],
+            'students.*.name'           => ['required', 'string', 'max:100'],
+            'students.*.furigana'       => ['required', 'string', 'max:300'],
             // distinct:strict … 表の中での重複チェック（strict がないと "001" と "1" が同じ扱いになる）
             'students.*.student_number' => ['required', 'string', 'max:20', 'distinct:strict', 'unique:students,student_number'],
+            'students.*.attend_number'  => ['required', 'string', 'max:20', 'distinct:strict', 'unique:students,attend_number'],
             'students.*.school_class_id' => ['required', 'integer', 'exists:school_classes,id'],
-            'subject_ids' => ['nullable', 'array'], // 受講する授業は空でも可
-            'subject_ids.*' => ['integer', 'distinct', 'exists:subjects,id'],
+            'subject_ids'               => ['nullable', 'array'], // 受講する授業は空でも可
+            'subject_ids.*'             => ['integer', 'distinct', 'exists:subjects,id'],
         ], [
-            'students.required' => '名前と学籍番号を1人分以上入力してください。',
+            'students.required'                   => '名前と学籍番号を1人分以上入力してください。',
             'students.*.student_number.distinct' => ':position行目の学籍番号「:input」が表の中で重複しています。',
-            'students.*.student_number.unique' => ':position行目の学籍番号「:input」は既に登録されています。',
+            'students.*.student_number.unique'   => ':position行目の学籍番号「:input」は既に登録されています。',
+            'students.*.attend_number.distinct'  => ':position行目の出席番号「:input」が表の中で重複しています。',
+            'students.*.attend_number.unique'    => ':position行目の出席番号「:input」は既に登録されています。',
         ], [
             // :position は「何行目か」（1から数える）に置き換わる
-            'students' => '生徒',
-            'students.*.name' => ':position行目の名前',
+            'students'                  => '生徒',
+            'students.*.name'           => ':position行目の名前',
+            'students.*.furigana'       => ':position行目のフリガナ',
             'students.*.student_number' => ':position行目の学籍番号',
+            'students.*.attend_number'  => ':position行目の出席番号',
             'students.*.school_class_id' => ':position行目のクラス',
-            'subject_ids' => '受講する授業',
-            'subject_ids.*' => '受講する授業',
+            'subject_ids'               => '受講する授業',
+            'subject_ids.*'             => '受講する授業',
         ]);
 
         $subjectIds = $data['subject_ids'] ?? [];
@@ -202,9 +211,9 @@ class StudentController extends Controller
         $hasOld = session()->hasOldInput();
 
         return [
-            'student' => $student,
-            'classes' => SchoolClass::orderBy('name')->get(),
-            'subjects' => Subject::with('schedules')->orderBySchedule()->get(),
+            'student'            => $student,
+            'classes'            => SchoolClass::orderBy('name')->get(),
+            'subjects'           => Subject::with('schedules')->orderBySchedule()->get(),
             'selectedSubjectIds' => array_map('intval', $hasOld
                 ? (array) old('subject_ids', []) // 前回の入力は文字列や null のこともあるので、必ず配列にする
                 : ($student->exists ? $student->subjects->pluck('id')->all() : [])),
@@ -216,11 +225,13 @@ class StudentController extends Controller
     private function validated(Request $request, ?Student $student = null): array
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'student_number' => ['required', 'string', 'max:20', Rule::unique('students')->ignore($student)],
+            'name'            => ['required', 'string', 'max:100'],
+            'furigana'        => ['required', 'string', 'max:300'],
+            'student_number'  => ['required', 'string', 'max:20', Rule::unique('students')->ignore($student)],
+            'attend_number'   => ['required', 'string', 'max:20', Rule::unique('students')->ignore($student)],
             'school_class_id' => ['required', 'integer', 'exists:school_classes,id'],
-            'subject_ids' => ['required', 'array', 'min:1'], // 授業は1つ以上
-            'subject_ids.*' => ['integer', 'distinct', 'exists:subjects,id'],
+            'subject_ids'     => ['required', 'array', 'min:1'], // 授業は1つ以上
+            'subject_ids.*'   => ['integer', 'distinct', 'exists:subjects,id'],
         ]);
 
         $subjectIds = $data['subject_ids'];

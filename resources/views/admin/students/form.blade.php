@@ -49,7 +49,8 @@
         </div>
 
         <div class="form-card">
-            <form method="POST" action="{{ $student->exists ? route('admin.students.update', $student) : route('admin.students.store') }}">
+            {{-- メインフォーム（登録・更新用） --}}
+            <form id="student-form" method="POST" action="{{ $student->exists ? route('admin.students.update', $student) : route('admin.students.store') }}">
                 @csrf
                 @if ($student->exists)
                     @method('PUT')
@@ -61,8 +62,16 @@
                         <input name="name" value="{{ old('name', $student->name) }}" type="text" class="form-input" placeholder="例: 山田太郎" required>
                     </div>
                     <div class="form-group">
+                        <label class="form-label">フリガナ <span class="required-badge">*</span></label>
+                        <input name="furigana" value="{{ old('furigana', $student->furigana) }}" type="text" class="form-input" placeholder="例: ヤマダタロウ" required>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">学籍番号 <span class="required-badge">*</span></label>
                         <input name="student_number" value="{{ old('student_number', $student->student_number) }}" type="text" class="form-input" placeholder="例: 0000000" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">出席番号 <span class="required-badge">*</span></label>
+                        <input name="attend_number" value="{{ old('attend_number', $student->attend_number) }}" type="text" class="form-input" placeholder="例: 14" required>
                     </div>
                 </div>
 
@@ -81,16 +90,16 @@
                 <div class="form-group">
                     <label class="form-label">受講する授業（1つ以上）</label>
                     <div class="checkbox-card">
-
-                    @forelse ($subjects as $subject)
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="subject_ids[]" value="{{ $subject->id }}"
-                                @checked(in_array($subject->id, $selectedSubjectIds, true))>
-                            {{ $subject->name }}（{{ $subject->schedule_label }}）
-                        </label>
-                    @empty
-                        <p>授業が登録されていません。</p>
-                    @endforelse
+                        @forelse ($subjects as $subject)
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="subject_ids[]" value="{{ $subject->id }}"
+                                    @checked(in_array($subject->id, $selectedSubjectIds, true))>
+                                {{ $subject->name }}（{{ $subject->schedule_label }}）
+                            </label>
+                        @empty
+                            <p>授業が登録されていません。</p>
+                        @endforelse
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -111,11 +120,8 @@
                         @foreach ($student->faceSamples as $sample)
                             <figure style="display:inline-block; margin:0">
                                 <img src="{{ route('admin.faces.image', $sample) }}" alt="">
-                                <form method="POST" action="{{ route('admin.faces.destroy', $sample) }}" onsubmit="return confirm('この写真を削除しますか？')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="delete">削除</button>
-                                </form>
+                                {{-- form属性で外側のフォームと紐付け --}}
+                                <button type="submit" form="delete-face-{{ $sample->id }}" class="delete" onclick="return confirm('この写真を削除しますか？')">削除</button>
                             </figure>
                         @endforeach
                     </div>
@@ -123,15 +129,9 @@
 
                 <div class="form-actions">
                     @if ($student->exists)
-                        <form method="POST" action="{{ route('admin.students.destroy', $student) }}" onsubmit="return confirm('この生徒の顔写真と出席記録もすべて削除されます。削除しますか？')">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn-secondary">この生徒を削除</button>
-                        </form>
-                    @endif
-
-                    @if ($student->exists)
-                        <button class="btn-secondary">保存</button>
+                        {{-- form属性で外側の削除フォームと紐付け --}}
+                        <button type="submit" form="delete-student-form" class="btn-secondary">この生徒を削除</button>
+                        <button type="submit" class="btn-primary">保存</button>
                     @else
                         {{-- どちらのボタンを押したかは name="next" の値で判別する --}}
                         <button name="next" value="faces" type="submit" class="btn-secondary">保存して顔写真を登録する</button>
@@ -140,7 +140,24 @@
                 </div>
             </form>
 
+            {{-- 外部削除用フォーム群（ネスト回避のためにメインフォームの外へ配置） --}}
+            @if ($student->exists)
+                {{-- 生徒の削除用フォーム --}}
+                <form id="delete-student-form" method="POST" action="{{ route('admin.students.destroy', $student) }}" onsubmit="return confirm('この生徒の顔写真と出席記録もすべて削除されます。削除しますか？')">
+                    @csrf
+                    @method('DELETE')
+                </form>
+
+                {{-- 顔写真の削除用フォーム --}}
+                @foreach ($student->faceSamples as $sample)
+                    <form id="delete-face-{{ $sample->id }}" method="POST" action="{{ route('admin.faces.destroy', $sample) }}">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                @endforeach
+            @endif
+
         </div>
-   </div>
+    </div>
 </main>
 @endsection
