@@ -35,7 +35,7 @@ class ClassController extends Controller
         // クラスの生徒と、それぞれがその曜日に受講している授業
         $students = $schoolClass->students()
             ->with('subjects.schedules')
-            ->orderBy('student_number')
+            ->orderBy('attend_number')
             ->get();
 
         // このクラスの誰かが受講している、その曜日の授業

@@ -129,5 +129,8 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
 
         // 分析
         Route::get('analyses', [Teacher\AnalysisController::class, 'index'])->name('analyses.index');
+        Route::get('analyses/class/{class}', [Teacher\AnalysisController::class, 'showClass'])->name('analyses.class');
+        Route::get('analyses/student/{student}', [Teacher\AnalysisController::class, 'showStudent'])->name('analyses.student');
+        Route::get('analyses/subject/{subject}', [Teacher\AnalysisController::class, 'showSubject'])->name('analyses.subject');
     });
 });
