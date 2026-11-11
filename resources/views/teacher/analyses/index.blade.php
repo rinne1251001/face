@@ -2,6 +2,26 @@
 @section('title', '分析一覧')
 @push('styles')
     <style>
+        .table-container {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+        .table-container table {
+            border-collapse: collapse;
+        }
+        .table-container th {
+            background-color: var(--color-main);
+            color: var(--color-bg);
+            border: 1px solid var(--color-bg);
+            padding-block: 7px;
+            padding-inline: 20px;
+        }
+        .table-container td {
+            color: var(--color-main);
+            border: 1px solid var(--color-main);
+            padding: 10px 20px;
+        }
+
         /* =========================================================
          折れ線グラフ（CSSのみ）
          - 値はすべて HTML の style 属性（CSS変数）で渡す
@@ -19,6 +39,7 @@
             --grid-color: #e6e6e6;
 
             max-width: 520px;
+            flex: 1 1 520px;
             padding: 36px 32px 40px 60px;   /* 上:値ラベル / 左:Y軸 / 下:X軸 の余白 */
             color: var(--color-font-light);
         }
@@ -158,6 +179,7 @@
             align-items: center;
             gap: 28px;
             max-width: 520px;
+            min-width: 0;
         }
         
         /* 円グラフ本体 */
@@ -212,84 +234,160 @@
     <main class="main">
         <div class="content-wrapper">
 
-            <div class="page-header">
-                <h1>分析一覧</h1>
+            <div style="display: grid; gap: 100px; grid-template-columns: minmax(0, 1fr);">
+                <div>
+                    @if($classes->isNotEmpty())
+                        <div style="display: grid; gap: 40px;">
+                            @foreach($classes as $class)
+                                <div>
+                                    <div class="page-header">
+                                        <h1>{{ $class->name }}</h1>
+                                        <div>
+                                            <a href="{{ route('teacher.analyses.class', $class) }}">詳しく見る</a>
+                                        </div>
+                                    </div>
+
+                                    <div style="display: grid; row-gap: 40px; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); padding-right: 20px;">
+                                        <figure class="line-chart" style="--max: 100; --count: 12; --y-grid: 5; --x-grid: 11;" aria-label="月別推移グラフ">
+                                            <div style="color: var(--color-main); font-weight: bold; font-size: 1.4em; transform: translateY(-20px);">月別出席率</div>
+                                            <div class="lc-plot">
+
+                                                <ul class="lc-y" aria-hidden="true">
+                                                    <li style="--t: 20">20%</li>
+                                                    <li style="--t: 40">40%</li>
+                                                    <li style="--t: 60">60%</li>
+                                                    <li style="--t: 80">80%</li>
+                                                    <li style="--t: 100">100%</li>
+                                                </ul>
+
+                                                <ul class="lc-x">
+                                                    <li style="--i: 0">4月</li>
+                                                    <li style="--i: 1">5月</li>
+                                                    <li style="--i: 2">6月</li>
+                                                    <li style="--i: 3">7月</li>
+                                                    <li style="--i: 4">8月</li>
+                                                    <li style="--i: 5">9月</li>
+                                                    <li style="--i: 6">10月</li>
+                                                    <li style="--i: 7">11月</li>
+                                                    <li style="--i: 8">12月</li>
+                                                    <li style="--i: 9">1月</li>
+                                                    <li style="--i: 10">2月</li>
+                                                    <li style="--i: 11">3月</li>
+                                                </ul>
+
+                                                <!-- 青の系列 -->
+                                                <ul class="lc-series" style="--color: var(--color-main)" aria-label="系列A">
+                                                    <li style="--i: 0;  --v: 14; --pv: 14"><span>14%</span></li>
+                                                    <li style="--i: 1;  --v: 27; --pv: 14"><span>27%</span></li>
+                                                    <li style="--i: 2;  --v: 41; --pv: 27"><span>41%</span></li>
+                                                    <li style="--i: 3;  --v: 35; --pv: 41"><span>35%</span></li>
+                                                    <li style="--i: 4;  --v: 30; --pv: 35"><span>30%</span></li>
+                                                    <li style="--i: 5;  --v: 43; --pv: 30"><span>43%</span></li>
+                                                    <li style="--i: 6;  --v: 54; --pv: 43"><span>54%</span></li>
+                                                    <li style="--i: 7;  --v: 62; --pv: 54"><span>62%</span></li>
+                                                    <li style="--i: 8;  --v: 69; --pv: 62"><span>69%</span></li>
+                                                    <li style="--i: 9;  --v: 64; --pv: 69"><span>64%</span></li>
+                                                    <li style="--i: 10; --v: 58; --pv: 64"><span>58%</span></li>
+                                                    <li style="--i: 11; --v: 60; --pv: 58"><span>60%</span></li>
+                                                </ul>
+
+                                            </div>
+                                        </figure>
+
+                                        <figure class="donut-chart" style="--attend: 112; --late: 50; --official: 14; --absent: 24;">
+                                            <div style="color: var(--color-main); font-weight: bold; font-size: 1.4em; transform: translateY(40%);">今日の出席率</div>
+
+                                            <div style="position: relative; max-width: 100%;">
+                                                <div class="donut-chart__ring" role="img" aria-label="出欠の内訳：出席 112件、遅刻 50件、公欠 14件、欠席 24件"></div>
+                                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--color-main); font-weight: bold; display: flex; gap: 5px; align-items: baseline;"><span style="font-size: 2em;">56</span><span style="font-size: 1.5em;">%</span></div>
+                                            </div>
+                                        
+                                            <ul class="donut-chart__legend">
+                                            <li class="is-attend">出席</li>
+                                            <li class="is-late">遅刻</li>
+                                            <li class="is-official">公欠</li>
+                                            <li class="is-absent">欠席</li>
+                                            </ul>
+                                        </figure>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="page-header">
+                            <h1>クラス分析</h1>
+                        </div>
+                        <p>受け持ちクラスはありません</p>
+                    @endif
+                </div>
+
+                <div>
+                    <div class="page-header">
+                        <h1>授業分析</h1>
+                    </div>
+                    @if($subjects->isNotEmpty())
+                        <div style="display: grid; row-gap: 40px; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));">
+                            @foreach($subjects as $subject)
+                                <div style="min-width: 0;">
+                                    <div>
+                                        <a href="{{ route('teacher.analyses.subject', $subject) }}">{{ $subject->name }}</a>
+                                    </div>
+
+                                    <div>
+                                        <figure class="line-chart" style="--max: 100; --count: 12; --y-grid: 5; --x-grid: 11;" aria-label="月別推移グラフ">
+                                            <div style="color: var(--color-main); font-weight: bold; font-size: 1.4em; transform: translateY(-20px);">月別出席率</div>
+                                            <div class="lc-plot">
+
+                                                <ul class="lc-y" aria-hidden="true">
+                                                    <li style="--t: 20">20%</li>
+                                                    <li style="--t: 40">40%</li>
+                                                    <li style="--t: 60">60%</li>
+                                                    <li style="--t: 80">80%</li>
+                                                    <li style="--t: 100">100%</li>
+                                                </ul>
+
+                                                <ul class="lc-x">
+                                                    <li style="--i: 0">4月</li>
+                                                    <li style="--i: 1">5月</li>
+                                                    <li style="--i: 2">6月</li>
+                                                    <li style="--i: 3">7月</li>
+                                                    <li style="--i: 4">8月</li>
+                                                    <li style="--i: 5">9月</li>
+                                                    <li style="--i: 6">10月</li>
+                                                    <li style="--i: 7">11月</li>
+                                                    <li style="--i: 8">12月</li>
+                                                    <li style="--i: 9">1<span>月</span></li>
+                                                    <li style="--i: 10">2月</li>
+                                                    <li style="--i: 11">3月</li>
+                                                </ul>
+
+                                                <!-- 青の系列 -->
+                                                <ul class="lc-series" style="--color: var(--color-main)" aria-label="系列A">
+                                                    <li style="--i: 0;  --v: 14; --pv: 14"><span>14%</span></li>
+                                                    <li style="--i: 1;  --v: 27; --pv: 14"><span>27%</span></li>
+                                                    <li style="--i: 2;  --v: 41; --pv: 27"><span>41%</span></li>
+                                                    <li style="--i: 3;  --v: 35; --pv: 41"><span>35%</span></li>
+                                                    <li style="--i: 4;  --v: 30; --pv: 35"><span>30%</span></li>
+                                                    <li style="--i: 5;  --v: 43; --pv: 30"><span>43%</span></li>
+                                                    <li style="--i: 6;  --v: 54; --pv: 43"><span>54%</span></li>
+                                                    <li style="--i: 7;  --v: 62; --pv: 54"><span>62%</span></li>
+                                                    <li style="--i: 8;  --v: 69; --pv: 62"><span>69%</span></li>
+                                                    <li style="--i: 9;  --v: 64; --pv: 69"><span>64%</span></li>
+                                                    <li style="--i: 10; --v: 58; --pv: 64"><span>58%</span></li>
+                                                    <li style="--i: 11; --v: 60; --pv: 58"><span>60%</span></li>
+                                                </ul>
+
+                                            </div>
+                                        </figure>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p>受け持ち授業はありません</p>
+                    @endif
+                </div>
             </div>
-
-            <figure class="line-chart" style="--max: 100; --count: 12; --y-grid: 5; --x-grid: 11;" aria-label="月別推移グラフ">
-                <div class="lc-plot">
-
-                    <ul class="lc-y" aria-hidden="true">
-                        <li style="--t: 20">20%</li>
-                        <li style="--t: 40">40%</li>
-                        <li style="--t: 60">60%</li>
-                        <li style="--t: 80">80%</li>
-                        <li style="--t: 100">100%</li>
-                    </ul>
-
-                    <ul class="lc-x">
-                        <li style="--i: 0">4月</li>
-                        <li style="--i: 1">5月</li>
-                        <li style="--i: 2">6月</li>
-                        <li style="--i: 3">7月</li>
-                        <li style="--i: 4">8月</li>
-                        <li style="--i: 5">9月</li>
-                        <li style="--i: 6">10月</li>
-                        <li style="--i: 7">11月</li>
-                        <li style="--i: 8">12月</li>
-                        <li style="--i: 9">1月</li>
-                        <li style="--i: 10">2月</li>
-                        <li style="--i: 11">3月</li>
-                    </ul>
-
-                    <!-- 赤の系列 -->
-                    <ul class="lc-series" style="--color: var(--color-accent)" aria-label="系列B">
-                        <li style="--i: 0;  --v: 44; --pv: 44"><span>44%</span></li>
-                        <li style="--i: 1;  --v: 58; --pv: 44"><span>58%</span></li>
-                        <li style="--i: 2;  --v: 72; --pv: 58"><span>72%</span></li>
-                        <li style="--i: 3;  --v: 61; --pv: 72"><span>61%</span></li>
-                        <li style="--i: 4;  --v: 49; --pv: 61"><span>49%</span></li>
-                        <li style="--i: 5;  --v: 45; --pv: 49"><span>45%</span></li>
-                        <li style="--i: 6;  --v: 41; --pv: 45"><span>41%</span></li>
-                        <li style="--i: 7;  --v: 43; --pv: 41"><span>43%</span></li>
-                        <li style="--i: 8;  --v: 40; --pv: 43"><span>40%</span></li>
-                        <li style="--i: 9;  --v: 30; --pv: 40"><span>30%</span></li>
-                        <li style="--i: 10; --v: 21; --pv: 30"><span>21%</span></li>
-                        <li style="--i: 11; --v: 25; --pv: 21"><span>25%</span></li>
-                    </ul>
-
-                    <!-- 青の系列 -->
-                    <ul class="lc-series" style="--color: var(--color-main)" aria-label="系列A">
-                        <li style="--i: 0;  --v: 14; --pv: 14"><span>14%</span></li>
-                        <li style="--i: 1;  --v: 27; --pv: 14"><span>27%</span></li>
-                        <li style="--i: 2;  --v: 41; --pv: 27"><span>41%</span></li>
-                        <li style="--i: 3;  --v: 35; --pv: 41"><span>35%</span></li>
-                        <li style="--i: 4;  --v: 30; --pv: 35"><span>30%</span></li>
-                        <li style="--i: 5;  --v: 43; --pv: 30"><span>43%</span></li>
-                        <li style="--i: 6;  --v: 54; --pv: 43"><span>54%</span></li>
-                        <li style="--i: 7;  --v: 62; --pv: 54"><span>62%</span></li>
-                        <li style="--i: 8;  --v: 69; --pv: 62"><span>69%</span></li>
-                        <li style="--i: 9;  --v: 64; --pv: 69"><span>64%</span></li>
-                        <li style="--i: 10; --v: 58; --pv: 64"><span>58%</span></li>
-                        <li style="--i: 11; --v: 60; --pv: 58"><span>60%</span></li>
-                    </ul>
-
-                </div>
-            </figure>
-
-            <figure class="donut-chart" style="--attend: 112; --late: 50; --official: 14; --absent: 24;">
-                <div style="position: relative;">
-                    <div class="donut-chart__ring" role="img" aria-label="出欠の内訳：出席 112件、遅刻 50件、公欠 14件、欠席 24件"></div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--color-main); font-weight: bold; display: flex; gap: 5px; align-items: baseline;"><span style="font-size: 2em;">56</span><span style="font-size: 1.5em;">%</span></div>
-                </div>
-            
-                <ul class="donut-chart__legend">
-                <li class="is-attend">出席</li>
-                <li class="is-late">遅刻></li>
-                <li class="is-official">公欠</li>
-                <li class="is-absent">欠席</li>
-                </ul>
-            </figure>
 
         </div>
     </main>

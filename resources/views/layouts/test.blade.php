@@ -30,10 +30,11 @@
  
             // メインメニュー（PC左側・スマホメニュー）
             $mainMenu = [
-                ['label' => '生徒一覧',   'url' => route('admin.students.index')],
-                ['label' => '生徒を追加', 'url' => route('admin.students.create')],
-                ['label' => 'クラス',     'url' => route('admin.classes.index')],
-                ['label' => '授業',       'url' => route('admin.subjects.index')],
+                ['label' => '生徒',        'url' => route('admin.students.index')],
+                ['label' => 'クラス',      'url' => route('admin.classes.index')],
+                ['label' => '授業',        'url' => route('admin.subjects.index')],
+                ['label' => '教室',        'url' => route('admin.rooms.index')],
+                ['label' => 'スケジュール', 'url' => route('admin.schedules.index')],
             ];
  
             // サブメニュー（PC右側・スマホメニュー）
@@ -58,6 +59,7 @@
             $mainMenu = [
                 ['label' => 'home',   'url' => route('teacher.dashboard')],
                 ['label' => 'クラス',   'url' => route('teacher.classes.index')],
+                ['label' => '分析', 'url' => route('teacher.analyses.index')],
                 ['label' => '設定', 'url' => route('teacher.settings.index')],
             ];
  

@@ -32,8 +32,9 @@ class ScheduleController extends Controller
 
         $subjects = Subject::with(['schedules', 'students'])->orderBy('name')->get();
 
-        // 月〜金の5日分：日付・曜日・その日の説明（祝日・休校・振替）
-        $days = collect(range(0, 4))->map(function ($i) use ($monday, $calendar) {
+        // 月〜日の7日分：日付・曜日・その日の説明（祝日・休校・振替）
+        // （土日は、授業の表を作ったあとで「授業がある日」だけに絞り込む）
+        $days = collect(range(0, 6))->map(function ($i) use ($monday, $calendar) {
             $date = $monday->copy()->addDays($i);
 
             return [
@@ -62,6 +63,14 @@ class ScheduleController extends Controller
             }
         }
 
+        // 土日は、その日に授業が1つでもあるときだけ表示する（月〜金はいつも表示）
+        $hasLessons = fn ($date) => collect($grid)->contains(fn ($byDate) => isset($byDate[$date->toDateString()]));
+        $days = $days->filter(fn ($day) => $day['date']->isWeekday() || $hasLessons($day['date']))->values();
+
+        // 表示する最後の時限：6限（config の always_shown_periods）まではいつも表示し、
+        // それより後ろの時限（7限）は、その週に授業があるときだけ表示する
+        $lastPeriod = max([config()->integer('school.always_shown_periods'), ...array_keys($grid)]);
+
         // 今日以降にかかる授業変更（移動・入れ替えの2行は1つにまとめる）
         $groupIds = ClassLessonChange::whereDate('date', '>=', today())->distinct()->pluck('group_id');
         $lessonChanges = ClassLessonChange::with(['schoolClass', 'fromSubject', 'toSubject'])
@@ -83,6 +92,7 @@ class ScheduleController extends Controller
             'isThisWeek' => $monday->isSameDay(today()->startOfWeek(Carbon::MONDAY)),
             'days' => $days,
             'grid' => $grid,
+            'lastPeriod' => $lastPeriod,
             'maxPeriod' => Subject::maxPeriod(),
             // 今日以降に登録してある休校・振替と変則授業
             'calendarDays' => CalendarDay::whereDate('date', '>=', today())->orderBy('date')->get(),

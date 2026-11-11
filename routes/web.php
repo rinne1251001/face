@@ -60,11 +60,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('face-samples/{faceSample}/image', [Admin\FaceSampleController::class, 'image'])->name('faces.image');
         Route::delete('face-samples/{faceSample}', [Admin\FaceSampleController::class, 'destroy'])->name('faces.destroy');
 
-        // クラス・授業・教師
+        // クラス・授業・教室・教師
         Route::resource('classes', Admin\SchoolClassController::class)
             ->except('show')
             ->parameters(['classes' => 'schoolClass']);
         Route::resource('subjects', Admin\SubjectController::class)->except('show');
+        Route::resource('rooms', Admin\ClassroomController::class);
         Route::resource('teachers', Admin\TeacherController::class)->except('show');
 
         // 時間割（祝日は自動。休校・振替・変則授業はここで登録する）
@@ -128,5 +129,8 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
 
         // 分析
         Route::get('analyses', [Teacher\AnalysisController::class, 'index'])->name('analyses.index');
+        Route::get('analyses/class/{class}', [Teacher\AnalysisController::class, 'showClass'])->name('analyses.class');
+        Route::get('analyses/student/{student}', [Teacher\AnalysisController::class, 'showStudent'])->name('analyses.student');
+        Route::get('analyses/subject/{subject}', [Teacher\AnalysisController::class, 'showSubject'])->name('analyses.subject');
     });
 });

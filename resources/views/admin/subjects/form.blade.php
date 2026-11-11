@@ -150,6 +150,93 @@
             appearance: none;
             cursor: pointer;
         }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+        .search-container input {
+            outline: none;
+            width: 100%;
+        }
+        .search-container ul {
+            position: absolute;
+            width: 100%;
+            top: 100%;
+            left: 0;
+            background-color: var(--color-sub);
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            z-index: 10;
+            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        /* 検索欄（または候補）にフォーカスがあり、候補が1件以上あるときだけ一覧を開く */
+        .search-container:focus-within ul:has(> li) {
+            display: block;
+        }
+        .search-container li {
+            padding: 15px 20px;
+            cursor: pointer;
+            background-color: var(--color-sub);
+            display: flex;
+            align-items: flex-end;
+            gap: 7px;
+        }
+        .search-container li:hover,
+        .search-container li:focus {
+            filter: brightness(0.95);
+            outline: none;
+        }
+        .search-container li span:nth-child(2) {
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+        .search-container li.empty {
+            cursor: default;
+            opacity: 0.7;
+        }
+        .search-container li.empty:hover {
+            filter: none;
+        }
+        /* キーボード（↑↓）で選んでいる候補 */
+        .search-container li.active {
+            filter: brightness(0.9);
+        }
+        /* 選んだ担当教師 */
+        .selected-teachers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px 0 2px;
+        }
+        /* 教師が0人なら隠す（:empty だと、Blade の改行・空白があるだけで効かなくなる） */
+        .selected-teachers:not(:has(.teacher-chip)) {
+            display: none;
+        }
+        .teacher-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 6px 4px 14px;
+            border-radius: 30px;
+            background-color: var(--color-main);
+            color: var(--color-bg);
+        }
+        .chip-remove {
+            display: grid;
+            place-items: center;
+            width: 22px;
+            height: 22px;
+            border: none;
+            border-radius: 50%;
+            background-color: rgb(255 255 255 / 25%);
+            color: inherit;
+            cursor: pointer;
+        }
+        .chip-remove:hover {
+            background-color: rgb(255 255 255 / 45%);
+        }
     </style>
 @endpush
 @section('content')
@@ -175,6 +262,33 @@
                         <p>{{ $message }}</p>
                     @endforeach
                 @endif
+            </div>
+
+            {{-- 担当教師（複数可）：検索して選ぶと、下の一覧に追加される --}}
+            <div class="inp-container">
+                <div class="inp-hov">
+                    <label for="teacher-search">担当教師<span style="font-size: 0.9em;">（名前・ログインIDで検索して選ぶ。何人でも追加できます）</span></label>
+                    <div class="search-container">
+                        {{-- name を付けないので、検索の文字そのものは送信されない --}}
+                        <input type="search" id="teacher-search" placeholder="名前で検索" autocomplete="off"
+                               role="combobox" aria-controls="teacher-results" aria-expanded="false" aria-autocomplete="list">
+                        <ul id="teacher-results" role="listbox" aria-label="検索結果"></ul>
+                    </div>
+
+                    {{-- 選んだ教師。中の hidden の teacher_ids[] が送信される --}}
+                    <div class="selected-teachers" id="selected-teachers">
+                        @foreach ($selectedTeachers as $teacher)
+                            <span class="teacher-chip" data-id="{{ $teacher->id }}" data-name="{{ $teacher->name }}">
+                                <input type="hidden" name="teacher_ids[]" value="{{ $teacher->id }}">
+                                {{ $teacher->name }} 先生
+                                <button type="button" class="chip-remove" aria-label="{{ $teacher->name }} 先生を外す">×</button>
+                            </span>
+                        @endforeach
+                    </div>
+                </div>
+                @foreach (collect($errors->get('teacher_ids'))->merge($errors->get('teacher_ids.*'))->flatten() as $message)
+                    <p>{{ $message }}</p>
+                @endforeach
             </div>
 
             @php
@@ -288,6 +402,148 @@
                 if (same.checked && e.target.matches('.period-start, .period-end')) {
                     copyFrom(e.target.closest('.schedule-row'));
                 }
+            });
+        });
+
+        // 担当教師：検索して選ぶと、下の一覧に追加される
+        document.addEventListener('DOMContentLoaded', () => {
+            const teachers = @json($teachers->map->only(['id', 'name', 'login_id'])->values());
+            const search = document.getElementById('teacher-search');
+            const results = document.getElementById('teacher-results');
+            const selected = document.getElementById('selected-teachers');
+            let active = -1; // ↑↓キーで選んでいる候補の番号（-1 はどれも選んでいない）
+
+            // 全角・半角、大文字・小文字、空白の違いを無視して比べるための変換
+            const norm = (s) => String(s ?? '').normalize('NFKC').toLowerCase().replace(/\s+/g, '');
+            const chips = () => [...selected.querySelectorAll('.teacher-chip')];
+            const selectedIds = () => chips().map((chip) => Number(chip.dataset.id));
+            const options = () => [...results.querySelectorAll('li[role="option"]')];
+
+            // 検索結果の一覧を作り直す（追加済みの教師は出さない。文字が空なら全員）
+            function renderResults() {
+                const word = norm(search.value);
+                const chosen = selectedIds();
+                const hits = teachers.filter((t) => !chosen.includes(t.id)
+                    && (norm(t.name).includes(word) || norm(t.login_id).includes(word)));
+
+                results.replaceChildren(...hits.map((t) => {
+                    const li = document.createElement('li');
+                    li.id = `teacher-option-${t.id}`;
+                    li.setAttribute('role', 'option');
+                    li.dataset.id = t.id;
+                    const name = document.createElement('span');
+                    name.textContent = `${t.name} 先生`; // textContent なので、名前に記号があっても安全
+                    const loginId = document.createElement('span');
+                    loginId.textContent = t.login_id;
+                    li.append(name, loginId);
+                    return li;
+                }));
+
+                if (hits.length === 0) {
+                    const li = document.createElement('li');
+                    li.className = 'empty';
+                    li.textContent = teachers.length === 0 ? '教師が登録されていません'
+                        : chosen.length === teachers.length ? '全員追加済みです' : '見つかりません';
+                    results.append(li);
+                }
+                search.setAttribute('aria-expanded', 'true');
+                setActive(-1);
+            }
+
+            // 候補の一覧を閉じる（中身を空にすると、CSS の ul:has(> li) に当てはまらなくなって消える）
+            function closeResults() {
+                results.replaceChildren();
+                search.setAttribute('aria-expanded', 'false');
+                setActive(-1);
+            }
+
+            // ↑↓キーで選んでいる候補に印を付ける
+            function setActive(index) {
+                const list = options();
+                active = list.length === 0 ? -1 : (index + list.length) % list.length;
+                if (index < 0) active = -1;
+                list.forEach((li, i) => {
+                    li.classList.toggle('active', i === active);
+                    li.setAttribute('aria-selected', i === active ? 'true' : 'false');
+                });
+                if (active >= 0) {
+                    search.setAttribute('aria-activedescendant', list[active].id);
+                    list[active].scrollIntoView({ block: 'nearest' });
+                } else {
+                    search.removeAttribute('aria-activedescendant');
+                }
+            }
+
+            // 教師を下の一覧に追加する
+            function addTeacher(id) {
+                const teacher = teachers.find((t) => t.id === id);
+                if (!teacher || selectedIds().includes(id)) return;
+
+                const chip = document.createElement('span');
+                chip.className = 'teacher-chip';
+                chip.dataset.id = teacher.id;
+                chip.dataset.name = teacher.name;
+
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'teacher_ids[]';
+                hidden.value = teacher.id;
+
+                const remove = document.createElement('button');
+                remove.type = 'button'; // type="button" にしないと、押したときにフォームが送信される
+                remove.className = 'chip-remove';
+                remove.textContent = '×';
+                remove.setAttribute('aria-label', `${teacher.name} 先生を外す`);
+
+                chip.append(hidden, `${teacher.name} 先生`, remove);
+                selected.append(chip);
+                search.value = '';
+                // 追加したら候補の一覧を閉じる（開いたままだと、下に追加した教師の×ボタンが一覧に隠れて押せない）
+                // 入力欄にはフォーカスが残るので、続けて名前を打てば、また一覧が開く
+                closeResults();
+            }
+
+            // 入力欄を選んだとき・クリックしたとき・文字を打ったときに、候補の一覧を開く
+            search.addEventListener('focus', renderResults);
+            search.addEventListener('click', () => {
+                if (results.children.length === 0) renderResults(); // 追加して閉じたあとに、もう一度クリックしたとき
+            });
+            search.addEventListener('input', renderResults);
+            search.addEventListener('blur', () => search.setAttribute('aria-expanded', 'false'));
+
+            search.addEventListener('keydown', (e) => {
+                if (e.isComposing || e.keyCode === 229) return; // 日本語入力の変換中は何もしない
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (results.children.length === 0) renderResults(); // 閉じていたら開く
+                    setActive(active + 1);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setActive(active < 0 ? -1 : active - 1);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault(); // Enter で授業のフォームが送信されないようにする
+                    const list = options();
+                    // ↑↓で選んだ候補、なければ（文字を入れているときだけ）いちばん上の候補を追加する
+                    const target = list[active] ?? (search.value.trim() !== '' ? list[0] : null);
+                    if (target) addTeacher(Number(target.dataset.id));
+                } else if (e.key === 'Escape') {
+                    search.value = '';
+                    search.blur();
+                }
+            });
+
+            // 候補を押しても入力欄からフォーカスが外れないようにする（外れると一覧が閉じて、クリックが届かない）
+            results.addEventListener('mousedown', (e) => e.preventDefault());
+            results.addEventListener('click', (e) => {
+                const li = e.target.closest('li[role="option"]');
+                if (li) addTeacher(Number(li.dataset.id));
+            });
+
+            // ×ボタンで外す
+            selected.addEventListener('click', (e) => {
+                const button = e.target.closest('.chip-remove');
+                if (!button) return;
+                button.closest('.teacher-chip').remove();
             });
         });
     </script>

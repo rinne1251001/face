@@ -91,14 +91,21 @@
         <section class="summary" aria-label="教師数">
             <div>
                 <span class="subtext">登録されている教師</span>
-                <span class="count">{{ \App\Models\Teacher::count() }}<small> 名</small></span>
+                <span class="count">{{ $total }}<small> 名</small></span>
             </div>
         </section>
 
         <section class="card" aria-labelledby="teacher-demo-title">
             <div class="toolbar">
                 <h2 id="teacher-demo-title">教師アカウント</h2>
-                <span class="search">⌕ 名前・ログインIDで検索</span>
+                <form class="search" method="GET" action="{{ route('admin.teachers.index') }}" role="search">
+                    <input style="border: none;" type="search" name="q" value="{{ $q }}"
+                           placeholder="⌕ 名前・ログインID・クラス・授業で検索..." aria-label="教師を検索">
+                    <button style="background-color: var(--color-main); color: var(--color-bg); padding: 2px 5px;" type="submit">検索</button>
+                    @if ($q !== '')
+                        <a class="action" href="{{ route('admin.teachers.index') }}">クリア</a>
+                    @endif
+                </form>
             </div>
 
             <div class="table-wrap">
@@ -109,14 +116,37 @@
                     <tbody>
                         @forelse ($teachers as $teacher)
                             <tr>
-                                <td><div class="person"><span class="avatar">佐</span><span><span class="name">{{ $teacher->name }}</span><span class="subtext">教師アカウント</span></span></div></td>
+                                <td><div class="person"><span class="avatar">{{ mb_substr($teacher->name, 0, 1) }}</span><span><span class="name">{{ $teacher->name }}</span><span class="subtext">教師アカウント</span></span></div></td>
                                 <td>{{ $teacher->login_id }}</td>
-                                <td><div class="tags"><span class="tag">1年A組</span><span class="tag">1年B組</span></div></td>
-                                <td><span class="subject">国語</span><span class="subtext">月曜日・1〜2限</span></td>
-                                <td><div class="actions"><button class="action" type="button">編集</button><button class="action action--delete" type="button">削除</button></div></td>
+                                <td>
+                                    <div class="tags">
+                                        @forelse ($teacher->schoolClasses as $schoolClass)
+                                            <span class="tag">{{ $schoolClass->name }}</span>
+                                        @empty
+                                            <span>なし</span>
+                                        @endforelse
+                                    </div>
+                                </td>
+                                <td>
+                                    @forelse ($teacher->subjects as $subject)
+                                        <div><span class="subject">{{ $subject->name }}</span><span class="subtext">{{ $subject->schedule_label }}</span></div>
+                                    @empty
+                                        未設定
+                                    @endforelse
+                                </td>
+                                <td>
+                                    <div class="actions">
+                                        <a class="action" href="{{ route('admin.teachers.edit', $teacher) }}">編集</a>
+                                        <form method="POST" action="{{ route('admin.teachers.destroy', $teacher) }}" onsubmit="return confirm('この教師を削除しますか？')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="action action--delete">削除</button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                             @empty
-                            <tr><td colspan="5"><span class="muted">なし</span></td></tr>
+                            <tr><td colspan="5">{{ $q !== '' ? "「{$q}」に当てはまる教師はいません。" : '教師が登録されていません。' }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>

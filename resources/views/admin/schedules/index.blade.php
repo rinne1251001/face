@@ -29,7 +29,8 @@
 
         .calendar {
             display: inline-grid;
-            grid-template-columns: auto repeat(5, 1fr);
+            /* 日の数は週によって5〜7日（土日は授業があるときだけ）なので、表の --days から受け取る */
+            grid-template-columns: auto repeat(var(--days, 5), 1fr);
             border-top: 1px solid var(--color-main);
             border-left: 1px solid var(--color-main);
             width: 100%;
@@ -118,7 +119,7 @@
                     <div>{{ $isThisWeek ? '今週' : $monday->format('n月j日').'の週' }}</div>
                     <a href="{{ route('admin.schedules.index', ['date' => $monday->copy()->addWeek()->toDateString()]) }}">▶</a>
                 </div>
-                <table class="calendar">
+                <table class="calendar" style="--days: {{ $days->count() }}">
                     <thead>
                         <tr>
                             <th></th>
@@ -133,7 +134,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @for ($period = 1; $period <= $maxPeriod; $period++)
+                        @for ($period = 1; $period <= $lastPeriod; $period++)
                             <tr>
                                 <th>{{ $period }}限</th>
                                 @foreach ($days as $day)
@@ -211,6 +212,23 @@
                         <li>登録はありません。</li>
                     @endforelse
                 </ul>
+            </div>
+
+            <div>
+                <div>
+                    <table>
+                        <thead>
+                            <tr><th colspan="4">11月</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                            <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
