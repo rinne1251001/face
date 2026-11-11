@@ -32,26 +32,37 @@
             <div class="page-header">
                 <h1>教室一覧</h1>
                 <div>
-                    <a class="btn" href="#">教室追加</a>
+                    <a class="btn" href="{{ route('admin.rooms.create') }}">教室追加</a>
                 </div>
+                
             </div>
 
             <p>全{{ $rooms->count() }}件</p>
             <div class="table-container">
                 <table>
                     <thead>
-                        <tr><th>階</th><th>教室名</th><th>クラス名</th><th>操作</th></tr>
+                        <tr><th>教室名</th><th>階</th><th>クラス名</th><th>操作</th></tr>
                     </thead>
                     <tbody>
                         @forelse($rooms as $room)
                             <tr>
-                                <td><a href="#"></a></td>
-                                <td></td>
-                                <td></td>
+                                <td><a href="{{ route('admin.rooms.show', $room) }}">{{ $room->name }}</a></td>
+                                <td>{{ $room->floorLabel }}</td>
                                 <td>
-                                    <div>
-                                        <a href="#" class="btn">編集</a>
-                                        削除
+                                    @forelse ($room->schoolClasses as $schoolClass)
+                                        {{ $schoolClass->name }}
+                                    @empty
+                                        紐づくクラスはありません
+                                    @endforelse
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 5px;">
+                                        <a href="{{ route('admin.rooms.edit', $room) }}" class="btn">編集</a>
+                                        <form method="POST" action="{{ route('admin.rooms.destroy', $room) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn">この教室を削除</button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
