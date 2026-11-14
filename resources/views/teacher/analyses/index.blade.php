@@ -180,6 +180,7 @@
             gap: 28px;
             max-width: 520px;
             min-width: 0;
+            padding-inline: 20px;
         }
         
         /* 円グラフ本体 */
@@ -247,7 +248,7 @@
                                         </div>
                                     </div>
 
-                                    <div style="display: grid; row-gap: 40px; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); padding-right: 20px;">
+                                    <div style="display: grid; row-gap: 40px; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));">
                                         <figure class="line-chart" style="--max: 100; --count: 12; --y-grid: 5; --x-grid: 11;" aria-label="月別推移グラフ">
                                             <div style="color: var(--color-main); font-weight: bold; font-size: 1.4em; transform: translateY(-20px);">月別出席率</div>
                                             <div class="lc-plot">

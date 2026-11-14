@@ -121,6 +121,9 @@ export async function warmupDetection(input, onStatus = () => { }) {
 export function attachOverlay(video, canvas) {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
+    // 映像の縦横比を CSS の --camera-ratio に入れる（.camera の幅を「高さが 90dvh になる幅」までにするのに使う）
+    // カメラやスマホの向きで 4:3 以外になることがあるので、実際の映像の大きさを使う
+    video.closest('.camera')?.style.setProperty('--camera-ratio', `${video.videoWidth} / ${video.videoHeight}`);
     overlay = { video, canvas };
 }
 

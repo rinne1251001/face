@@ -50,6 +50,7 @@
             <li><a href="#method">メソッド</a></li>
             <li><a href="#crud">CRUDメソッド</a></li>
             <li><a href="#validation">バリデーションチェック</a></li>
+            <li><a href="#form">フォームの書き方</a></li>
             <li><a href="#chain">メソッドチェーン</a></li>
             <li><a href="#sql">SQL文</a></li>
         </ol>
@@ -980,6 +981,41 @@ public function show(Subject $subject): View
                         </tr>
                     </tbody>
                 </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="form">フォームの書き方</h2>
+            <section>
+                <h3>基本的な書き方</h3>
+                <pre><code class="php">&lt;form method="POST" action="使いたいメソッドのルート名">
+        {{-- トークンを入れる --}}
+        @csrf
+        {{--
+            ↓編集（edit）のとき
+            @method('PUT')
+        --}}
+
+    &lt;div>
+        &lt;label for="inputのidの値">タイトル&lt;/label>
+        &lt;input id="任意の値" name="キー名（基本はカラム名）" value="{{ old('キー名', $変数->カラム名) }}" required>
+    &lt;/div>
+
+    &lt;button>保存&lt;/button>
+&lt;/form></code></pre>
+            </section>
+
+            <section>
+                <h3>チェックボックス</h3>
+                <pre><code class="php">&lt;div>
+    &lt;label for="is_active">照合の対象にするか&lt;/label>
+    &lt;input type="checkbox" id="is_active" name="is_active" value="1" @checked(session()->hasOldInput() ? old('is_active') : $student->is_active)>
+&lt;/div></code></pre>
+            </section>
+
+            <section>
+                <h3></h3>
+                <pre><code class="php"></code></pre>
             </section>
         </div>
 

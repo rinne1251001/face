@@ -21,6 +21,17 @@
             border: 1px solid var(--color-main);
             padding: 10px 20px;
         }
+
+        .profile-container {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+        .profile-container th {
+            text-align: right;
+        }
+        .profile-container td {
+            padding: 2px 20px;
+        }
     </style>
 @endpush
 @section('content')
@@ -30,6 +41,17 @@
 
             <div class="page-header">
                 <h1>{{ $student->name }}の分析詳細</h1>
+            </div>
+
+            <div class="profile-container">
+                <table>
+                    <tr><th>名前</th><td>{{ $student->name }}（{{ $student->furigana }}）</td></tr>
+                    <tr><th>学籍番号</th><td>{{ $student->student_number }}</td></tr>
+                    <tr><th>出席番号</th><td>{{ $student->attend_number }}</td></tr>
+                    <tr><th>クラス</th><td></td></tr>
+                    <tr><th>担任</th><td></td></tr>
+                    <tr><th>出席率</th><td>%</td></tr>
+                </table>
             </div>
 
             <div>
