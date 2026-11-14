@@ -1,5 +1,5 @@
 @extends('layouts.test')
-@section('title', $subject->exists ? '授業の編集' : '授業の追加')
+@section('title', ($subject->exists ? '授業の編集' : '授業の追加').'（'.$year->label.'）')
 @push('styles')
     <style>
         :root {
@@ -243,14 +243,22 @@
 <main class="main">
     <div class="content-wrapper">
         <div class="page-header">
-            <h1>{{ $subject->exists ? '授業の編集' : '授業の追加' }}</h1>
+            <h1>{{ $subject->exists ? '授業の編集' : '授業の追加' }}（{{ $year->label }}）</h1>
         </div>
+
+        @include('admin.partials.year-lock-notice', ['year' => $year])
 
         <form method="POST" action="{{ $subject->exists ? route('admin.subjects.update', $subject) : route('admin.subjects.store') }}">
             @csrf
             @if ($subject->exists)
                 @method('PUT')
+            @else
+                {{-- どの年度に授業を作るか（編集のときは、授業の年度のまま） --}}
+                <input type="hidden" name="year" value="{{ $year->year }}">
             @endif
+
+            {{-- 読み取り専用の年度では、入力欄をまとめて押せなくする --}}
+            <fieldset @disabled(! $year->isEditable()) style="border: none; margin: 0; padding: 0; min-width: 0;">
 
             <div class="inp-container">
                 <div class="inp-hov">
@@ -262,6 +270,20 @@
                         <p>{{ $message }}</p>
                     @endforeach
                 @endif
+            </div>
+
+            <div class="inp-container">
+                <div class="inp-hov">
+                    <label for="grade">学年</label>
+                    <select id="grade" name="grade" required>
+                        @for ($g = 1; $g <= $maxGrade; $g++)
+                            <option value="{{ $g }}" @selected((int) old('grade', $subject->grade) === $g)>{{ $g }}年</option>
+                        @endfor
+                    </select>
+                </div>
+                @foreach ($errors->get('grade') as $message)
+                    <p>{{ $message }}</p>
+                @endforeach
             </div>
 
             {{-- 担当教師（複数可）：検索して選ぶと、下の一覧に追加される --}}
@@ -345,8 +367,9 @@
 
             <div class="inp-container">
                 <div class="inp-hov">
-                    <label id="name">授業開始日</label>
-                    <input type="date" name="start_date" value="{{ old('start_date', $subject->start_date?->format('Y-m-d')) }}">
+                    <label id="name">授業開始日（空なら年度の初めから）</label>
+                    {{-- 年度の外の日は選べないようにする（サーバーでもチェックする） --}}
+                    <input type="date" name="start_date" value="{{ old('start_date', $subject->start_date?->format('Y-m-d')) }}" min="{{ $year->start_date->format('Y-m-d') }}" max="{{ $year->end_date->format('Y-m-d') }}">
                 </div>
                 @if ($errors->has('start_date'))
                     @foreach ($errors->get('start_date') as $message)
@@ -357,8 +380,8 @@
 
             <div class="inp-container">
                 <div class="inp-hov">
-                    <label id="name">授業終了日</label>
-                    <input type="date" name="end_date" value="{{ old('end_date', $subject->end_date?->format('Y-m-d')) }}">
+                    <label id="name">授業終了日（空なら年度の終わりまで）</label>
+                    <input type="date" name="end_date" value="{{ old('end_date', $subject->end_date?->format('Y-m-d')) }}" min="{{ $year->start_date->format('Y-m-d') }}" max="{{ $year->end_date->format('Y-m-d') }}">
                 </div>
                 @if ($errors->has('end_date'))
                     @foreach ($errors->get('end_date') as $message)
@@ -367,9 +390,13 @@
                 @endif
             </div>
 
+            </fieldset>
+
             <div>
-                <button class="btn">保存</button>
-                <a href="{{ route('admin.subjects.index') }}">授業一覧へ戻る</a>
+                @if ($year->isEditable())
+                    <button class="btn">保存</button>
+                @endif
+                <a href="{{ route('admin.subjects.index', ['year' => $year->year]) }}">授業一覧へ戻る</a>
             </div>
         </form>
     </div>

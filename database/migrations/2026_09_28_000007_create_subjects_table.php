@@ -11,8 +11,11 @@ return new class extends Migration
     {
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
+            // どの年度の授業か（授業がある年度は削除できない）
+            $table->foreignId('academic_year_id')->constrained()->restrictOnDelete();
             $table->string('name', 100);
-            $table->date('start_date')->nullable();
+            $table->unsignedTinyInteger('grade');   // 学年
+            $table->date('start_date')->nullable(); // 年度更新でコピーした直後は空。あとで登録する
             $table->date('end_date')->nullable();
             $table->timestamps();
         });

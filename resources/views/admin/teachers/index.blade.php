@@ -83,9 +83,21 @@
                 <h1>教師一覧</h1>
                 <p class="description">教師と担当クラス・授業をまとめて確認できます。</p>
             </div>
-            <form action="{{ route('admin.teachers.create') }}" method="GET">
-                <button class="add-btn" type="submit">＋ 教師を追加</button>
-            </form>
+
+            <div>
+                <form action="{{ route('admin.teachers.create') }}" method="GET">
+                    {{-- 追加の画面でも、いま表示している年度の受け持ち・担当を設定する --}}
+                    @if ($year)
+                        <input type="hidden" name="year" value="{{ $year->year }}">
+                    @endif
+                    <button class="add-btn" type="submit">＋ 教師を追加</button>
+                </form>
+            </div>
+
+            {{-- 受け持ちクラス・担当授業を表示する年度 --}}
+            @if ($year)
+                @include('admin.partials.year-switch', ['year' => $year])
+            @endif
         </div>
 
         <section class="summary" aria-label="教師数">
@@ -105,18 +117,21 @@
                     @if ($q !== '')
                         <a class="action" href="{{ route('admin.teachers.index') }}">クリア</a>
                     @endif
+                    @if ($year)
+                        <input type="hidden" name="year" value="{{ $year->year }}">
+                    @endif
                 </form>
             </div>
 
             <div class="table-wrap">
                 <table>
                     <thead>
-                        <tr><th>教師</th><th>ログインID</th><th>受け持ちクラス</th><th>担当授業</th><th>操作</th></tr>
+                        <tr><th>教師</th><th>ログインID</th><th>受け持ちクラス（{{ $year?->label }}）</th><th>担当授業（{{ $year?->label }}）</th><th>操作</th></tr>
                     </thead>
                     <tbody>
                         @forelse ($teachers as $teacher)
                             <tr>
-                                <td><div class="person"><span class="avatar">{{ mb_substr($teacher->name, 0, 1) }}</span><span><span class="name">{{ $teacher->name }}</span><span class="subtext">教師アカウント</span></span></div></td>
+                                <td><div class="person"><span class="avatar">{{ mb_substr($teacher->name, 0, 1) }}</span><span><span class="name">{{ $teacher->name }}</span><span class="subtext">{{ $teacher->can_login ? '教師アカウント' : 'ログイン不可' }}</span></span></div></td>
                                 <td>{{ $teacher->login_id }}</td>
                                 <td>
                                     <div class="tags">
@@ -136,7 +151,7 @@
                                 </td>
                                 <td>
                                     <div class="actions">
-                                        <a class="action" href="{{ route('admin.teachers.edit', $teacher) }}">編集</a>
+                                        <a class="action" href="{{ route('admin.teachers.edit', [$teacher, 'year' => $year?->year]) }}">編集</a>
                                         <form method="POST" action="{{ route('admin.teachers.destroy', $teacher) }}" onsubmit="return confirm('この教師を削除しますか？')">
                                             @csrf
                                             @method('DELETE')

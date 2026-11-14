@@ -1,5 +1,5 @@
 @extends('layouts.test')
-@section('title', $student->exists ? '生徒の編集' : '生徒の追加')
+@section('title', ($student->exists ? '生徒の編集' : '生徒の追加').'（'.$year->label.'）')
 @push('styles')
 <style>
 :root {
@@ -37,6 +37,9 @@
 .delete:hover {
     color: var(--color-accent);
 }
+/* 読み取り専用の年度では、入力欄をまとめて押せなくする（fieldset の disabled） */
+.form-fieldset { border: none; margin: 0; padding: 0; min-width: 0; }
+.optional-note { color: var(--color-font-light); font-size: 12px; margin-left: 4px; font-weight: normal; }
 </style>
 @endpush
 
@@ -44,9 +47,15 @@
 <main class="main">
     <div class="content-wrapper">
         <div class="page-header">
-            <h1>{{ $student->exists ? '生徒の編集' : '生徒の追加' }}</h1>
-            <a href="{{ route('admin.students.index') }}" class="btn-back">← 一覧に戻る</a>
+            <h1>{{ $student->exists ? '生徒の編集' : '生徒の追加' }}（{{ $year->label }}）</h1>
+            <a href="{{ route('admin.students.index', ['year' => $year->year]) }}" class="btn-back">← 一覧に戻る</a>
         </div>
+
+        @include('admin.partials.year-lock-notice', ['year' => $year])
+
+        @php
+            $editable = $year->isEditable(); // false なら見るだけ（入力欄も保存ボタンも使えない）
+        @endphp
 
         <div class="form-card">
             {{-- メインフォーム（登録・更新用） --}}
@@ -55,64 +64,92 @@
                 @if ($student->exists)
                     @method('PUT')
                 @endif
+                {{-- どの年度の在籍・授業を保存するか --}}
+                <input type="hidden" name="year" value="{{ $year->year }}">
 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">名前 <span class="required-badge">*</span></label>
-                        <input name="name" value="{{ old('name', $student->name) }}" type="text" class="form-input" placeholder="例: 山田太郎" required>
+                <fieldset class="form-fieldset" @disabled(! $editable)>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="name">名前 <span class="required-badge">*</span></label>
+                            <input id="name" name="name" value="{{ old('name', $student->name) }}" type="text" class="form-input" placeholder="例: 山田太郎" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="furigana">フリガナ <span class="required-badge">*</span></label>
+                            <input id="furigana" name="furigana" value="{{ old('furigana', $student->furigana) }}" type="text" class="form-input" placeholder="例: ヤマダタロウ" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="student_number">学籍番号 <span class="required-badge">*</span></label>
+                            <input id="student_number" name="student_number" value="{{ old('student_number', $student->student_number) }}" type="text" class="form-input" placeholder="例: 0000000" required>
+                        </div>
+                        <div class="form-group">
+                            {{-- 何年で卒業するかは学科で決まる --}}
+                            <label class="form-label" for="department_id">学科 <span class="required-badge">*</span></label>
+                            <select id="department_id" name="department_id" class="form-select" required>
+                                <option value="">選択してください</option>
+                                @foreach ($departments as $department)
+                                    <option value="{{ $department->id }}" @selected(old('department_id', $student->department_id) == $department->id)>
+                                        {{ $department->name }}（{{ $department->years }}年制）
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">フリガナ <span class="required-badge">*</span></label>
-                        <input name="furigana" value="{{ old('furigana', $student->furigana) }}" type="text" class="form-input" placeholder="例: ヤマダタロウ" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">学籍番号 <span class="required-badge">*</span></label>
-                        <input name="student_number" value="{{ old('student_number', $student->student_number) }}" type="text" class="form-input" placeholder="例: 0000000" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">出席番号 <span class="required-badge">*</span></label>
-                        <input name="attend_number" value="{{ old('attend_number', $student->attend_number) }}" type="text" class="form-input" placeholder="例: 14" required>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label class="form-label">クラス <span class="required-badge">*</span></label>
-                    <select name="school_class_id" class="form-select" required>
-                        <option value="">選択してください</option>
-                        @foreach ($classes as $schoolClass)
-                            <option value="{{ $schoolClass->id }}" @selected(old('school_class_id', $student->school_class_id) == $schoolClass->id)>
-                                {{ $schoolClass->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">受講する授業（1つ以上）</label>
-                    <div class="checkbox-card">
-                        @forelse ($subjects as $subject)
-                            <label class="checkbox-item">
-                                <input type="checkbox" name="subject_ids[]" value="{{ $subject->id }}"
-                                    @checked(in_array($subject->id, $selectedSubjectIds, true))>
-                                {{ $subject->name }}（{{ $subject->schedule_label }}）
-                            </label>
-                        @empty
-                            <p>授業が登録されていません。</p>
-                        @endforelse
+                    {{-- ここから下は、この年度だけの内容（年度が変わると、別の値になる） --}}
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="grade">学年 <span class="required-badge">*</span></label>
+                            <select id="grade" name="grade" class="form-select" required>
+                                @for ($g = 1; $g <= $maxGrade; $g++)
+                                    <option value="{{ $g }}" @selected((int) old('grade', $enrollment->grade) === $g)>{{ $g }}年</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="school_class_id">クラス <span class="optional-note">決まっていなければ「未定」</span></label>
+                            <select id="school_class_id" name="school_class_id" class="form-select">
+                                <option value="">未定</option>
+                                @foreach ($classes as $schoolClass)
+                                    <option value="{{ $schoolClass->id }}" @selected(old('school_class_id', $enrollment->school_class_id) == $schoolClass->id)>
+                                        {{ $schoolClass->name }}（{{ $schoolClass->grade }}年）
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="attend_number">出席番号 <span class="optional-note">クラスが決まってから入力</span></label>
+                            <input id="attend_number" name="attend_number" value="{{ old('attend_number', $enrollment->attend_number) }}" type="text" class="form-input" placeholder="例: 14">
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label class="checkbox-item">
-                        <input type="checkbox" name="is_active" value="1" @checked(session()->hasOldInput() ? old('is_active') : $student->is_active)>
-                        <span style="font-weight: 600;">照会の対象にする</span>
-                    </label>
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">受講する授業（{{ $year->label }}・未定なら空のまま）</label>
+                        <div class="checkbox-card">
+                            @forelse ($subjects as $subject)
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="subject_ids[]" value="{{ $subject->id }}"
+                                        @checked(in_array($subject->id, $selectedSubjectIds, true))>
+                                    {{ $subject->name }}（{{ $subject->schedule_label }}）
+                                </label>
+                            @empty
+                                <p>{{ $year->label }}の授業が登録されていません。</p>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="is_active" value="1" @checked(session()->hasOldInput() ? old('is_active') : $student->is_active)>
+                            <span style="font-weight: 600;">照合の対象にする</span>
+                        </label>
+                    </div>
+                </fieldset>
 
                 @if ($errors->any())
                     <ul class="error">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
                 @endif
 
+                {{-- 顔写真は年度に関係ないので、読み取り専用の年度でも登録・削除できる --}}
                 @if ($student->exists)
                     <label class="form-label">登録済みの顔写真（{{ $student->faceSamples->count() }}枚）</label>
                     <div><a class="btn-secondary" href="{{ route('admin.faces.create', $student) }}">カメラで顔写真を登録する</a></div>
@@ -128,7 +165,9 @@
                 @endif
 
                 <div class="form-actions">
-                    @if ($student->exists)
+                    @if (! $editable)
+                        <span>読み取り専用のため、変更できません。</span>
+                    @elseif ($student->exists)
                         {{-- form属性で外側の削除フォームと紐付け --}}
                         <button type="submit" form="delete-student-form" class="btn-secondary">この生徒を削除</button>
                         <button type="submit" class="btn-primary">保存</button>
@@ -142,11 +181,13 @@
 
             {{-- 外部削除用フォーム群（ネスト回避のためにメインフォームの外へ配置） --}}
             @if ($student->exists)
-                {{-- 生徒の削除用フォーム --}}
-                <form id="delete-student-form" method="POST" action="{{ route('admin.students.destroy', $student) }}" onsubmit="return confirm('この生徒の顔写真と出席記録もすべて削除されます。削除しますか？')">
-                    @csrf
-                    @method('DELETE')
-                </form>
+                {{-- 生徒の削除用フォーム（year は、削除したあとに戻る一覧の年度） --}}
+                @if ($editable)
+                    <form id="delete-student-form" method="POST" action="{{ route('admin.students.destroy', [$student, 'year' => $year->year]) }}" onsubmit="return confirm('この生徒の顔写真・在籍・出席記録もすべて削除されます。削除しますか？')">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                @endif
 
                 {{-- 顔写真の削除用フォーム --}}
                 @foreach ($student->faceSamples as $sample)

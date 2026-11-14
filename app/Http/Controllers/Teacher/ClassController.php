@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
+use App\Services\CheckinWindow;
 use App\Services\SchoolCalendar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -18,7 +20,12 @@ class ClassController extends Controller
     public function index(Request $request): View
     {
         $teacher = $request->user('teacher');
-        $classes = $teacher->schoolClasses()->withCount('students')->orderBy('name')->get();
+        // 今年度の受け持ちクラスだけ
+        $classes = $teacher->schoolClasses()
+            ->where('school_classes.academic_year_id', AcademicYear::currentOrNewest()?->id)
+            ->withCount('students')
+            ->orderBy('name')
+            ->get();
 
         return view('teacher.classes.index', compact('classes'));
     }
@@ -63,6 +70,19 @@ class ClassController extends Controller
             ->get()
             ->keyBy(fn ($a) => "{$a->student_id}-{$a->subject_id}-{$a->period}");
 
+        // 記録がない生徒を「欠席」と表示するコマ（「授業ID-時限」の一覧）
+        //   受付が終わっていて、出欠の記録が（このクラス以外の生徒も含めて）1件以上あるコマ
+        //   記録が1件もないコマは、受付をしていないとみなして「未記録」のまま（出席一覧・分析と同じ）
+        $closedLessons = Attendance::query()
+            ->where('date', $date->toDateString())
+            ->whereIn('subject_id', $subjects->pluck('id'))
+            ->distinct()
+            ->get(['subject_id', 'period'])
+            ->filter(fn ($a) => CheckinWindow::for($date, (int) $a->period)->hasClosed(now()))
+            ->map(fn ($a) => "{$a->subject_id}-{$a->period}")
+            ->values()
+            ->all();
+
         return view('teacher.classes.show', [
             'schoolClass' => $schoolClass,
             'date' => $date,
@@ -72,6 +92,7 @@ class ClassController extends Controller
             'subjects' => $subjects,
             'columns' => $columns, // ← これがなかったので $columns が未定義になっていた
             'attendances' => $attendances,
+            'closedLessons' => $closedLessons,
             // 自分の担当授業なら、列の見出しから授業の画面へ移動できるようにする
             'mySubjectIds' => array_map('intval', $teacher->subjects()->pluck('subjects.id')->all()),
         ]);

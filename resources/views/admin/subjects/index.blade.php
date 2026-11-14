@@ -234,11 +234,17 @@
     <div class="content-wrapper">
 
         <div class="page-header">
-            <h1>授業一覧</h1>
-            <div>
-                <a class="btn" href="{{ route('admin.subjects.create') }}">＋ 授業を追加</a>
-            </div>
+            <h1>授業一覧（{{ $year->label }}）</h1>
+            {{-- 読み取り専用の年度では、追加のボタンを出さない --}}
+            @if ($year->isEditable())
+                <div>
+                    <a class="btn" href="{{ route('admin.subjects.create', ['year' => $year->year]) }}">＋ 授業を追加</a>
+                </div>
+            @endif
         </div>
+
+        @include('admin.partials.year-switch', ['year' => $year])
+        @include('admin.partials.year-lock-notice', ['year' => $year])
 
         <section class="subjects-card" aria-label="授業一覧">
 
@@ -275,13 +281,16 @@
                                 </td>
                                 <td>
                                     <div class="subject-actions">
-                                        <a class="subject-edit-button" href="{{ route('admin.subjects.edit', $subject) }}">編集</a>
-                                        <form method="POST" action="{{ route('admin.subjects.destroy', $subject) }}" class="inline"
-                                            onsubmit="return confirm('この授業を削除しますか？受講・担当の設定も外れます。')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="subject-delete-button">削除</button>
-                                        </form>
+                                        {{-- 読み取り専用の年度では、見るだけ（削除のボタンも出さない） --}}
+                                        <a class="subject-edit-button" href="{{ route('admin.subjects.edit', $subject) }}">{{ $year->isEditable() ? '編集' : '詳細' }}</a>
+                                        @if ($year->isEditable())
+                                            <form method="POST" action="{{ route('admin.subjects.destroy', $subject) }}" class="inline"
+                                                onsubmit="return confirm('この授業を削除しますか？受講・担当の設定も外れます。')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="subject-delete-button">削除</button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

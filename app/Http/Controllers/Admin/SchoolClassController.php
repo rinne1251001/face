@@ -2,21 +2,27 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\SortsList;
+use App\Http\Controllers\Concerns\UsesAcademicYear;
+use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Models\Classroom;
+use App\Models\Department;
 use App\Models\SchoolClass;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Response;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 // クラスの一覧・追加・編集・削除（管理者のみ）
+// クラスは年度ごとに別のもの。一覧と追加は ?year=2026 の年度（なければ今年度）、編集はそのクラスの年度で行う
+// 過去の年度は読み取り専用（年度の画面で「編集を許可」したときだけ変更できる）
 // 受け持ちの教師は「教師」の画面で設定する
 class SchoolClassController extends Controller
 {
-    use SortsList; // 並び替えの共通処理（$this->applySort() が使えるようになる）
+    use SortsList;        // 並び替えの共通処理（$this->applySort() が使えるようになる）
+    use UsesAcademicYear; // yearOrFail()・ensureEditable()
 
     // 生徒数の絞り込みの選択肢（URL の ?students= に使うキー => [画面の文字, 最小, 最大]）
     // 最大が null のものは「〜人以上」。選択肢を増やしたいときは、ここに1行足すだけ
@@ -29,8 +35,13 @@ class SchoolClassController extends Controller
     ];
 
     // 一覧画面（検索・生徒数と受け持ちの教師での絞り込み・並び替え）
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
+        if (! AcademicYear::query()->exists()) {
+            return redirect()->route('admin.years.index')->with('status', '先に「年度更新」から年度を登録してください。');
+        }
+        $year = $this->yearOrFail($request);
+
         // 検索の文字（空のときや、URL をいじって文字以外が送られてきたときは絞り込まない）
         $input = $request->query('q');
         $q = is_string($input) ? trim($input) : '';
@@ -52,6 +63,7 @@ class SchoolClassController extends Controller
         }
 
         $query = SchoolClass::query()
+            ->where('academic_year_id', $year->id) // 選んでいる年度のクラスだけ
             ->with(['classroom', 'teachers' => fn ($q) => $q->orderBy('name')]) // 教室も一緒に読み込む
             ->withCount('students') // 生徒数（$schoolClass->students_count で使える。並び替えにも使う）
             // has()：受け持ちの教師が1人以上いるクラス ／ doesntHave()：1人もいないクラス
@@ -91,65 +103,90 @@ class SchoolClassController extends Controller
         $view = $request->ajax() ? 'admin.classes.partials.list' : 'admin.classes.index';
 
         return response()
-            ->view($view, compact('classes', 'q', 'students', 'teachers', 'studentRanges', 'filtering', 'sort', 'direction'))
+            ->view($view, compact('year', 'classes', 'q', 'students', 'teachers', 'studentRanges', 'filtering', 'sort', 'direction'))
             // 同じ URL で「ページ全体」と「表だけ」を返し分けるので、ブラウザのキャッシュで混ざらないようにする
             ->header('Vary', 'X-Requested-With');
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('admin.classes.form', $this->formData(new SchoolClass));
+        $year = $this->yearOrFail($request);
+        $this->ensureEditable($year);
+
+        return view('admin.classes.form', $this->formData($year, new SchoolClass(['grade' => 1])));
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $schoolClass = SchoolClass::create($this->validated($request));
+        $year = $this->yearOrFail($request);
+        $this->ensureEditable($year);
 
-        return redirect()->route('admin.classes.index')->with('status', "「{$schoolClass->name}」を追加しました。");
+        $schoolClass = $year->schoolClasses()->create($this->validated($request, $year));
+
+        return redirect()->route('admin.classes.index', ['year' => $year->year])
+            ->with('status', "「{$schoolClass->name}」を追加しました。");
     }
 
+    // 編集画面（読み取り専用の年度のクラスなら、見るだけの画面になる）
     public function edit(SchoolClass $schoolClass): View
     {
-        return view('admin.classes.form', $this->formData($schoolClass));
+        return view('admin.classes.form', $this->formData($schoolClass->academicYear, $schoolClass));
     }
 
     public function update(Request $request, SchoolClass $schoolClass): RedirectResponse
     {
-        $schoolClass->update($this->validated($request, $schoolClass));
+        $year = $schoolClass->academicYear;
+        $this->ensureEditable($year);
 
-        return redirect()->route('admin.classes.index')->with('status', '保存しました。');
+        $schoolClass->update($this->validated($request, $year, $schoolClass));
+
+        return redirect()->route('admin.classes.index', ['year' => $year->year])->with('status', '保存しました。');
     }
 
     public function destroy(SchoolClass $schoolClass): RedirectResponse
     {
-        // 生徒は必ずどこかのクラスに所属するので、生徒がいるクラスは削除できない
+        $year = $schoolClass->academicYear;
+        $this->ensureEditable($year);
+
+        // 生徒がいるクラスは削除できない（削除すると、生徒のクラスが「未定」に戻ってしまうため）
         if ($schoolClass->students()->exists()) {
             return back()->with('error', "「{$schoolClass->name}」には生徒が所属しているため削除できません。先に生徒のクラスを変更してください。");
         }
 
         $schoolClass->delete(); // 教師の受け持ち設定は外部キー制約で一緒に削除される
 
-        return redirect()->route('admin.classes.index')->with('status', '削除しました。');
+        return redirect()->route('admin.classes.index', ['year' => $year->year])->with('status', '削除しました。');
     }
 
-    // フォーム画面に渡すデータ（クラスと、教室の選択肢）
+    // フォーム画面に渡すデータ（年度・クラスと、教室・学年の選択肢）
     /** @return array<string, mixed> */
-    private function formData(SchoolClass $schoolClass): array
+    private function formData(AcademicYear $year, SchoolClass $schoolClass): array
     {
         return [
+            'year' => $year,
             'schoolClass' => $schoolClass,
             'classrooms' => Classroom::orderBy('floor')->orderBy('name')->get(), // 階 → 教室名の順
+            'maxGrade' => Department::maxYears(),
         ];
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request, ?SchoolClass $schoolClass = null): array
+    private function validated(Request $request, AcademicYear $year, ?SchoolClass $schoolClass = null): array
     {
+        $maxGrade = Department::maxYears();
+
         return $request->validate([
-            'name' => ['required', 'string', 'max:50', Rule::unique('school_classes')->ignore($schoolClass)],
+            // 同じ年度の中で、クラス名が重複しないように（年度が違えば同じ名前でもよい）
+            'name' => ['required', 'string', 'max:50',
+                Rule::unique('school_classes')->where('academic_year_id', $year->id)->ignore($schoolClass)],
+            'grade' => ['required', 'integer', "between:1,{$maxGrade}"],
             // ホームルームの教室（「未設定」を選ぶと空 → null で保存される）
             'classroom_id' => ['nullable', 'integer', 'exists:classrooms,id'],
-        ], [], [
+        ], [
+            'name.unique' => "{$year->label}には、「:input」というクラスが既にあります。",
+        ], [
+            'name' => 'クラス名',
+            'grade' => '学年',
             'classroom_id' => 'ホームルームの教室',
         ]);
     }
@@ -160,6 +197,7 @@ class SchoolClassController extends Controller
     {
         return [
             'name' => 'name',
+            'grade' => 'grade',
             'students' => 'students_count', // withCount('students') で作られる「生徒数」の列
         ];
     }

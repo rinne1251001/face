@@ -7,13 +7,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Teacher extends Authenticatable
 {
-    protected $fillable = ['login_id', 'password', 'name'];
+    protected $fillable = ['login_id', 'password', 'name', 'can_login'];
 
     protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array
     {
-        return ['password' => 'hashed'];
+        return ['password' => 'hashed', 'can_login' => 'boolean'];
     }
 
     // 受け持ちクラス（0個以上）

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\Subject;
 use App\Services\SchoolCalendar;
@@ -17,7 +18,10 @@ class DashboardController extends Controller
         $teacher = $request->user('teacher');
         $today = today();
 
+        $yearId = AcademicYear::currentOrNewest()?->id; // 担当授業・受け持ちクラスは今年度の分だけ出す
+
         $subjects = $teacher->subjects()
+            ->where('subjects.academic_year_id', $yearId)
             ->with('schedules')
             ->withCount('students')
             ->orderBySchedule()
@@ -42,7 +46,11 @@ class DashboardController extends Controller
             ->get()
             ->mapWithKeys(fn ($row) => ["{$row->subject_id}-{$row->period}" => $row->total]);
 
-        $classes = $teacher->schoolClasses()->withCount('students')->orderBy('name')->get();
+        $classes = $teacher->schoolClasses()
+            ->where('school_classes.academic_year_id', $yearId)
+            ->withCount('students')
+            ->orderBy('name')
+            ->get();
 
         return view('teacher.dashboard', [
             'today' => $today,

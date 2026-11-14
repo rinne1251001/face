@@ -6,6 +6,7 @@
             <tr>
                 {{-- key はコントローラーの sortColumns() のキー --}}
                 @include('partials.sort-header', ['key' => 'name', 'label' => 'クラス名'])
+                @include('partials.sort-header', ['key' => 'grade', 'label' => '学年'])
                 @include('partials.sort-header', ['key' => 'students', 'label' => '生徒数'])
                 <th>受け持ちの教師</th>
                 <th>操作</th>
@@ -15,6 +16,7 @@
             @forelse ($classes as $schoolClass)
                 <tr>
                     <td><strong>{{ $schoolClass->name }}</strong></td>
+                    <td>{{ $schoolClass->grade }}年</td>
                     <td>{{ $schoolClass->students_count }} 人</td>
                     <td>
                         @forelse ($schoolClass->teachers as $teacher)
@@ -24,16 +26,19 @@
                         @endforelse
                     </td>
                     <td>
-                        <a href="{{ route('admin.classes.edit', $schoolClass) }}" class="btn-edit">編集</a>
-                        <form method="POST" action="{{ route('admin.classes.destroy', $schoolClass) }}" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn-delete">削除</button>
-                        </form>
+                        {{-- 読み取り専用の年度では、見るだけ（削除のボタンも出さない） --}}
+                        <a href="{{ route('admin.classes.edit', $schoolClass) }}" class="btn-edit">{{ $year->isEditable() ? '編集' : '詳細' }}</a>
+                        @if ($year->isEditable())
+                            <form method="POST" action="{{ route('admin.classes.destroy', $schoolClass) }}" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn-delete">削除</button>
+                            </form>
+                        @endif
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="4">{{ $filtering ? '条件に合うクラスがありません。' : 'クラスが登録されていません。' }}</td></tr>
+                <tr><td colspan="5">{{ $filtering ? '条件に合うクラスがありません。' : 'クラスが登録されていません。' }}</td></tr>
             @endforelse
         </tbody>
     </table>

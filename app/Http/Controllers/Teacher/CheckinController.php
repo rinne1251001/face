@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\MatchLog;
 use App\Models\Subject;
+use App\Services\CheckinWindow;
 use App\Services\FaceMatcher;
 use App\Services\SchoolCalendar;
 use Illuminate\Http\JsonResponse;
@@ -23,17 +24,24 @@ class CheckinController extends Controller
 
         $today = today();
         $period = $subject->periodOrFirst($request->query('period'), $today); // ?period=数字 で何限の受付かを指定
+        // この時限にこの授業を受けるクラス（クラスごとの授業変更を反映。今日この授業がなければ空）
+        $classIds = $subject->periodsOn($today) !== [] ? $subject->classIdsOn($today, $period) : [];
 
         return view('teacher.subjects.checkin', [
             'subject' => $subject,
             'today' => $today,
             'period' => $period, // ← これがないと受付画面が「Undefined variable $period」になる
+            'window' => CheckinWindow::for($today, $period), // 受付時間（出席・遅刻になる時刻）
             'periods' => $subject->periodsFor($today), // 切り替えられる時限
             'wrongDay' => $subject->periodsOn($today) === [], // 今日はこの授業がない（祝日・休校・曜日違い）
             'dayNote' => $calendar->dayNote($today),            // 例：祝日（文化の日）
-            // 受講者の人数（クラスの授業変更で、この時限に受けないクラスの生徒は数えない）
-            'studentCount' => $subject->periodsOn($today) !== [] && $subject->classIdsOn($today, $period) !== []
-                ? $subject->students()->whereIn('school_class_id', $subject->classIdsOn($today, $period))->count()
+            // 受講者の人数（クラスの授業変更で、この時限に受けないクラスの生徒は数えない。クラスが未定の生徒は数える）
+            'studentCount' => $classIds !== []
+                ? $subject->students()
+                    ->whereHas('enrollments', fn ($e) => $e
+                        ->where('academic_year_id', $subject->academic_year_id)
+                        ->where(fn ($e) => $e->whereIn('school_class_id', $classIds)->orWhereNull('school_class_id')))
+                    ->count()
                 : $subject->students()->count(),
             'recordedCount' => $subject->attendances()
                 ->where('date', $today->toDateString())
@@ -56,6 +64,19 @@ class CheckinController extends Controller
         ], ['model_version.in' => 'モデルのバージョンがサーバー設定と一致しません。']);
 
         $period = $request->integer('period');
+
+        // 0. 受付時間か（開始30分前〜開始時刻は出席、開始時刻を過ぎたら終了時刻まで遅刻。それ以外は受け付けない）
+        //    受付時間の外の出欠は、教師が出席一覧から手動で登録する
+        $window = CheckinWindow::for(today(), $period);
+        $status = $window->statusAt(now());
+        if ($status === null) {
+            return response()->json([
+                'result' => 'closed',
+                'message' => $window->hasOpened(now())
+                    ? "{$period}限の受付は終わりました（{$window->closesAt->format('G:i')}まで）。出席一覧から手動で登録してください。"
+                    : "{$period}限の受付は {$window->opensAt->format('G:i')} からです。",
+            ]);
+        }
 
         // 照合は登録済みの全生徒を対象にする。
         // （受講者だけに絞ると、受講していない生徒が受講者のそっくりさんと間違えられることがあるため、
@@ -93,8 +114,10 @@ class CheckinController extends Controller
         }
 
         // 2-2. 受講者だが、クラスの授業変更で、この時限はこの授業を受けないクラスの生徒
+        //      （生徒のクラスは、この授業の年度の在籍で決まる。クラスが未定の生徒は止めない）
         $classIds = $subject->classIdsOn(today(), $period);
-        if ($subject->periodsOn(today()) !== [] && $classIds !== [] && ! in_array((int) $student->school_class_id, $classIds, true)) {
+        $classId = $student->enrollmentFor($subject->academicYear)?->school_class_id;
+        if ($subject->periodsOn(today()) !== [] && $classIds !== [] && $classId !== null && ! in_array($classId, $classIds, true)) {
             return response()->json([
                 'result' => 'not_enrolled',
                 'student' => $summary,
@@ -102,11 +125,12 @@ class CheckinController extends Controller
             ]);
         }
 
-        // 3. 出席を記録する。今日のこの時限にすでに記録があれば、上書きせずにそのまま返す
+        // 3. 出席（開始時刻まで）か遅刻（開始時刻を過ぎてから）を記録する
+        //    今日のこの時限にすでに記録があれば（教師が手動で公欠にした場合なども）、上書きせずにそのまま返す
         //    （createOrFirst は、同時に2回送られて二重登録になりそうなときも1件にしてくれる）
         $attendance = Attendance::createOrFirst(
             ['student_id' => $student->id, 'subject_id' => $subject->id, 'date' => today()->toDateString(), 'period' => $period],
-            ['status' => 'present', 'method' => 'face', 'match_log_id' => $log->id],
+            ['status' => $status, 'method' => 'face', 'match_log_id' => $log->id],
         );
 
         if (! $attendance->wasRecentlyCreated) {
@@ -122,7 +146,7 @@ class CheckinController extends Controller
             'result' => 'recorded',
             'student' => $summary,
             'status_label' => $attendance->statusLabel(),
-            'message' => "{$student->name} さんの{$period}限の出席を記録しました。",
+            'message' => "{$student->name} さんの{$period}限を「{$attendance->statusLabel()}」で記録しました。",
             'recorded_count' => $subject->attendances()
                 ->where('date', today()->toDateString())
                 ->where('period', $period)

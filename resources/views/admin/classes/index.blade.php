@@ -127,9 +127,15 @@
 <main class="main">
     <div class="content-wrapper">
         <div class="page-header">
-            <h1>クラス一覧</h1>
-            <a class="btn" href="{{ route('admin.classes.create') }}">＋ クラスを追加</a>
+            <h1>クラス一覧（{{ $year->label }}）</h1>
+            {{-- 読み取り専用の年度では、追加のボタンを出さない --}}
+            @if ($year->isEditable())
+                <a class="btn" href="{{ route('admin.classes.create', ['year' => $year->year]) }}">＋ クラスを追加</a>
+            @endif
         </div>
+
+        @include('admin.partials.year-switch', ['year' => $year])
+        @include('admin.partials.year-lock-notice', ['year' => $year])
 
                 {{-- 検索フォーム。GET で送るので、検索した状態の URL をブックマーク・共有できる --}}
         <form class="class-search-container" method="GET" action="{{ route('admin.classes.index') }}" role="search">
@@ -154,8 +160,9 @@
             {{-- 検索しても、いまの並び順のままにする（data-sync-query：並び替えたときに ajax-list.js が値を書き換える） --}}
             <input type="hidden" name="sort" value="{{ $sort }}" data-sync-query>
             <input type="hidden" name="direction" value="{{ $direction }}" data-sync-query>
+            <input type="hidden" name="year" value="{{ $year->year }}">
             @if ($filtering)
-                <a class="clear-link" href="{{ route('admin.classes.index') }}">クリア</a>
+                <a class="clear-link" href="{{ route('admin.classes.index', ['year' => $year->year]) }}">クリア</a>
             @endif
         </form>
 

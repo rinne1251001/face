@@ -50,7 +50,11 @@
                             @foreach ($columns as ['subject' => $subject, 'period' => $period])
                                 <td>
                                     @if ($student->subjects->contains('id', $subject->id))
-                                        @include('partials.status-badge', ['attendance' => $attendances->get("{$student->id}-{$subject->id}-{$period}")])
+                                        @include('partials.status-badge', [
+                                            'attendance' => $attendances->get("{$student->id}-{$subject->id}-{$period}"),
+                                            // 受付が終わったコマで記録がなければ「欠席（顔認証なし）」
+                                            'absentIfMissing' => in_array("{$subject->id}-{$period}", $closedLessons, true),
+                                        ])
                                     @else
                                         <span class="muted">－</span>
                                     @endif

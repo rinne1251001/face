@@ -20,10 +20,12 @@ const RESULT_HOLD = 2500;    // 結果を枠に表示しておく時間（ミリ
 const SAME_PERSON = 10000;   // 同じ人の「記録済み」を記録欄に何度も出さないための時間（ミリ秒）
 
 // サーバーの結果ごとの、枠に出す文字と色
+// サーバーの結果ごとの、枠に出す文字と色（r はサーバーの返事。status_label は「出席」か「遅刻」）
 const RESULT_VIEW = {
-    recorded: { ok: true, label: (s) => `${s.name} さん 出席` },
+    recorded: { ok: true, label: (s, r) => `${s.name} さん ${r.status_label}` },
     already: { ok: true, label: (s) => `${s.name} さん 記録済み` },
     not_enrolled: { ok: false, label: (s) => `${s.name} さん 受講者外` },
+    closed: { ok: false, label: () => '受付時間外' },
     unknown: { ok: false, label: () => '該当者なし' },
 };
 
@@ -95,7 +97,7 @@ function addLog(r) {
     lastLogged = { id: s.id, at: Date.now() };
 
     const text = {
-        recorded: '出席を記録しました',
+        recorded: `${r.status_label}を記録しました`,
         already: `記録済み（${r.status_label}）`,
         not_enrolled: 'この授業の受講者ではありません',
     }[r.result] ?? r.message;
@@ -107,7 +109,7 @@ function addLog(r) {
 }
 
 async function loop() {
-    for (;;) {
+    for (; ;) {
         if (!running) {
             await watch(300);
             continue;
@@ -121,7 +123,7 @@ async function loop() {
             const r = await postCheckin(averageEmbedding(collected));
             const view = RESULT_VIEW[r.result] ?? RESULT_VIEW.unknown;
             // 照合した顔の枠に結果を表示する（fillText は HTML ではないのでエスケープ不要）
-            showLabel(view.label(r.student ?? {}), view.ok, RESULT_HOLD);
+            showLabel(view.label(r.student ?? {}, r), view.ok, RESULT_HOLD);
             setStatus(r.message);
             addLog(r);
             if (r.recorded_count !== undefined) recordedCountEl.textContent = r.recorded_count;

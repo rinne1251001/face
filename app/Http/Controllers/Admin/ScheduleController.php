@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\UsesAcademicYear;
+use App\Models\AcademicYear;
 use App\Models\CalendarDay;
 use App\Models\ClassLessonChange;
 use App\Models\SchoolClass;
@@ -24,13 +26,15 @@ use Illuminate\View\View;
 // 祝日は自動で休みになるので、登録するのは学校独自の休み・振替・変則授業だけ
 class ScheduleController extends Controller
 {
+    use UsesAcademicYear; // ensureDateEditable()（読み取り専用の年度の日付は変更させない）
+
     // 1週間の時間割（?date=2026-11-09 でその日を含む週。省略すると今週）
     public function index(Request $request, SchoolCalendar $calendar): View
     {
         $request->validate(['date' => ['nullable', 'date_format:Y-m-d']]);
         $monday = Carbon::parse($request->query('date', today()->toDateString()))->startOfWeek(Carbon::MONDAY);
 
-        $subjects = Subject::with(['schedules', 'students'])->orderBy('name')->get();
+        $subjects = Subject::with(['schedules', 'students.enrollments'])->orderBy('name')->get();
 
         // 月〜日の7日分：日付・曜日・その日の説明（祝日・休校・振替）
         // （土日は、授業の表を作ったあとで「授業がある日」だけに絞り込む）
@@ -108,9 +112,12 @@ class ScheduleController extends Controller
     // 登録の画面（?date= で日付を入れておける）
     public function create(Request $request): View
     {
+        // 選べるのは、今年度とこれからの年度のクラス・授業（終わった年度のものは出さない）
+        $yearIds = AcademicYear::query()->whereDate('end_date', '>=', today())->pluck('id');
+
         return view('admin.schedules.form', [
-            'classes' => SchoolClass::orderBy('name')->get(),
-            'subjects' => Subject::orderBy('name')->get(),
+            'classes' => SchoolClass::with('academicYear')->whereIn('academic_year_id', $yearIds)->orderBy('name')->get(),
+            'subjects' => Subject::with('academicYear')->whereIn('academic_year_id', $yearIds)->orderBy('name')->get(),
             'date' => $request->query('date'),
         ]);
     }
@@ -123,6 +130,7 @@ class ScheduleController extends Controller
             'day_of_week' => ['nullable', 'integer', Rule::in(array_keys(Subject::DAYS))], // 空なら休校
             'note' => ['nullable', 'string', 'max:100'],
         ], [], ['date' => '日付', 'day_of_week' => '時間割', 'note' => 'メモ']);
+        $this->ensureDateEditable($data['date']);
 
         // whereDate で探す（DB によって日付の保存のされ方が違っても、日付だけで比べられるように）
         $day = CalendarDay::whereDate('date', $data['date'])->first() ?? new CalendarDay(['date' => $data['date']]);
@@ -137,6 +145,9 @@ class ScheduleController extends Controller
 
     public function destroyDay(CalendarDay $calendarDay): RedirectResponse
     {
+        $this->ensureDateEditable($calendarDay->date);   // destroyDay()
+        $this->ensureDateEditable($specialClass->date);  // destroySpecialClass()
+
         $calendarDay->delete();
 
         return back()->with('status', "{$calendarDay->date->format('n月j日')}の設定を取り消しました。");
@@ -160,6 +171,16 @@ class ScheduleController extends Controller
             'period_end' => '終了時限',
             'note' => 'メモ',
         ]);
+
+        $this->ensureDateEditable($data['date']);
+
+        // 変則授業の日付は、その授業の年度の中だけ（ほかの年度の日に授業を入れないように）
+        $subject = Subject::with('academicYear')->findOrFail($data['subject_id']);
+        if (! Carbon::parse($data['date'])->between($subject->academicYear->start_date, $subject->academicYear->end_date)) {
+            throw ValidationException::withMessages([
+                'date' => "日付は、この授業の年度（{$subject->academicYear->label}）の中から選んでください。",
+            ]);
+        }
 
         $special = SpecialClass::where('subject_id', $data['subject_id'])->whereDate('date', $data['date'])->first()
             ?? new SpecialClass(['subject_id' => $data['subject_id'], 'date' => $data['date']]);
@@ -230,6 +251,24 @@ class ScheduleController extends Controller
         $classId = (int) $data['school_class_id'];
         $type = (string) $data['type'];
         $date = Carbon::parse((string) $data['date']);
+
+                $this->ensureDateEditable($date);
+        if (isset($data['to_date'])) {
+            $this->ensureDateEditable((string) $data['to_date']);
+        }
+
+        // クラスと授業は、その日の年度のものだけ（クラス・授業は年度ごとに別のものなので）
+        $year = AcademicYear::containing($date);
+        if ($year === null || (int) SchoolClass::whereKey($classId)->value('academic_year_id') !== $year->id) {
+            throw ValidationException::withMessages(['school_class_id' => 'クラスは、その日付の年度のクラスを選んでください。']);
+        }
+        if (isset($data['to_date']) && AcademicYear::containing(Carbon::parse((string) $data['to_date']))?->id !== $year->id) {
+            throw ValidationException::withMessages(['to_date' => "移動先・入れ替える相手の日付は、{$year->label}の中から選んでください。"]);
+        }
+        if (isset($data['to_subject_id']) && (int) Subject::whereKey($data['to_subject_id'])->value('academic_year_id') !== $year->id) {
+            throw ValidationException::withMessages(['to_subject_id' => "代わりにする授業は、{$year->label}の授業を選んでください。"]);
+        }
+
         $base = [
             'group_id' => (string) Str::uuid(),
             'type' => $type,
@@ -291,7 +330,9 @@ class ScheduleController extends Controller
     // 授業変更を取り消す
     public function destroyLessonChange(string $group): RedirectResponse
     {
-        ClassLessonChange::where('group_id', $group)->get()->each->delete();
+        $changes = ClassLessonChange::where('group_id', $group)->get();
+        $changes->each(fn (ClassLessonChange $change) => $this->ensureDateEditable($change->date));
+        $changes->each->delete();
 
         return back()->with('status', '授業変更を取り消しました。');
     }
@@ -345,7 +386,7 @@ class ScheduleController extends Controller
             [$start, $end] = [$from, $to];
         }
 
-        $subject = Subject::with(['schedules', 'students'])->find($subjectId);
+        $subject = Subject::with(['schedules', 'students.enrollments'])->find($subjectId);
         foreach (range($start, max($start, $end)) as $period) {
             if ($subject === null || ! in_array($classId, $subject->classIdsOn($date, $period), true)) {
                 throw ValidationException::withMessages([
@@ -370,9 +411,10 @@ class ScheduleController extends Controller
             ->where('school_class_id', $classId)
             ->whereNotNull('to_subject_id')
             ->pluck('to_subject_id');
-        $subjects = Subject::with(['schedules', 'students'])
+        $subjects = Subject::with(['schedules', 'students.enrollments'])
             ->where(fn ($q) => $q
-                ->whereHas('students', fn ($s) => $s->where('school_class_id', $classId))
+                // このクラスの生徒が受けている授業（クラスは年度ごとに別なので、在籍のクラスで探せば年度も合う）
+                ->whereHas('students.enrollments', fn ($e) => $e->where('school_class_id', $classId))
                 ->orWhereIn('id', $changedIds))
             ->get();
 

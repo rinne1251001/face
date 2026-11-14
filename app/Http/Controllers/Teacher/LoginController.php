@@ -27,7 +27,8 @@ class LoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::guard('teacher')->attempt($credentials, $request->boolean('remember'))) {
+        // can_login が false の教師は、IDとパスワードが合っていてもログインできない
+        if (! Auth::guard('teacher')->attempt($credentials + ['can_login' => true], $request->boolean('remember'))) {
             return back()
                 ->withErrors(['login_id' => 'ログインIDまたはパスワードが違います。'])
                 ->onlyInput('login_id');

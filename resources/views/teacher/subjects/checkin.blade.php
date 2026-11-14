@@ -26,6 +26,8 @@
             {{ $today->format('Y年n月j日') }}（{{ \App\Models\Subject::DAYS[$today->dayOfWeekIso] }}）
             ／ 記録済み <strong id="recordedCount">{{ $recordedCount }}</strong> / {{ $studentCount }}人
         </p>
+        {{-- 受付時間（出席・遅刻の分かれ目）。この時間の外は受け付けないので、手動で登録する --}}
+        <p>受付時間：{{ $window->label() }}（それ以外の時間は、出席一覧から手動で登録します）</p>
         @if ($wrongDay)
             <p>※ 今日はこの授業の日ではありません（{{ $subject->schedule_label }}{{ $dayNote ? "／今日は{$dayNote}" : '' }}）。今日の日付で記録されるので注意してください。</p>
         @endif

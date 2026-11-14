@@ -48,8 +48,15 @@
             <p><a href="{{ route('teacher.checkin.show', [$subject, 'period' => $period]) }}">▶ 顔認証で{{ $period }}限の出席を取る（今日）</a></p>
         @endif
 
+        <p class="muted">
+            顔認証の受付：{{ $window->label() }}。受付が終わっても顔認証をしなかった生徒は欠席になります。公欠と、受付時間の外の出欠は、ここで手動で登録してください。
+        </p>
+
         @if ($isFuture)
-            <p class="muted">未来の日付は表示のみです（出席は登録できません）。</p>
+            <p>未来の日付は表示のみです（出席は登録できません）。</p>
+        @endif
+        @if ($readOnly)
+            <p>{{ $year->label }}は読み取り専用のため、表示のみです（出席は変更できません）。</p>
         @endif
 
         <table>
@@ -59,8 +66,8 @@
                 <tr>
                     <td>{{ $student->student_number }}</td>
                     <td>{{ $student->name }}</td>
-                    <td>{{ $student->schoolClass->name }}</td>
-                    <td>@include('partials.status-badge', ['attendance' => $attendance])</td>
+                    <td><td>{{ $student->enrollmentFor($year)?->schoolClass?->name ?? '未定' }}</td></td>
+                    <td>@include('partials.status-badge', ['attendance' => $attendance, 'absentIfMissing' => $absentIfMissing])</td>
                     <td>
                         @if ($attendance)
                             {{ $attendance->methodLabel() }}
@@ -83,7 +90,7 @@
                                     @foreach (\App\Models\Attendance::STATUSES as $value => $label)
                                         <option value="{{ $value }}" @selected($attendance?->status === $value)>{{ $label }}</option>
                                     @endforeach
-                                    <option value="none" @selected(! $attendance)>未記録に戻す</option>
+                                    <option value="none" @selected(! $attendance)>{{ $absentIfMissing ? '記録を消す（欠席扱い）' : '未記録に戻す' }}</option>
                                 </select>
                                 <button>保存</button>
                             </form>

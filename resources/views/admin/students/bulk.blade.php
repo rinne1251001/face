@@ -1,13 +1,14 @@
 @extends('layouts.test')
-@section('title', '生徒を一斉に追加')
-
-@section('content')
+@section('title', '生徒を一斉に追加（'.$year->label.'）')
+@push('styles')
 <style>
     .bulk-table td { padding: 2px; vertical-align: middle; }
     .bulk-table input, .bulk-table select { width: 100%; box-sizing: border-box; }
     .bulk-table .row-no { width: 3em; text-align: right; color: #6b7280; }
     .bulk-table .invalid { border-color: #b91c1c; background: #fef2f2; }
 </style>
+@endpush
+@section('content')
 
 <main class="main">
     <div class="content-wrapper">
@@ -15,12 +16,15 @@
             <h1>生徒を一斉に追加</h1>
         </div>
 
-        @if ($classes->isEmpty())
-            <p class="warn">先に<a href="{{ route('admin.classes.index') }}">クラス</a>を1つ以上登録してください。</p>
+        @include('admin.partials.year-lock-notice', ['year' => $year])
+
+        @if ($departments->isEmpty())
+            <p class="warn">学科が登録されていません。先に学科を登録してください。</p>
         @endif
 
         <p class="muted">
-            Excel で「名前・学籍番号・クラス名」の順に並んだ範囲をコピーし、表の「名前」のマスを選んで Ctrl+V で貼り付けると一気に入力できます。<br>
+            Excel で「名前・フリガナ・学籍番号・出席番号・クラス名」の順に並んだ範囲をコピーし、表の「名前」のマスを選んで Ctrl+V で貼り付けると一気に入力できます。<br>
+            クラスと出席番号は、決まっていなければ空欄（未定）のままで登録できます。あとで生徒ごとに設定してください。<br>
             名前と学籍番号が両方とも空の行は無視されます。1人でもエラーがあると、誰も登録されません。
         </p>
 
@@ -36,6 +40,28 @@
 
         <form method="POST" action="{{ route('admin.students.bulk.store') }}">
             @csrf
+
+            {{-- どの年度に登録するか --}}
+            <input type="hidden" name="year" value="{{ $year->year }}">
+
+            {{-- 学科と学年は、表の全員に共通（学科や学年が違う生徒は、分けて登録する） --}}
+            <p>
+                <label>学科（全員共通）
+                    <select name="department_id" required @class(['invalid' => $errors->has('department_id')])>
+                        <option value="">選択してください</option>
+                        @foreach ($departments as $department)
+                            <option value="{{ $department->id }}" @selected(old('department_id') == $department->id)>{{ $department->name }}（{{ $department->years }}年制）</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label>学年（全員共通）
+                    <select name="grade" required @class(['invalid' => $errors->has('grade')])>
+                        @for ($g = 1; $g <= $maxGrade; $g++)
+                            <option value="{{ $g }}" @selected((int) old('grade', 1) === $g)>{{ $g }}年</option>
+                        @endfor
+                    </select>
+                </label>
+            </p>
 
             <p>
                 <label>クラスをまとめて設定
@@ -98,7 +124,7 @@
             <p><button type="button" id="add-rows">＋ 10行追加</button></p>
 
             <fieldset>
-                <legend>受講する授業（全員共通・空でも可）</legend>
+                <legend>受講する授業（{{ $year->label }}・全員共通・空でも可）</legend>
                 @forelse ($subjects as $subject)
                     <label style="display:block">
                         <input type="checkbox" name="subject_ids[]" value="{{ $subject->id }}"
@@ -106,7 +132,7 @@
                         {{ $subject->name }}（{{ $subject->schedule_label }}）
                     </label>
                 @empty
-                    <p>授業が登録されていません。</p>
+                    <p>{{ $year->label }}の授業が登録されていません。</p>
                 @endforelse
             </fieldset>
 
@@ -156,7 +182,10 @@
     // クラス名の文字からクラスを選ぶ（全角・半角や空白の違いは無視）
     const norm = (s) => s.normalize('NFKC').replace(/\s+/g, '').toLowerCase();
     function setClass(select, text) {
-        const option = [...select.options].find((o) => o.value && norm(o.text) === norm(text));
+        // 「未定」と書いてあれば、未定（空）にする
+        const option = norm(text) === norm('未定')
+            ? select.options[0]
+            : [...select.options].find((o) => o.value && norm(o.text) === norm(text));
         select.value = option ? option.value : '';
         select.classList.toggle('invalid', !option && text.trim() !== ''); // 見つからないクラス名は赤くする
     }

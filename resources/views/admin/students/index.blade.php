@@ -48,6 +48,7 @@
 .badge-status.inactive { background: var(--color-status-inactive-bg); color: var(--color-status-inactive-text); }
 .badge-photo-none { color: var(--color-status-warning-text); font-weight: 500; }
 .action-links { display: flex; gap: 8px; }
+.year-switch { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
 
 /* ページネーション */
 .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; font-size: 14px; }
@@ -61,12 +62,28 @@
 <main class="main">
     <div class="content-wrapper">
         <div class="page-header">
-            <h1>生徒一覧</h1>
-            <div>
-                <a class="btn" href="{{ route('admin.students.create') }}">＋ 生徒を追加</a>
-                <a class="btn" href="{{ route('admin.students.bulk.create') }}">＋ 一斉に追加</a>
-            </div>
+            <h1>生徒一覧（{{ $year->label }}）</h1>
+            {{-- 読み取り専用の年度では、追加のボタンを出さない --}}
+            @if ($year->isEditable())
+                <div>
+                    <a class="btn" href="{{ route('admin.students.create', ['year' => $year->year]) }}">＋ 生徒を追加</a>
+                    <a class="btn" href="{{ route('admin.students.bulk.create', ['year' => $year->year]) }}">＋ 一斉に追加</a>
+                </div>
+            @endif
         </div>
+
+        {{-- 年度の切り替え（ほかの年度のクラスでは絞り込めないので、検索の条件は付けずに切り替える） --}}
+        <form class="year-switch" method="GET">
+            <label for="year-select">年度</label>
+            <select id="year-select" class="select-filter" name="year" onchange="this.form.submit()">
+                @foreach ($years as $y)
+                    <option value="{{ $y->year }}" @selected($y->is($year))>{{ $y->label }}</option>
+                @endforeach
+            </select>
+            <noscript><button class="btn">表示</button></noscript>
+        </form>
+
+        @include('admin.partials.year-lock-notice', ['year' => $year])
 
         <div class="filter-card">
             <form class="filter-form" method="GET">

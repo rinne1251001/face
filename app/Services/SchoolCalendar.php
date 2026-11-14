@@ -6,6 +6,8 @@ use App\Models\CalendarDay;
 use App\Models\ClassLessonChange;
 use App\Models\SpecialClass;
 use Carbon\CarbonInterface;
+use Carbon\CarbonPeriod;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Yasumi\Yasumi;
 
@@ -27,6 +29,9 @@ class SchoolCalendar
 
     /** @var array<string, Collection<int, ClassLessonChange>> 日付 => その日のクラスごとの授業変更 */
     private array $lessonChanges = [];
+
+    /** @var array<string, true> まとめて読み込み済みの期間（「開始日|終了日」） */
+    private array $preloaded = [];
 
     // 祝日の名前（祝日でなければ null）。振替休日・国民の休日も含む
     public function holidayName(CarbonInterface $date): ?string
@@ -95,11 +100,39 @@ class SchoolCalendar
         return $this->lessonChanges[$key] ??= ClassLessonChange::whereDate('date', $key)->get();
     }
 
+    // ある期間の「日付ごとの設定・変則授業・授業変更」を、まとめて読み込んでおく
+    // （分析で1年分の日付を調べるときに、日付ごとに SQL を出さないようにするため。読み込むのは3回だけ）
+    public function preload(CarbonInterface $from, CarbonInterface $to): void
+    {
+        $first = $from->toDateString();
+        $last = $to->toDateString();
+        if ($first > $last || isset($this->preloaded["{$first}|{$last}"])) {
+            return;
+        }
+
+        $days = CalendarDay::whereBetween('date', [$first, $last])->get()->keyBy(fn (CalendarDay $day) => $day->date->toDateString());
+        $specials = SpecialClass::whereBetween('date', [$first, $last])->get()->groupBy(fn (SpecialClass $special) => $special->date->toDateString());
+        $changes = ClassLessonChange::whereBetween('date', [$first, $last])->get()->groupBy(fn (ClassLessonChange $change) => $change->date->toDateString());
+
+        // その期間のすべての日付を埋める（何もない日も「何もない」と覚えておけば、あとで SQL を出さずに済む）
+        foreach (CarbonPeriod::create($first, $last) as $date) {
+            $key = $date->toDateString();
+            if (! array_key_exists($key, $this->days)) {
+                $this->days[$key] = $days->get($key);
+            }
+            $this->specialClasses[$key] ??= ($specials->get($key) ?? new EloquentCollection)->keyBy('subject_id');
+            $this->lessonChanges[$key] ??= $changes->get($key) ?? new EloquentCollection;
+        }
+
+        $this->preloaded["{$first}|{$last}"] = true;
+    }
+
     // 覚えている内容を捨てる（CalendarDay・SpecialClass・ClassLessonChange を保存・削除したときに呼ばれる）
     public function flush(): void
     {
         $this->days = [];
         $this->specialClasses = [];
         $this->lessonChanges = [];
+        $this->preloaded = [];
     }
 }

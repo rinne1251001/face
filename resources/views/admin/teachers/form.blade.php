@@ -6,11 +6,19 @@
     <div class="content-wrapper">
         <h1>{{ $teacher->exists ? '教師の編集' : '教師の追加' }}</h1>
 
+        {{-- 受け持ちクラス・担当授業は年度ごとに違う。年度を切り替えると、その年度の分を表示・保存する
+             （切り替えると画面を開き直すので、入力の途中なら先に保存してください） --}}
+        @if ($year)
+            @include('admin.partials.year-switch', ['year' => $year])
+        @endif
+
         <form method="POST" action="{{ $teacher->exists ? route('admin.teachers.update', $teacher) : route('admin.teachers.store') }}">
             @csrf
             @if ($teacher->exists)
                 @method('PUT')
             @endif
+            {{-- どの年度の受け持ち・担当を保存するか --}}
+            <input type="hidden" name="year" value="{{ $year?->year }}">
 
             <p><label>名前<br><input name="name" value="{{ old('name', $teacher->name) }}" required></label></p>
             <p><label>ログインID<br><input name="login_id" value="{{ old('login_id', $teacher->login_id) }}" required></label></p>
@@ -21,22 +29,38 @@
                 <br><span class="muted">変更しない場合は空欄のままにしてください。</span>
             @endif
             </p>
+            <p>
+                <label>
+                    <input type="checkbox" name="can_login" value="1" @checked(session()->hasOldInput() ? old('can_login') : $teacher->can_login)>
+                    ログインできる
+                </label>
+                <br><span class="muted">退職などで使わなくなったアカウントは、削除せずにチェックを外すと、受け持ちの記録を残したままログインだけを止められます。</span>
+            </p>
+
+            @if ($year === null)
+                <p class="muted">年度がまだ登録されていないため、受け持ちクラスと担当授業は設定できません。</p>
+            @else
+                @include('admin.partials.year-lock-notice', ['year' => $year])
+            @endif
+
+            {{-- 読み取り専用の年度（と、年度がないとき）は、受け持ち・担当を変更できない --}}
+            <fieldset @disabled($year === null || ! $year->isEditable()) style="border: none; margin: 0; padding: 0;">
 
             <fieldset>
-                <legend>受け持ちクラス（なしでも可）</legend>
+                <legend>受け持ちクラス（{{ $year?->label }}・なしでも可）</legend>
                 @forelse ($classes as $schoolClass)
                     <label style="display:block">
                         <input type="checkbox" name="class_ids[]" value="{{ $schoolClass->id }}"
                             @checked(in_array($schoolClass->id, $selectedClassIds, true))>
-                        {{ $schoolClass->name }}
+                        {{ $schoolClass->name }}（{{ $schoolClass->grade }}年）
                     </label>
                 @empty
-                    <p>クラスが登録されていません。</p>
+                    <p>{{ $year?->label }}のクラスが登録されていません。</p>
                 @endforelse
             </fieldset>
 
             <fieldset>
-                <legend>担当授業（なしでも可）</legend>
+                <legend>担当授業（{{ $year?->label }}・なしでも可）</legend>
                 @forelse ($subjects as $subject)
                     <label style="display:block">
                         <input type="checkbox" name="subject_ids[]" value="{{ $subject->id }}"
@@ -44,8 +68,9 @@
                         {{ $subject->name }}（{{ $subject->schedule_label }}）
                     </label>
                 @empty
-                    <p>授業が登録されていません。担当授業は、授業を登録したあとで設定できます。</p>
+                    <p>{{ $year?->label }}の授業が登録されていません。担当授業は、授業を登録したあとで設定できます。</p>
                 @endforelse
+            </fieldset>
             </fieldset>
 
             @if ($errors->any())
@@ -53,7 +78,7 @@
             @endif
             <button>保存</button>
         </form>
-        <p><a href="{{ route('admin.teachers.index') }}">教師一覧へ戻る</a></p>
+        <p><a href="{{ route('admin.teachers.index', ['year' => $year?->year]) }}">教師一覧へ戻る</a></p>
     </div>
 </main>
 @endsection
