@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Admin;
 // 必要なクラスや機能をインポートする
 use App\Http\Controllers\Concerns\SortsList;
 use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Models\Classroom;
 use App\Models\SchoolClass;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 // クラス宣言
@@ -38,24 +40,29 @@ class ClassroomController extends Controller
             $classFilter = '';
         }
 
+        // 教室に紐づくクラスは、今年度（今年度がなければ、いちばん新しい年度）のものだけを使う
+        // （クラスは年度ごとに別の行なので、絞らないと過去の年度のクラスまで出てしまう）
+        $yearId = AcademicYear::currentOrNewest()?->id;
+        $inYear = fn ($c) => $c->where('school_classes.academic_year_id', $yearId);
+
         $query = Classroom::query()
-            ->with('schoolClasses', fn ($c) => $c->orderBy('name'))
+            ->with('schoolClasses', fn ($c) => $inYear($c)->orderBy('name'))
             // 階を選んでいるときだけ、その階の教室に絞り込む
             ->when($floor !== null, fn ($w) => $w->where('floor', $floor))
-            // has()：クラスが1つ以上ある教室 ／ doesntHave()：クラスが1つもない教室
-            ->when($classFilter === 'with', fn ($w) => $w->has('schoolClasses'))
-            ->when($classFilter === 'without', fn ($w) => $w->doesntHave('schoolClasses'));
+            // whereHas()：その年度のクラスが1つ以上ある教室 ／ whereDoesntHave()：1つもない教室
+            ->when($classFilter === 'with', fn ($w) => $w->whereHas('schoolClasses', $inYear))
+            ->when($classFilter === 'without', fn ($w) => $w->whereDoesntHave('schoolClasses', $inYear));
 
         // キーワードが、教室名・クラス名のどちらかに含まれる教室
         foreach ($keywords as $keyword) {
             $like = "%{$keyword}%";
             $query->where(fn ($w) => $w
                 ->where('name', 'like', $like)
-                ->orWhereHas('schoolClasses', fn ($c) => $c->where('name', 'like', $like)));
+                ->orWhereHas('schoolClasses', fn ($c) => $inYear($c)->where('name', 'like', $like)));
         }
 
         // 並び替え（何も指定がなければ階の順）
-        [$sort, $direction] = $this->applySort($query, $request, $this->sortColumns(), 'floor');
+        [$sort, $direction] = $this->applySort($query, $request, $this->sortColumns($yearId), 'floor');
 
         $rooms = $query
             ->orderBy('name') // 同じ値どうしは教室名の順（同じ階の中など）
@@ -88,9 +95,9 @@ class ClassroomController extends Controller
     // 新規作成保存処理
     public function store(Request $request): RedirectResponse
     {
-        $subject = Classroom::create($this->validated($request));
+        Classroom::create($this->validated($request));
 
-        return redirect()->route('admin.rooms.index');
+        return redirect()->route('admin.rooms.index')->with('status', '教室を追加しました。');
     }
     // 詳細画面
     public function show(Classroom $room): View
@@ -106,7 +113,7 @@ class ClassroomController extends Controller
     // 編集保存処理
     public function update(Request $request, Classroom $room): RedirectResponse
     {
-        $room->update($this->validated($request));
+        $room->update($this->validated($request, $room));
 
         return redirect()->route('admin.rooms.index')->with('status', '保存しました。');
     }
@@ -118,30 +125,34 @@ class ClassroomController extends Controller
 
         return redirect()->route('admin.rooms.index')->with('status', '教室を削除しました。');
     }
-    
+
+    // 入力のチェック（$room … 編集のときの教室。同じ名前のチェックで自分自身を除くため）
     /** @return array<string, mixed> */
-    private function validated(Request $request): array
+    private function validated(Request $request, ?Classroom $room = null): array
     {
         return $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'floor' => ['required', 'integer'],
-            
+            // 50文字まで（テーブルの列の長さ）。同じ名前の教室は作れない
+            'name' => ['required', 'string', 'max:50', Rule::unique('classrooms')->ignore($room)],
+            // 地下1階〜9階（地下はマイナス。0階はない）。画面の選択肢と同じ範囲
+            'floor' => ['required', 'integer', 'between:-1,9', 'not_in:0'],
         ], [], [
-            'name' => 'クラス名',
+            'name' => '教室名',
             'floor' => '階',
         ]);
     }
 
     // 一覧で並び替えできる列（URL の ?sort= に使うキー => 並び替えに使う列）
     /** @return array<string, mixed> */
-    private function sortColumns(): array
+    private function sortColumns(?int $yearId): array
     {
         return [
             'name' => 'name',
             'floor' => 'floor',
             // クラス名は別のテーブルにあるので、その教室のクラス名を取り出すサブクエリで並び替える
             // （クラスが複数あるときは、名前がいちばん先になるものを使う）
-            'class' => SchoolClass::selectRaw('min(name)')->whereColumn('school_classes.classroom_id', 'classrooms.id'),
+            'class' => SchoolClass::selectRaw('min(name)')
+                ->whereColumn('school_classes.classroom_id', 'classrooms.id')
+                ->where('school_classes.academic_year_id', $yearId),
         ];
     }
 }

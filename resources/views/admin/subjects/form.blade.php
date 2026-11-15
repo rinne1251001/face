@@ -262,8 +262,8 @@
 
             <div class="inp-container">
                 <div class="inp-hov">
-                    <label id="name">授業名</label>
-                    <input for="name" name="name" value="{{ old('name', $subject->name) }}" placeholder="例：数学" required autofocus>
+                    <label for="name">授業名</label>
+                    <input id="name" name="name" value="{{ old('name', $subject->name) }}" placeholder="例：数学" required autofocus>
                 </div>
                 @if ($errors->has('name'))
                     @foreach ($errors->get('name') as $message)

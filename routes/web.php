@@ -43,7 +43,7 @@ Route::redirect('/', '/teacher');
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest:admin')->group(function () {
         Route::get('login', [Admin\LoginController::class, 'show'])->name('login');
-        Route::post('login', [Admin\LoginController::class, 'login'])->middleware('throttle:5,1');
+        Route::post('login', [Admin\LoginController::class, 'login'])->middleware('throttle:login');
     });
 
     Route::middleware('auth:admin')->group(function () {
@@ -85,7 +85,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // 照合テスト（しきい値の調整用）
         Route::get('match', [Admin\FaceMatchController::class, 'show'])->name('match.show');
-        Route::post('match', [Admin\FaceMatchController::class, 'match'])->name('match.run')->middleware('throttle:60,1');
+        Route::post('match', [Admin\FaceMatchController::class, 'match'])->name('match.run')->middleware('throttle:face-match');
         Route::get('match/logs', [Admin\FaceMatchController::class, 'logs'])->name('match.logs');      // 照合ログの表の中身
         Route::post('match/log', [Admin\FaceMatchController::class, 'toggleLog'])->name('match.log');  // ログを取る／取らないの切り替え
 
@@ -108,7 +108,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::prefix('teacher')->name('teacher.')->group(function () {
     Route::middleware('guest:teacher')->group(function () {
         Route::get('login', [Teacher\LoginController::class, 'show'])->name('login');
-        Route::post('login', [Teacher\LoginController::class, 'login'])->middleware('throttle:5,1');
+        Route::post('login', [Teacher\LoginController::class, 'login'])->middleware('throttle:login');
     });
 
     // EnsureTeacherCanLogin … 「ログインできない」設定になった教師は、ログイン中でもログアウトさせる
@@ -125,7 +125,7 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
         Route::get('subjects/{subject}/checkin', [Teacher\CheckinController::class, 'show'])->name('checkin.show');
         Route::post('subjects/{subject}/checkin', [Teacher\CheckinController::class, 'store'])
             ->name('checkin.store')
-            ->middleware('throttle:120,1');
+            ->middleware('throttle:checkin');
 
         // 受け持ちクラスの出席状況
         Route::get('classes', [Teacher\ClassController::class, 'index'])->name('classes.index');
@@ -136,7 +136,7 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
         Route::get('settings/password', [Teacher\SettingController::class, 'editPassword'])->name('settings.password.edit');
         Route::put('settings/password', [Teacher\SettingController::class, 'updatePassword'])
             ->name('settings.password.update')
-            ->middleware('throttle:5,1'); // 今のパスワードを総当たりで試されないように、1分に5回まで
+            ->middleware('throttle:password'); // 今のパスワードを総当たりで試されないように、1分に5回まで
 
         // 分析
         Route::get('analyses', [Teacher\AnalysisController::class, 'index'])->name('analyses.index');

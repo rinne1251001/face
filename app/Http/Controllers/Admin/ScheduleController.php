@@ -145,8 +145,7 @@ class ScheduleController extends Controller
 
     public function destroyDay(CalendarDay $calendarDay): RedirectResponse
     {
-        $this->ensureDateEditable($calendarDay->date);   // destroyDay()
-        $this->ensureDateEditable($specialClass->date);  // destroySpecialClass()
+        $this->ensureDateEditable($calendarDay->date); // 読み取り専用の年度の日付は取り消せない
 
         $calendarDay->delete();
 
@@ -192,6 +191,8 @@ class ScheduleController extends Controller
 
     public function destroySpecialClass(SpecialClass $specialClass): RedirectResponse
     {
+        $this->ensureDateEditable($specialClass->date); // 読み取り専用の年度の日付は取り消せない
+
         $specialClass->delete();
 
         return back()->with('status', '変則授業を取り消しました。');

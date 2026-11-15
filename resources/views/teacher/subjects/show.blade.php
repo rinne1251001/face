@@ -66,7 +66,7 @@
                 <tr>
                     <td>{{ $student->student_number }}</td>
                     <td>{{ $student->name }}</td>
-                    <td><td>{{ $student->enrollmentFor($year)?->schoolClass?->name ?? '未定' }}</td></td>
+                    <td>{{ $student->enrollmentFor($year)?->schoolClass?->name ?? '未定' }}</td>
                     <td>@include('partials.status-badge', ['attendance' => $attendance, 'absentIfMissing' => $absentIfMissing])</td>
                     <td>
                         @if ($attendance)
@@ -80,7 +80,7 @@
                         @endif
                     </td>
                     <td>
-                        @unless ($isFuture)
+                        @unless ($isFuture || $readOnly)
                             <form method="POST" action="{{ route('teacher.attendances.update', [$subject, $student]) }}" class="inline">
                                 @csrf
                                 @method('PUT')

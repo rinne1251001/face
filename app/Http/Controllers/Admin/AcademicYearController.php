@@ -214,7 +214,7 @@ class AcademicYearController extends Controller
             'adjustments.*.action' => ['required', Rule::in(['repeat', 'withdraw'])],
             'adjustments.*.grade' => ['nullable', 'integer', "between:1,{$maxGrade}"], // 退学のときは送られてこない
             'classes' => ['array', 'max:200'],
-            'classes.*.name' => ['required', 'string', 'max:50', 'distinct:strict'], // 同じ年度に同じ名前のクラスは作れない
+            'classes.*.name' => ['required', 'string', 'max:50', 'distinct:strict,ignore_case'], // 同じ年度に同じ名前のクラスは作れない
             'classes.*.grade' => ['required', 'integer', "between:1,{$maxGrade}"],
             'subjects' => ['array', 'max:500'],
             'subjects.*.name' => ['required', 'string', 'max:100'],

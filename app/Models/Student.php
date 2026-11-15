@@ -17,13 +17,6 @@ class Student extends Model
         return ['is_active' => 'boolean'];
     }
 
-    // 所属クラス（必ず1つ）
-    /** @return BelongsTo<SchoolClass, $this> */
-    public function schoolClass(): BelongsTo
-    {
-        return $this->belongsTo(SchoolClass::class);
-    }
-
     // 学科（必ず1つ。何年で卒業するかは学科で決まる）
     /** @return BelongsTo<Department, $this> */
     public function department(): BelongsTo
@@ -70,7 +63,7 @@ class Student extends Model
     {
         return $this->hasMany(Enrollment::class);
     }
-    
+
     // ある年度の在籍（その年度に在籍していなければ null）
     // enrollments を読み込み済みならそれを使うので、一覧で with() しておけば SQL は増えない
     public function enrollmentFor(AcademicYear $year): ?Enrollment

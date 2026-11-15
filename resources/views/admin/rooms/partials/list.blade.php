@@ -26,7 +26,7 @@
                     <td>
                         <div style="display: flex; gap: 5px;">
                             <a href="{{ route('admin.rooms.edit', $room) }}" class="btn">編集</a>
-                            <form method="POST" action="{{ route('admin.rooms.destroy', $room) }}">
+                            <form method="POST" action="{{ route('admin.rooms.destroy', $room) }}" onsubmit="return confirm('この教室を削除しますか？（カメラの登録も消え、クラス・時間割の教室は「未設定」になります）')">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn">削除</button>

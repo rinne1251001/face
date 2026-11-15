@@ -101,8 +101,8 @@
                     <div>
                         <label for="day-note">メモ（任意）</label>
                         <input id="day-note" name="note" value="{{ old('note') }}" maxlength="100" placeholder="例：文化祭、11/3の振替">
-                        @if ($errors->has('day_of_week'))
-                            @foreach ($errors->get('day_of_week') as $message)
+                        @if ($errors->has('note'))
+                            @foreach ($errors->get('note') as $message)
                                 <p>{{ $message }}</p>
                             @endforeach
                         @endif
@@ -125,7 +125,7 @@
                         <select id="subject_id" name="subject_id" required>
                             <option value="">選択してください</option>
                             @foreach ($subjects as $subject)
-                                <option value="{{ $subject->id }}" @selected(old('subject_id') == $subject->id)>{{ $subject->name }}</option>
+                                <option value="{{ $subject->id }}" @selected(old('subject_id') == $subject->id)>{{ $subject->name }}（{{ $subject->academicYear->label }}）</option>
                             @endforeach
                         </select>
                         @if ($errors->has('subject_id'))
@@ -146,19 +146,19 @@
                     </div>
 
                     <div>
-                        <label for="period_start">時限</label>
-                        <select name="to_period_start" id="change-to-period-start" aria-label="開始時限">
+                        <label for="special-period-start">時限</label>
+                        <select name="period_start" id="special-period-start" aria-label="開始時限">
                             @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
                                 <option value="{{ $p }}" @selected(old('period_start', 1) == $p)>{{ $p }}限</option>
                             @endfor
                         </select>
                         〜
-                        <select name="to_period_end" id="change-to-period-end" aria-label="終了時限">
+                        <select name="period_end" id="special-period-end" aria-label="終了時限">
                             @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
                                 <option value="{{ $p }}" @selected(old('period_end', 1) == $p)>{{ $p }}限</option>
                             @endfor
                         </select>
-                        @foreach (collect($errors->get('days'))->merge($errors->get('days.*'))->merge($errors->get('schedules.*'))->flatten() as $message)
+                        @foreach (collect($errors->get('period_start'))->merge($errors->get('period_end')) as $message)
                             <p>{{ $message }}</p>
                         @endforeach
                     </div>
@@ -192,7 +192,7 @@
                         <select id="change-class" name="school_class_id" required>
                             <option value="">選択してください</option>
                             @foreach ($classes as $class)
-                                <option value="{{ $class->id }}" @selected(old('school_class_id') == $class->id)>{{ $class->name }}</option>
+                                <option value="{{ $class->id }}" @selected(old('school_class_id') == $class->id)>{{ $class->name }}（{{ $class->academicYear->label }}）</option>
                             @endforeach
                         </select>
                     </div>
@@ -218,12 +218,21 @@
                         </select>
                     </div>
 
+                    {{-- 2時限以上続く授業のときだけ出る（一部の時限だけ変えるとき）。出し入れは下の JavaScript がする --}}
+                    <div data-periods-for="change-lesson" hidden
+                            data-old-start="{{ old('lesson_period_start') }}" data-old-end="{{ old('lesson_period_end') }}">
+                        <span>変更する時限</span>
+                        <select name="lesson_period_start" aria-label="変更する時限（開始）"></select>
+                        〜
+                        <select name="lesson_period_end" aria-label="変更する時限（終了）"></select>
+                    </div>
+
                     <div data-show-for="change add">
                         <label for="change-to-subject">代わりにする授業</label>
                         <select id="change-to-subject" name="to_subject_id">
                             <option value="">選択してください</option>
                             @foreach ($subjects as $subject)
-                                <option value="{{ $subject->id }}" @selected(old('to_subject_id') == $subject->id)>{{ $subject->name }}</option>
+                                <option value="{{ $subject->id }}" @selected(old('to_subject_id') == $subject->id)>{{ $subject->name }}（{{ $subject->academicYear->label }}）</option>
                             @endforeach
                         </select>
                     </div>
@@ -240,14 +249,31 @@
                         </select>
                     </div>
 
-                    <div data-periods-for="change-lesson" hidden
-                            data-old-start="{{ old('lesson_period_start') }}" data-old-end="{{ old('lesson_period_end') }}">
-                        <span>時限</span>
-                        <select name="lesson_period_start" aria-label="変更する時限（開始）"></select>
+                    {{-- 相手の授業が2時限以上続くときだけ出る（一部の時限だけ入れ替えるとき） --}}
+                    <div data-periods-for="change-to-lesson" hidden
+                            data-old-start="{{ old('to_lesson_period_start') }}" data-old-end="{{ old('to_lesson_period_end') }}">
+                        <span>入れ替える時限</span>
+                        <select name="to_lesson_period_start" aria-label="入れ替える時限（開始）"></select>
                         〜
-                        <select name="lesson_period_end" aria-label="変更する時限（終了）"></select>
+                        <select name="to_lesson_period_end" aria-label="入れ替える時限（終了）"></select>
                     </div>
                     <p id="swap-hint" class="muted" aria-live="polite"></p>
+
+                    {{-- 移動先・追加する時限（移動のときは、元の授業と同じ時限の数に自動でそろえる） --}}
+                    <div data-show-for="move add">
+                        <label for="change-to-period-start">移動先・追加する時限</label>
+                        <select name="to_period_start" id="change-to-period-start" aria-label="開始時限">
+                            @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
+                                <option value="{{ $p }}" @selected(old('to_period_start', 1) == $p)>{{ $p }}限</option>
+                            @endfor
+                        </select>
+                        〜
+                        <select name="to_period_end" id="change-to-period-end" aria-label="終了時限">
+                            @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
+                                <option value="{{ $p }}" @selected(old('to_period_end', 1) == $p)>{{ $p }}限</option>
+                            @endfor
+                        </select>
+                    </div>
 
                     <div>
                         <label for="change-note">メモ（任意）</label>

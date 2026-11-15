@@ -87,14 +87,16 @@
 
         <div class="filter-card">
             <form class="filter-form" method="GET">
+                <input type="hidden" name="year" value="{{ $year->year }}">
                 <div class="search-input-wrapper">
                     <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <input type="text" class="input-search" name="q" value="{{ $q }}" placeholder="名前・学籍番号で検索...">
+                    <input type="text" class="input-search" name="q" value="{{ $q }}" placeholder="名前・学籍番号・出席番号・クラスで検索...">
                 </div>
                 <select class="select-filter" name="class_id">
                     <option value="">すべてのクラス</option>
+                    <option value="none" @selected($classId === 'none')>クラス未定</option>
                     @foreach ($classes as $class)
                         <option value="{{ $class->id }}" @selected($classId === $class->id)>{{ $class->name }}</option>
                     @endforeach

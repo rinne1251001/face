@@ -186,7 +186,7 @@ class StudentController extends Controller
             'students.*.name'            => ['required', 'string', 'max:100'],
             'students.*.furigana'        => ['required', 'string', 'max:300'],
             // distinct:strict … 表の中での重複チェック（strict がないと "001" と "1" が同じ扱いになる）
-            'students.*.student_number'  => ['required', 'string', 'max:20', 'distinct:strict', 'unique:students,student_number'],
+            'students.*.student_number'  => ['required', 'string', 'max:20', 'distinct:strict,ignore_case', 'unique:students,student_number'],
             // クラスは未定（空）でもよい。選ぶなら、この年度のクラスだけ
             'students.*.school_class_id' => ['nullable', 'integer', Rule::exists('school_classes', 'id')->where('academic_year_id', $year->id)],
             'subject_ids'                => ['nullable', 'array'], // 受講する授業は空でも可
