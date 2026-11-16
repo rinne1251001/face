@@ -50,6 +50,13 @@ class Subject extends Model
         return $this->belongsToMany(Student::class);
     }
 
+    // 授業の画面で選んだクラス（0個以上）。選んだクラスの生徒は、保存のときに students() にも入る
+    /** @return BelongsToMany<SchoolClass, $this> */
+    public function schoolClasses(): BelongsToMany
+    {
+        return $this->belongsToMany(SchoolClass::class);
+    }
+
     /** @return BelongsToMany<Teacher, $this> */
     public function teachers(): BelongsToMany
     {

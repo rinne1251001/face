@@ -59,8 +59,8 @@
         left: 50%;
         translate: -50% 0;
         /* 画面が狭くて隣と重なるときだけ <wbr> の位置で折り返す
-           最大幅 ＝（全体の幅 − 円1つ）÷ 5 ＝ 円と円の間隔 */
-        max-width: calc((100cqi - 40px) / 4 - 4px);
+           最大幅 ＝（全体の幅 − 円1つ）÷ 5 ＝ 円と円の間隔（ステップが6つなので、間隔は5つ） */
+        max-width: calc((100cqi - 40px) / 5 - 4px);
         word-break: keep-all;
         text-align: center;
         color: var(--step-color);
@@ -85,7 +85,8 @@
     #step2:checked ~ .progress .step-container:nth-child(-n+2),
     #step3:checked ~ .progress .step-container:nth-child(-n+3),
     #step4:checked ~ .progress .step-container:nth-child(-n+4),
-    #step5:checked ~ .progress .step-container:nth-child(-n+5) {
+    #step5:checked ~ .progress .step-container:nth-child(-n+5),
+    #step6:checked ~ .progress .step-container:nth-child(-n+6) {
         --step-color: var(--color-main);
     }
 
@@ -93,7 +94,8 @@
     #step2:checked ~ .progress .step-container:nth-child(-n+1),
     #step3:checked ~ .progress .step-container:nth-child(-n+2),
     #step4:checked ~ .progress .step-container:nth-child(-n+3),
-    #step5:checked ~ .progress .step-container:nth-child(-n+4) {
+    #step5:checked ~ .progress .step-container:nth-child(-n+4),
+    #step6:checked ~ .progress .step-container:nth-child(-n+5) {
         --bar-fill: 100%;
     }
 
@@ -122,7 +124,8 @@
     #step2:checked ~ .form-container .form:nth-child(-n+1),
     #step3:checked ~ .form-container .form:nth-child(-n+2),
     #step4:checked ~ .form-container .form:nth-child(-n+3),
-    #step5:checked ~ .form-container .form:nth-child(-n+4) {
+    #step5:checked ~ .form-container .form:nth-child(-n+4),
+    #step6:checked ~ .form-container .form:nth-child(-n+5) {
         translate: -100% 0;
     }
 
@@ -131,7 +134,8 @@
     #step2:checked ~ .form-container .form:nth-child(2),
     #step3:checked ~ .form-container .form:nth-child(3),
     #step4:checked ~ .form-container .form:nth-child(4),
-    #step5:checked ~ .form-container .form:nth-child(5) {
+    #step5:checked ~ .form-container .form:nth-child(5),
+    #step6:checked ~ .form-container .form:nth-child(6) {
         position: static;
         translate: 0 0;
         visibility: visible;
@@ -217,6 +221,11 @@
     .ay-table-container tr:has(> td > input[type="checkbox"]:not(:checked)) {
         background-color: color-mix(in srgb, var(--color-sub), var(--color-font-light) 50%);
         color: var(--color-bg);
+    }
+
+    /* 文字だけのセル（教師コピーの名前・ログインID）。入力欄と同じ余白にそろえる */
+    .ay-table-container td.text-cell {
+        padding-inline: 10px;
     }
 
     /* 「追加」ボタンのセル */
@@ -370,16 +379,20 @@
         </div>
 
         @php
-            $steps = ['年度<wbr>作成', '生徒<wbr>進級', 'クラス<wbr>コピー', '授業<wbr>コピー', '確認'];
+            $steps = ['年度<wbr>作成', '生徒<wbr>進級', '教師<wbr>コピー', 'クラス<wbr>コピー', '授業<wbr>コピー', '確認'];
 
             // 入力エラーで戻ってきたときは、エラーがある最初のステップを開く
             $openStep = match (true) {
                 $errors->hasAny(['year', 'start_date', 'end_date']) => 1,
                 $errors->has('adjustments*') => 2,
-                $errors->has('classes*') => 3,
-                $errors->has('subjects*') => 4,
+                $errors->has('teachers_off*') => 3,
+                $errors->has('classes*') => 4,
+                $errors->has('subjects*') => 5,
                 default => 1,
             };
+
+            // 教師コピーのチェック：最初は全員チェック済み。入力エラーで戻ってきたときは、さっきの状態
+            $teacherCopied = fn (int $id) => ! session()->hasOldInput() || ! empty(old("teachers.$id.copy"));
 
             // 入力エラーで戻ってきたときの、さっきの個別調整（下のスクリプトが行を作り直す）
             // （スクリプトに渡すときは変数にしておく。カンマを含む式をそのまま渡すと、Blade が式を途中で区切ることがある）
@@ -500,7 +513,47 @@
                     </div>
                 </div>
 
-                {{-- 3. クラスコピー（名前と学年だけ。教室と担任は、あとでクラスの画面から設定する） --}}
+                {{-- 3. 教師コピー（教師は年度ごとに作り直さない。チェックを外した教師を、ログインできない設定にするだけ） --}}
+                <div class="form">
+                    <div>教師コピー</div>
+                    <p>
+                        新年度も続ける教師にチェックを入れます。チェックを外した教師は、年度を登録するとログインできなくなります
+                        （これまでの記録は残ります。教師の画面の「ログイン可」で、いつでも戻せます）。
+                        新しい教師は、年度を登録したあとで教師の画面から追加します。
+                    </p>
+                    <div class="ay-table-container">
+                        <table data-teacher-table>
+                            <thead>
+                                <tr><th>コピー</th><th>名前</th><th>ログインID</th></tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($teachers as $teacher)
+                                    <tr>
+                                        <td>
+                                            {{-- listed … この画面に出ていた教師の印（出ていない教師は、登録しても何も変わらない） --}}
+                                            <input type="hidden" name="teachers[{{ $teacher->id }}][listed]" value="1">
+                                            <input type="checkbox" name="teachers[{{ $teacher->id }}][copy]" value="1" @checked($teacherCopied($teacher->id))
+                                                aria-label="{{ $teacher->name }} 先生は新年度も続ける">
+                                        </td>
+                                        <td class="text-cell">{{ $teacher->name }}</td>
+                                        <td class="text-cell">{{ $teacher->login_id }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td class="text-cell" colspan="3">ログインできる教師が登録されていません。</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                        @foreach (collect($errors->get('teachers_off*'))->flatten()->unique() as $message)
+                            <p class="ay-error">{{ $message }}</p>
+                        @endforeach
+                    </div>
+                    <div class="btn-container">
+                        <label class="prev" for="step2">前へ</label>
+                        <label class="next" for="step4">次へ</label>
+                    </div>
+                </div>
+
+                {{-- 4. クラスコピー（名前と学年だけ。教室と担任は、あとでクラスの画面から設定する） --}}
                 <div class="form">
                     <div>クラスコピー</div>
                     @include('admin.years.partials.copy-table', [
@@ -508,12 +561,12 @@
                         'rows' => $rowsFor('classes', $classes),
                     ])
                     <div class="btn-container">
-                        <label class="prev" for="step2">前へ</label>
-                        <label class="next" for="step4">次へ</label>
+                        <label class="prev" for="step3">前へ</label>
+                        <label class="next" for="step5">次へ</label>
                     </div>
                 </div>
 
-                {{-- 4. 授業コピー（名前と学年だけ。期間・時間割・担当は、あとで授業の画面から登録する） --}}
+                {{-- 5. 授業コピー（名前と学年だけ。期間・時間割・担当は、あとで授業の画面から登録する） --}}
                 <div class="form">
                     <div>授業コピー</div>
                     @include('admin.years.partials.copy-table', [
@@ -521,12 +574,12 @@
                         'rows' => $rowsFor('subjects', $subjects),
                     ])
                     <div class="btn-container">
-                        <label class="prev" for="step3">前へ</label>
-                        <label class="next" for="step5">次へ</label>
+                        <label class="prev" for="step4">前へ</label>
+                        <label class="next" for="step6">次へ</label>
                     </div>
                 </div>
 
-                {{-- 5. 確認（数字は下のスクリプトが、今の入力から数える） --}}
+                {{-- 6. 確認（数字は下のスクリプトが、今の入力から数える） --}}
                 <div class="form">
                     <div>確認</div>
                     <table class="confirm">
@@ -536,11 +589,13 @@
                         <tr><td>卒業生徒数</td><td><span data-count="graduated">0</span>人</td></tr>
                         <tr><td>留年数</td><td><span data-count="repeated">0</span>人</td></tr>
                         <tr><td>退学数</td><td><span data-count="withdrawn">0</span>人</td></tr>
+                        <tr><td>続ける教師数</td><td><span data-count="teachers">0</span>人</td></tr>
+                        <tr><td>ログインできなくなる教師数</td><td><span data-count="teachersOff">0</span>人</td></tr>
                         <tr><td>クラス数</td><td><span data-count="classes">0</span>件</td></tr>
                         <tr><td>授業数</td><td><span data-count="subjects">0</span>件</td></tr>
                     </table>
                     <div class="btn-container">
-                        <label class="prev" for="step4">前へ</label>
+                        <label class="prev" for="step5">前へ</label>
                         <button type="submit" class="next">登録</button>
                     </div>
                 </div>
@@ -772,10 +827,16 @@
                             && row.querySelector('[name$="[name]"]').value.trim() !== '';
                     }).length;
 
+                // 教師コピー：チェックした教師（続ける）と、外した教師（ログインできなくなる）の人数
+                const teacherBoxes = [...document.querySelectorAll('[data-teacher-table] input[type="checkbox"]')];
+                const teachers = teacherBoxes.filter((box) => box.checked).length;
+
                 const values = {
                     ...counts,
                     year: yearInput.value === '' ? '' : `${yearInput.value}年度`,
                     range: `${startInput.value.replaceAll('-', '/')}～${endInput.value.replaceAll('-', '/')}`,
+                    teachers,
+                    teachersOff: teacherBoxes.length - teachers,
                     classes: countRows('classes'),
                     subjects: countRows('subjects'),
                 };

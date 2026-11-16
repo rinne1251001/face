@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
 use App\Models\SchoolClass;
 use App\Models\Subject;
+use App\Models\SubjectScheduleRoom;
 use App\Models\Teacher;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\RedirectResponse;
@@ -124,6 +125,15 @@ class TeacherController extends Controller
 
         $this->syncInYear($teacher->schoolClasses(), $year->schoolClasses()->pluck('id'), $classIds);
         $this->syncInYear($teacher->subjects(), $year->subjects()->pluck('id'), $subjectIds);
+
+        // 担当から外した授業では、曜日ごとの「教室と担当教師」からも外す（その欄は「未設定」に戻る）
+        // （授業の画面では、担当教師に選んだ教師しか選べないので、合わせておく）
+        SubjectScheduleRoom::query()
+            ->where('teacher_id', $teacher->id)
+            ->whereHas('schedule.subject', fn ($q) => $q
+                ->where('academic_year_id', $year->id)
+                ->whereNotIn('subjects.id', $subjectIds))
+            ->update(['teacher_id' => null]);
     }
 
     // $relation のうち、$yearIds（その年度のクラスや授業）の分だけを $selectedIds に入れ替える

@@ -7,6 +7,7 @@ use App\Models\AcademicYear;
 use App\Models\Department;
 use App\Models\Enrollment;
 use App\Models\Student;
+use App\Models\Teacher;
 use App\Services\FaceMatcher;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -18,9 +19,10 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 // 年度の一覧と、年度更新（管理者のみ）
-// 年度更新：新しい年度を作り、在校生の進級と、クラス・授業の名前のコピーをまとめて行う
+// 年度更新：新しい年度を作り、在校生の進級と、教師の引き継ぎ、クラス・授業の名前のコピーをまとめて行う
 //   ・クラスと出席番号は、決まっていないので空のまま登録する（あとで生徒ごとに設定する）
 //   ・新入生は、ここでは登録しない（あとで生徒の画面から登録する）
+//   ・教師は年度ごとに作り直さない。「教師コピー」のチェックを外した教師を、ログインできない設定にするだけ
 //   ・クラスと授業は、名前と学年だけを新しい行としてコピーする（教室・担任・時間割・期間はあとで登録する）
 class AcademicYearController extends Controller
 {
@@ -62,6 +64,8 @@ class AcademicYearController extends Controller
                 ])
                 ->sortBy('number')
                 ->values(),
+            // 教師コピーの表に出す教師（今ログインできる教師だけ。すでにログインできない教師は出さない）
+            'teachers' => Teacher::query()->where('can_login', true)->orderBy('name')->orderBy('id')->get(['id', 'name', 'login_id']),
             // コピー元のクラスと授業（名前と学年だけ使う）
             'classes' => $from ? $from->schoolClasses()->orderBy('grade')->orderBy('name')->get(['name', 'grade']) : collect(),
             'subjects' => $from ? $from->subjects()->orderBy('grade')->orderBy('name')->get(['name', 'grade']) : collect(),
@@ -75,7 +79,7 @@ class AcademicYearController extends Controller
         $targets = $this->promotionTargets($from);
         $data = $this->validated($request, $from, $targets);
 
-        $year = DB::transaction(function () use ($data, $targets) {
+        [$year, $disabled] = DB::transaction(function () use ($data, $targets) {
             // 1. 年度を作る
             $year = AcademicYear::create(Arr::only($data, ['year', 'start_date', 'end_date']));
 
@@ -124,18 +128,27 @@ class AcademicYearController extends Controller
                 Student::query()->whereKey($chunk)->update(['is_active' => false]);
             }
 
-            // 3. クラスと授業（名前と学年だけの、新しい行として作る。コピー元とは別のクラス・授業になる）
+            // 3. 教師：「教師コピー」のチェックを外した教師を、ログインできない設定にする
+            //    （教師の行や、過去の受け持ち・担当の記録は消さない。教師の画面の「ログイン可」でいつでも戻せる）
+            //    update() は変更した行の数を返す。もともとログインできない教師は数えない
+            $disabled = Teacher::query()
+                ->whereKey($data['teachers_off'] ?? [])
+                ->where('can_login', true)
+                ->update(['can_login' => false]);
+
+            // 4. クラスと授業（名前と学年だけの、新しい行として作る。コピー元とは別のクラス・授業になる）
             $year->schoolClasses()->createMany(array_values($data['classes'] ?? []));
             $year->subjects()->createMany(array_values($data['subjects'] ?? []));
 
-            return $year;
+            return [$year, $disabled];
         });
 
         $matcher->flush(); // 照合の対象が変わったので、照合用のキャッシュを作り直す
 
         return redirect()
             ->route('admin.years.index', ['year' => $year->year])
-            ->with('status', "{$year->label}を登録しました。在校生のクラスと出席番号は未定の状態です。");
+            ->with('status', "{$year->label}を登録しました。在校生のクラスと出席番号は未定の状態です。"
+                .($disabled > 0 ? "教師{$disabled}人をログインできない設定にしました。" : ''));
     }
 
     // 進級の対象：コピー元の年度の在籍のうち、年度末の結果がまだ決まっていないもの
@@ -200,6 +213,15 @@ class AcademicYearController extends Controller
                 (array) $request->input('adjustments', []),
                 fn ($row) => is_array($row) && filled($row['student_id'] ?? null),
             ),
+            // 教師コピー：画面に出ていた教師（listed）のうち、チェック（copy）を外した教師のID
+            // （画面に出ていなかった教師は、ここに入らないので何も変わらない）
+            'teachers_off' => collect((array) $request->input('teachers', []))
+                ->filter(fn ($row) => is_array($row) && ! empty($row['listed']) && empty($row['copy']))
+                ->keys()
+                ->filter(fn ($id) => is_numeric($id))
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->all(),
             'classes' => $rows('classes'),
             'subjects' => $rows('subjects'),
         ];
@@ -213,6 +235,8 @@ class AcademicYearController extends Controller
             'adjustments.*.student_id' => ['required', 'integer', 'distinct', Rule::in($targets->pluck('student_id')->all())],
             'adjustments.*.action' => ['required', Rule::in(['repeat', 'withdraw'])],
             'adjustments.*.grade' => ['nullable', 'integer', "between:1,{$maxGrade}"], // 退学のときは送られてこない
+            'teachers_off' => ['array', 'max:5000'],
+            'teachers_off.*' => ['integer'],
             'classes' => ['array', 'max:200'],
             'classes.*.name' => ['required', 'string', 'max:50', 'distinct:strict,ignore_case'], // 同じ年度に同じ名前のクラスは作れない
             'classes.*.grade' => ['required', 'integer', "between:1,{$maxGrade}"],
@@ -242,6 +266,8 @@ class AcademicYearController extends Controller
             'adjustments.*.student_id' => '個別調整の生徒',
             'adjustments.*.action' => '個別調整の処理',
             'adjustments.*.grade' => '個別調整の進級学年',
+            'teachers_off' => '教師コピー',
+            'teachers_off.*' => '教師コピー',
             'classes.*.name' => ':position行目のクラス名',
             'classes.*.grade' => ':position行目のクラスの学年',
             'subjects.*.name' => ':position行目の授業名',

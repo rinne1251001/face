@@ -22,6 +22,14 @@ return new class extends Migration
             $table->primary(['student_id', 'subject_id']);
         });
 
+        // 授業を受けるクラス（0個以上）
+        // 授業の画面でクラスを選ぶと、そのクラスの生徒が上の student_subject にも入る
+        Schema::create('school_class_subject', function (Blueprint $table) {
+            $table->foreignId('school_class_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('subject_id')->constrained()->cascadeOnDelete();
+            $table->primary(['school_class_id', 'subject_id']);
+        });
+
         // 教師が担当する授業（1つ以上）
         Schema::create('subject_teacher', function (Blueprint $table) {
             $table->foreignId('subject_id')->constrained()->cascadeOnDelete();
@@ -33,6 +41,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('subject_teacher');
+        Schema::dropIfExists('school_class_subject');
         Schema::dropIfExists('student_subject');
         Schema::dropIfExists('school_class_teacher');
     }

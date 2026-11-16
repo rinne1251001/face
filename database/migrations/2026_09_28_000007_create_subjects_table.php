@@ -26,19 +26,32 @@ return new class extends Migration
             $table->unsignedTinyInteger('day_of_week');
             $table->unsignedTinyInteger('period_start');
             $table->unsignedTinyInteger('period_end');
-            // 授業をする教室（決まっていなくてもよい。教室を削除したら「未設定」に戻す）
-            $table->foreignId('classroom_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
 
             // 同じ授業に同じ曜日は1つだけ。曜日での絞り込みにもこの索引が使われる
             $table->unique(['subject_id', 'day_of_week']);
             // ※ index(['day_of_week', 'period_start']) はどこからも使われていないので削除した
         });
+
+        // その曜日の授業の「教室と担当教師」（1つの曜日に何行でも持てる）
+        //   クラスを選んだ授業 … クラスごとに1行（school_class_id あり）
+        //   クラスを選ばない授業・「＋追加」した欄 … 教室ごとに1行（school_class_id は空）
+        Schema::create('subject_schedule_rooms', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('subject_schedule_id')->constrained()->cascadeOnDelete();
+            // クラスを削除したら、そのクラスの行も消す
+            $table->foreignId('school_class_id')->nullable()->constrained()->cascadeOnDelete();
+            // 教室・教師は決まっていなくてもよい。削除したら「未設定」に戻す
+            $table->foreignId('classroom_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('teacher_id')->nullable()->constrained()->nullOnDelete();
+            $table->timestamps();
+        });
     }
 
     public function down(): void
     {
         // 作った順の逆（子 → 親）に消す
+        Schema::dropIfExists('subject_schedule_rooms');
         Schema::dropIfExists('subject_schedules');
         Schema::dropIfExists('subjects');
     }

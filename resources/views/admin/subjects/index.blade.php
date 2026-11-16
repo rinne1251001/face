@@ -260,6 +260,7 @@
                             <th scope="col">曜日</th>
                             <th scope="col">時限</th>
                             <th scope="col">授業名</th>
+                            <th scope="col">クラス</th>
                             <th scope="col">受講生徒数</th>
                             <th scope="col">担当の教師</th>
                             <th scope="col">操作</th>
@@ -271,6 +272,7 @@
                                 <td>{{ $subject->start_date?->format('n月j日') }} - {{ $subject->end_date?->format('n月j日') }}</td>
                                 <td><span class="schedule-label">{{ $subject->schedule_label }}</span></td>
                                 <td><span class="subject-name">{{ $subject->name }}</span></td>
+                                <td>{{ $subject->schoolClasses->pluck('name')->implode('・') ?: '—' }}</td>
                                 <td><span class="student-count">{{ $subject->students_count }}人</span></td>
                                 <td>
                                     @forelse ($subject->teachers as $teacher)
@@ -295,7 +297,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5">授業が登録されていません。</td></tr>
+                            <tr><td colspan="7">授業が登録されていません。</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -305,8 +307,8 @@
         <aside class="subjects-note">
             <span class="subjects-note-icon" aria-hidden="true">ⓘ</span>
             <p>
-                担当の教師は「教師」の画面、受講する生徒は「生徒」の画面で設定します。
-                同じ授業が週に複数回ある場合は、曜日・時限ごとに別々に登録してください。
+                授業を受けるクラス・担当の教師・曜日ごとの教室は、授業の「編集」で設定します。
+                クラスを選ぶと、そのクラスの生徒が全員受講生になります（1人ずつ変えるときは「生徒」の画面）。
             </p>
         </aside>
     </div>

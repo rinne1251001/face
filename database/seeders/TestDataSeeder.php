@@ -488,12 +488,29 @@ class TestDataSeeder extends Seeder
                     'grade' => $classes[0]->grade,
                 ]);
 
+                // 授業を受けるクラス（授業の画面の「クラス」で選んだのと同じ形）
+                DB::table('school_class_subject')->insert(
+                    array_map(fn ($c) => ['school_class_id' => $c->id, 'subject_id' => $subject->id], $classes),
+                );
+
                 foreach ($picked as $day => $start) {
-                    $subject->schedules()->create([
+                    $schedule = $subject->schedules()->create([
                         'day_of_week' => $day,
                         'period_start' => $start,
                         'period_end' => $start + $length - 1,
-                        'classroom_id' => $room->id,
+                    ]);
+                    // 教室と担当教師：クラスごとに1行（1人目の教師が教える）。補助の教師は、教室だけの行にする
+                    $schedule->rooms()->createMany([
+                        ...array_map(fn ($c) => [
+                            'school_class_id' => $c->id,
+                            'classroom_id' => $room->id,
+                            'teacher_id' => $this->teachers[$teacherIndex]->id,
+                        ], $classes),
+                        ...array_map(fn ($t) => [
+                            'school_class_id' => null,
+                            'classroom_id' => $room->id,
+                            'teacher_id' => $this->teachers[$t]->id,
+                        ], array_slice($teacherIndexes, 1)),
                     ]);
                     foreach ($teacherIndexes as $t) {
                         foreach ($keys($day, $start, [...$owners, "t:{$t}"]) as $key) {
