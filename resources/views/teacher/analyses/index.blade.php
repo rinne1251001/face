@@ -247,7 +247,7 @@
                                     <div class="page-header">
                                         <h1>{{ $class->name }}</h1>
                                         <div>
-                                            <a href="{{ route('teacher.analyses.class', $class) }}">詳しく見る</a>
+                                            <a class="btn-action" href="{{ route('teacher.analyses.class', $class) }}">詳しく見る</a>
                                         </div>
                                     </div>
 

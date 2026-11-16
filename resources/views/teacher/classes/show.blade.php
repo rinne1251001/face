@@ -4,16 +4,18 @@
 @section('content')
     <main class="main">
         <div class="content-wrapper">
-            <h1>{{ $schoolClass->name }} の出席状況</h1>
+            <div class="page-header">
+                <h1>{{ $schoolClass->name }} の出席状況</h1>
+            </div>
 
             {{-- 日付の切り替え --}}
-            <form method="GET" action="{{ route('teacher.classes.show', $schoolClass) }}">
-                <a href="{{ route('teacher.classes.show', ['schoolClass' => $schoolClass, 'date' => $date->copy()->subDay()->toDateString()]) }}">« 前の日</a>
+            <form class="button-group" method="GET" action="{{ route('teacher.classes.show', $schoolClass) }}">
+                <a class="btn-action" href="{{ route('teacher.classes.show', ['schoolClass' => $schoolClass, 'date' => $date->copy()->subDay()->toDateString()]) }}">« 前の日</a>
                 <input type="date" name="date" value="{{ $date->toDateString() }}">
-                <button>表示</button>
-                <a href="{{ route('teacher.classes.show', ['schoolClass' => $schoolClass, 'date' => $date->copy()->addDay()->toDateString()]) }}">次の日 »</a>
+                <button class="btn">表示</button>
+                <a class="btn-action" href="{{ route('teacher.classes.show', ['schoolClass' => $schoolClass, 'date' => $date->copy()->addDay()->toDateString()]) }}">次の日 »</a>
                 @unless ($date->isToday())
-                    | <a href="{{ route('teacher.classes.show', $schoolClass) }}">今日</a>
+                    <a class="btn-action" href="{{ route('teacher.classes.show', $schoolClass) }}">今日</a>
                 @endunless
             </form>
 
@@ -66,7 +68,7 @@
                 <p class="muted">「－」はその授業を受講していない生徒です。出席の変更は、担当の教師が授業の画面から行います。</p>
             @endif
 
-            <p><a href="{{ route('teacher.dashboard') }}">ホームへ戻る</a></p>
+            <p><a class="btn-action" href="{{ route('teacher.dashboard') }}">ホームへ戻る</a></p>
         </div>
     </main>
 @endsection

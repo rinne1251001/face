@@ -3,13 +3,7 @@
 @push('styles')
 <style>
     :root {
-        --bg-summary: #f7f2ec;
-        --border-summary: #eee8e0;
-        --bg-card: #ffffff;
         --text-sub: #4f4d60;
-        --text-search: #999999;
-        --bg-th: #fbfaf9;
-        --border-td: #f0eef0;
         --avatar-cool-bg: #e9edf8;
         --avatar-warm-bg: #fae9e5;
         --avatar-warm-color: #b86e62;
@@ -18,57 +12,45 @@
         --danger: #b86e62;
     }
 
-    /* ページタイトルと追加ボタン */
-    .heading,
-    .toolbar,
-    .summary {
+    .page-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
     }
 
-    .heading { margin-bottom: 24px; }
-    .eyebrow { margin-bottom: 8px !important; color: var(--color-main); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
-    h1 { margin: 0; font-size: clamp(28px, 4vw, 38px); }
-    .description { margin-top: 8px !important; color: var(--color-main); font-size: 14px; }
-    .add-btn { padding: 12px 18px; border: 0; border-radius: 9px; background: var(--color-main); color: #fff; font-size: 14px; font-weight: 700; }
-
-    /* 教師数のサマリー */
-    .summary { margin-bottom: 18px; padding: 18px 22px; border: 1px solid var(--border-summary); border-radius: 12px; background: var(--bg-summary); }
+    .summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 20px; padding: 16px; border: 1px solid var(--color-font-light); border-radius: 8px; background: var(--color-bg); }
     .count { display: block; margin-top: 3px; font-size: 26px; font-weight: 800; }
     .count small,
-    .summary-note { color: var(--color-main); font-size: 13px; }
+    .subtext { color: var(--color-font-light); font-size: 13px; }
 
-    /* 教師一覧テーブル */
-    .card { overflow: hidden; border: 1px solid var(--color-font-light); border-radius: 12px; background: var(--bg-card); box-shadow: 0 10px 28px rgb(40 38 62 / 5%); }
-    .toolbar { padding: 16px 20px; border-bottom: 1px solid var(--color-font-light); }
+    .card { overflow: hidden; border: 1px solid var(--color-font-light); border-radius: 8px; background: var(--color-bg); }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px; border-bottom: 1px solid var(--color-font-light); }
     .toolbar h2 { margin: 0; font-size: 16px; }
-    .search { padding: 9px 12px; border: 1px solid var(--color-font-light); border-radius: 8px; color: var(--text-search); font-size: 13px; }
+    .search { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .search-input { min-width: 220px; padding: 8px 12px; border: 1px solid var(--color-font-light); border-radius: 6px; font-size: 14px; }
     .table-wrap { overflow-x: auto; }
     table { width: 100%; margin: 0; border-collapse: collapse; text-align: left; }
     th,
-    td { padding: 14px 16px; border: 0; border-bottom: 1px solid var(--border-td); vertical-align: middle; }
-    th { background: var(--bg-th); color: var(--color-main); font-size: 11px; white-space: nowrap; }
-    td { color: var(--text-sub); font-size: 13px; }
+    td { padding: 12px 16px; border: 0; border-bottom: 1px solid var(--color-font-light); vertical-align: middle; }
+    th { background: var(--color-bg); color: var(--color-font-light); font-size: 14px; font-weight: 600; white-space: nowrap; }
+    td { color: var(--text-sub); font-size: 14px; }
     tbody tr:last-child td { border-bottom: 0; }
 
-    /* 名前・クラス・授業の表示 */
     .person { display: flex; align-items: center; gap: 10px; min-width: 150px; }
     .avatar { display: grid; width: 36px; height: 36px; flex: 0 0 36px; place-items: center; border-radius: 10px; background: var(--avatar-cool-bg); color: var(--color-main); font-weight: 800; }
     .avatar--warm { background: var(--avatar-warm-bg); color: var(--avatar-warm-color); }
     .name,
     .subject { display: block; color: var(--color-font); font-weight: 700; }
-    .subtext { display: block; margin-top: 3px; color: var(--color-main); font-size: 11px; }
+    .subtext { display: block; margin-top: 3px; color: var(--color-font-light); font-size: 11px; }
     .tags,
     .actions { display: flex; flex-wrap: wrap; gap: 6px; white-space: nowrap; }
     .tag { padding: 4px 7px; border-radius: 5px; background: var(--tag-bg); color: var(--tag-color); font-size: 11px; }
-    .action { padding: 5px 9px; border: 1px solid var(--color-font-light); border-radius: 6px; background: var(--bg-card); color: var(--color-main); font-size: 11px; }
-    .action--delete { color: var(--danger); }
-    .note { margin-top: 12px !important; color: var(--color-main); font-size: 12px; }
+    .btn-action { display: inline-block; padding: 4px 8px; border: 1px solid var(--color-font-light); border-radius: 4px; background: var(--color-bg); color: var(--color-main); font-size: 13px; text-decoration: none; }
+    .btn-action--delete { color: var(--danger); }
 
     @media (max-width: 767px) {
-        .heading,
         .toolbar,
         .summary { align-items: flex-start; flex-direction: column; }
     }
@@ -78,27 +60,15 @@
 
 <main class="main">
     <div class="content-wrapper">
-        <div class="heading">
-            <div>
-                <h1>教師一覧</h1>
-                <p class="description">教師と担当クラス・授業をまとめて確認できます。</p>
-            </div>
-
-            <div>
-                <form action="{{ route('admin.teachers.create') }}" method="GET">
-                    {{-- 追加の画面でも、いま表示している年度の受け持ち・担当を設定する --}}
-                    @if ($year)
-                        <input type="hidden" name="year" value="{{ $year->year }}">
-                    @endif
-                    <button class="add-btn" type="submit">＋ 教師を追加</button>
-                </form>
-            </div>
-
-            {{-- 受け持ちクラス・担当授業を表示する年度 --}}
-            @if ($year)
-                @include('admin.partials.year-switch', ['year' => $year])
-            @endif
+        <div class="page-header">
+            <h1>教師一覧（{{ $year->label }}）</h1>
+            <a class="btn" href="{{ route('admin.teachers.create', ['year' => $year->year]) }}">＋ 教師を追加</a>
         </div>
+
+        {{-- 受け持ちクラス・担当授業を表示する年度 --}}
+        @if ($year)
+            @include('admin.partials.year-switch', ['year' => $year])
+        @endif
 
         <section class="summary" aria-label="教師数">
             <div>
@@ -111,11 +81,11 @@
             <div class="toolbar">
                 <h2 id="teacher-demo-title">教師アカウント</h2>
                 <form class="search" method="GET" action="{{ route('admin.teachers.index') }}" role="search">
-                    <input style="border: none;" type="search" name="q" value="{{ $q }}"
+                    <input class="search-input" type="search" name="q" value="{{ $q }}"
                            placeholder="⌕ 名前・ログインID・クラス・授業で検索..." aria-label="教師を検索">
-                    <button style="background-color: var(--color-main); color: var(--color-bg); padding: 2px 5px;" type="submit">検索</button>
+                    <button class="btn" type="submit">検索</button>
                     @if ($q !== '')
-                        <a class="action" href="{{ route('admin.teachers.index') }}">クリア</a>
+                        <a class="btn-action" href="{{ route('admin.teachers.index') }}">クリア</a>
                     @endif
                     @if ($year)
                         <input type="hidden" name="year" value="{{ $year->year }}">
@@ -151,11 +121,11 @@
                                 </td>
                                 <td>
                                     <div class="actions">
-                                        <a class="action" href="{{ route('admin.teachers.edit', [$teacher, 'year' => $year?->year]) }}">編集</a>
+                                        <a class="btn-action" href="{{ route('admin.teachers.edit', [$teacher, 'year' => $year?->year]) }}">編集</a>
                                         <form method="POST" action="{{ route('admin.teachers.destroy', $teacher) }}" onsubmit="return confirm('この教師を削除しますか？')">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="action action--delete">削除</button>
+                                            <button class="btn-action btn-action--delete">削除</button>
                                         </form>
                                     </div>
                                 </td>

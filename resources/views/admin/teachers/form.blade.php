@@ -4,7 +4,9 @@
 @section('content')
 <main class="main">
     <div class="content-wrapper">
-        <h1>{{ $teacher->exists ? '教師の編集' : '教師の追加' }}</h1>
+        <div class="page-header">
+            <h1 class="page-title">{{ $teacher->exists ? '教師の編集' : '教師の追加' }}</h1>
+        </div>
 
         {{-- 受け持ちクラス・担当授業は年度ごとに違う。年度を切り替えると、その年度の分を表示・保存する
              （切り替えると画面を開き直すので、入力の途中なら先に保存してください） --}}

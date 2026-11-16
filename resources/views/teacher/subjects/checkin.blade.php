@@ -7,7 +7,9 @@
         
         {{-- 何限の出席かは、送り先の URL（?period=）で伝える --}}
         <div id="face-checkin" data-checkin-url="{{ route('teacher.checkin.store', [$subject, 'period' => $period]) }}">
-        <h1>出席受付：{{ $subject->name }}（{{ $subject->schedule_label }}）{{ $period }}限</h1>
+        <div class="page-header">
+            <h1>出席受付：{{ $subject->name }}（{{ $subject->schedule_label }}）{{ $period }}限</h1>
+        </div>
 
         {{-- 2時限以上続く授業は、ここで受け付ける時限を切り替える --}}
         @if (count($periods) > 1)
@@ -17,7 +19,7 @@
                     @if ($p === $period)
                         <strong>【{{ $p }}限】</strong>
                     @else
-                        <a href="{{ route('teacher.checkin.show', [$subject, 'period' => $p]) }}">{{ $p }}限</a>
+                        <a class="btn-action" href="{{ route('teacher.checkin.show', [$subject, 'period' => $p]) }}">{{ $p }}限</a>
                     @endif
                 @endforeach
             </p>
@@ -38,8 +40,8 @@
             <canvas id="overlay"></canvas>
         </div>
         <p>
-            <button id="toggleBtn" disabled>受付を一時停止</button>
-            <a href="{{ route('teacher.subjects.show', [$subject, 'period' => $period]) }}">出席一覧・手動登録へ</a>
+            <button class="btn" id="toggleBtn" disabled>受付を一時停止</button>
+            <a class="btn-action" href="{{ route('teacher.subjects.show', [$subject, 'period' => $period]) }}">出席一覧・手動登録へ</a>
         </p>
 
         <h2>この画面での受付記録</h2>

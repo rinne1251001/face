@@ -4,17 +4,19 @@
 @section('content')
 <main class="main">
     <div class="content-wrapper">
-        <h1>{{ $subject->name }}（{{ $subject->schedule_label }}）{{ $period }}限の出席</h1>
+        <div class="page-header">
+            <h1>{{ $subject->name }}（{{ $subject->schedule_label }}）{{ $period }}限の出席</h1>
+        </div>
 
         {{-- 日付の切り替え --}}
-        <form method="GET" action="{{ route('teacher.subjects.show', $subject) }}">
-            <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->subWeek()->toDateString(), 'period' => $period]) }}">« 前の週</a>
+        <form class="button-group" method="GET" action="{{ route('teacher.subjects.show', $subject) }}">
+            <a class="btn-action" href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->subWeek()->toDateString(), 'period' => $period]) }}">« 前の週</a>
             <input type="date" name="date" value="{{ $date->toDateString() }}">
             <input type="hidden" name="period" value="{{ $period }}">
-            <button>表示</button>
-            <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->addWeek()->toDateString(), 'period' => $period]) }}">次の週 »</a>
+            <button class="btn">表示</button>
+            <a class="btn-action" href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->addWeek()->toDateString(), 'period' => $period]) }}">次の週 »</a>
             @unless ($isToday)
-                | <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'period' => $period]) }}">今日</a>
+                <a class="btn-action" href="{{ route('teacher.subjects.show', ['subject' => $subject, 'period' => $period]) }}">今日</a>
             @endunless
         </form>
 
@@ -26,7 +28,7 @@
                     @if ($p === $period)
                         <strong>【{{ $p }}限】</strong>
                     @else
-                        <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->toDateString(), 'period' => $p]) }}">{{ $p }}限</a>
+                        <a class="btn-action" href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->toDateString(), 'period' => $p]) }}">{{ $p }}限</a>
                     @endif
                 @endforeach
             </p>
@@ -45,7 +47,7 @@
         </p>
 
         @if ($isToday)
-            <p><a href="{{ route('teacher.checkin.show', [$subject, 'period' => $period]) }}">▶ 顔認証で{{ $period }}限の出席を取る（今日）</a></p>
+            <p><a class="btn" href="{{ route('teacher.checkin.show', [$subject, 'period' => $period]) }}">▶ 顔認証で{{ $period }}限の出席を取る（今日）</a></p>
         @endif
 
         <p class="muted">
@@ -92,7 +94,7 @@
                                     @endforeach
                                     <option value="none" @selected(! $attendance)>{{ $absentIfMissing ? '記録を消す（欠席扱い）' : '未記録に戻す' }}</option>
                                 </select>
-                                <button>保存</button>
+                                <button class="btn-action">保存</button>
                             </form>
                         @endunless
                     </td>
@@ -106,7 +108,7 @@
             <ul class="error">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
         @endif
 
-        <p><a href="{{ route('teacher.dashboard') }}">ホームへ戻る</a></p>
+        <p><a class="btn-action" href="{{ route('teacher.dashboard') }}">ホームへ戻る</a></p>
 
     </div>
 </main>

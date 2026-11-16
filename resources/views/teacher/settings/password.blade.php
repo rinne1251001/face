@@ -57,6 +57,10 @@
 
     <main class="main">
         <div class="content-wrapper">
+            <div class="page-header">
+                <h1>パスワード変更</h1>
+            </div>
+
             <form method="POST" action="{{ route('teacher.settings.password.update') }}">
                 @csrf
                 @method('PUT')
@@ -92,7 +96,7 @@
                     </div>
                 </div>
 
-                <button>変更する</button>
+                <button class="btn">変更する</button>
             </form>
         </div>
     </main>
