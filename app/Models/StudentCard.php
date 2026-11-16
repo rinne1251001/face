@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 // 入校証（FeliCa）。student_id が null のカードは、まだ誰のものでもない
 class StudentCard extends Model
 {
+    // IDm は 8 バイト = 16 桁の 16 進数（バリデーションの regex に使う）
+    public const IDM_PATTERN = '/^[0-9A-Fa-f]{16}$/';
+
     protected $fillable = ['student_id', 'idm', 'is_active'];
 
     protected function casts(): array

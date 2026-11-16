@@ -19,6 +19,7 @@ class Attendance extends Model
     // 記録の方法
     public const METHODS = [
         'face' => '顔認証',
+        'card_face' => '入校証＋顔認証',
         'manual' => '手動',
     ];
 

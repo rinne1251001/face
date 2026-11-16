@@ -119,12 +119,25 @@ export async function warmupDetection(input, onStatus = () => { }) {
 
 // 枠線を描くキャンバスをカメラ映像に重ねる（startCamera の後に呼ぶ）
 export function attachOverlay(video, canvas) {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
     // 映像の縦横比を CSS の --camera-ratio に入れる（.camera の幅を「高さが 90dvh になる幅」までにするのに使う）
     // カメラやスマホの向きで 4:3 以外になることがあるので、実際の映像の大きさを使う
     video.closest('.camera')?.style.setProperty('--camera-ratio', `${video.videoWidth} / ${video.videoHeight}`);
     overlay = { video, canvas };
+
+    // canvas の画素数を「画面に表示されている大きさ × 画面の倍率」に合わせる。
+    // 映像の画素数（640×480）のままにすると、大きく引き伸ばして表示されるので、枠の線や文字がぼやける
+    const fit = () => {
+        const scale = window.devicePixelRatio || 1;
+        const width = Math.round(canvas.clientWidth * scale) || video.videoWidth;
+        const height = Math.round(canvas.clientHeight * scale) || video.videoHeight;
+        // 大きさを入れ直すと canvas の絵は消える（次に検出したときにまた描かれる）ので、変わったときだけにする
+        if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width;
+            canvas.height = height;
+        }
+    };
+    fit();
+    new ResizeObserver(fit).observe(canvas); // ウィンドウの大きさを変えたときなどに合わせ直す
 }
 
 // 照合結果などを、対象の顔の枠に一定時間表示する

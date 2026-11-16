@@ -42,5 +42,9 @@ class AppServiceProvider extends ServiceProvider
         // 照合テスト：管理者ごとに1分に60回まで
         RateLimiter::for('face-match', fn (Request $request) => Limit::perMinute(60)
             ->by('admin:'.$request->user('admin')?->getAuthIdentifier()));
+
+        // 入校証の照合・登録（読み取り・生徒の検索・登録の合計）：管理者ごとに1分に120回まで
+        RateLimiter::for('card-match', fn (Request $request) => Limit::perMinute(120)
+            ->by('admin:'.$request->user('admin')?->getAuthIdentifier()));
     }
 }

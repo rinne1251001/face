@@ -37,7 +37,7 @@
         <div class="page-header">
             <h1>照合テスト</h1>
             <div>
-                <a class="btn" href="#">カードリーダーテスト</a>
+                <a class="btn" href="{{ route('admin.cards.match.show') }}">カードリーダーテスト</a>
             </div>
         </div>
 

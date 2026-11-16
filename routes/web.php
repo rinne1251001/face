@@ -89,6 +89,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('match/logs', [Admin\FaceMatchController::class, 'logs'])->name('match.logs');      // 照合ログの表の中身
         Route::post('match/log', [Admin\FaceMatchController::class, 'toggleLog'])->name('match.log');  // ログを取る／取らないの切り替え
 
+        Route::get('cards/match', [Admin\CardMatchController::class, 'show'])->name('cards.match.show');
+        Route::post('cards/match', [Admin\CardMatchController::class, 'touch'])->name('cards.match.touch')->middleware('throttle:card-match');
+        Route::post('cards/match/students', [Admin\CardMatchController::class, 'students'])->name('cards.match.students')->middleware('throttle:card-match');
+        Route::post('cards/match/link', [Admin\CardMatchController::class, 'link'])->name('cards.match.link')->middleware('throttle:card-match');
+
         // 年度（一覧と年度更新）
         Route::get('years', [Admin\AcademicYearController::class, 'index'])->name('years.index');
         Route::get('years/create', [Admin\AcademicYearController::class, 'create'])->name('years.create');
@@ -121,8 +126,11 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
         Route::put('subjects/{subject}/students/{student}/attendance', [Teacher\AttendanceController::class, 'update'])
             ->name('attendances.update');
 
-        // 顔認証での出席受付
+        // 出席受付（入校証をかざす → 顔認証）
         Route::get('subjects/{subject}/checkin', [Teacher\CheckinController::class, 'show'])->name('checkin.show');
+        Route::post('subjects/{subject}/checkin/card', [Teacher\CheckinController::class, 'card'])
+            ->name('checkin.card')
+            ->middleware('throttle:checkin');
         Route::post('subjects/{subject}/checkin', [Teacher\CheckinController::class, 'store'])
             ->name('checkin.store')
             ->middleware('throttle:checkin');

@@ -7,6 +7,7 @@ use App\Models\AcademicYear;
 use App\Models\Department;
 use App\Models\Enrollment;
 use App\Models\Student;
+use App\Models\StudentCard;
 use App\Models\Teacher;
 use App\Services\FaceMatcher;
 use Illuminate\Database\Eloquent\Collection;
@@ -124,8 +125,10 @@ class AcademicYearController extends Controller
                 Enrollment::query()->insert($chunk);
             }
             // 卒業・退学した生徒は、顔照合の対象から外す（記録は残す。生徒の画面でいつでも戻せる）
+            // その生徒の入校証も、使用停止にする（入校証そのものや、タッチの記録は消さない）
             foreach (array_chunk($leaving, 500) as $chunk) {
                 Student::query()->whereKey($chunk)->update(['is_active' => false]);
+                StudentCard::query()->whereIn('student_id', $chunk)->update(['is_active' => false]);
             }
 
             // 3. 教師：「教師コピー」のチェックを外した教師を、ログインできない設定にする
