@@ -29,8 +29,12 @@ class ScheduleController extends Controller
     use UsesAcademicYear; // ensureDateEditable()（読み取り専用の年度の日付は変更させない）
 
     // 1週間の時間割（?date=2026-11-09 でその日を含む週。省略すると今週）
-    public function index(Request $request, SchoolCalendar $calendar): View
+    public function index(Request $request, SchoolCalendar $calendar): View|RedirectResponse
     {
+        if (! AcademicYear::query()->exists()) {
+            return redirect()->route('admin.years.index')->with('status', '先に「年度更新」から年度を登録してください。');
+        }
+
         $request->validate(['date' => ['nullable', 'date_format:Y-m-d']]);
         $monday = Carbon::parse($request->query('date', today()->toDateString()))->startOfWeek(Carbon::MONDAY);
 
@@ -110,7 +114,7 @@ class ScheduleController extends Controller
     }
 
     // 登録の画面（?date= で日付を入れておける）
-    public function create(Request $request): View
+    public function create(Request $request, SchoolCalendar $calendar): View
     {
         // 選べるのは、今年度とこれからの年度のクラス・授業（終わった年度のものは出さない）
         $yearIds = AcademicYear::query()->whereDate('end_date', '>=', today())->pluck('id');
@@ -119,28 +123,93 @@ class ScheduleController extends Controller
             'classes' => SchoolClass::with('academicYear')->whereIn('academic_year_id', $yearIds)->orderBy('name')->get(),
             'subjects' => Subject::with('academicYear')->whereIn('academic_year_id', $yearIds)->orderBy('name')->get(),
             'date' => $request->query('date'),
+            'weekData' => $this->weekData($calendar),
         ]);
     }
 
     // 休校・振替を登録する（同じ日付がすでにあれば上書き）
+    //   day_of_week … 何曜日の時間割で授業をするか（空なら休校）
+    //   week        … どの週の曜日か（その週の月曜日の日付。省略すると、登録する日と同じ週）
+    //   例：11/7（土）に、11/3（火・祝日）の授業をする → date=11/7、day_of_week=2、week=11/2
     public function storeDay(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'date' => ['required', 'date_format:Y-m-d'],
             'day_of_week' => ['nullable', 'integer', Rule::in(array_keys(Subject::DAYS))], // 空なら休校
+            'week' => ['nullable', 'date_format:Y-m-d'],
             'note' => ['nullable', 'string', 'max:100'],
-        ], [], ['date' => '日付', 'day_of_week' => '時間割', 'note' => 'メモ']);
+        ], [], ['date' => '日付', 'day_of_week' => '時間割', 'week' => '週', 'note' => 'メモ']);
         $this->ensureDateEditable($data['date']);
+
+        $timetableDate = isset($data['day_of_week'])
+            ? $this->timetableDateOrFail(Carbon::parse($data['date']), (int) $data['day_of_week'], $data['week'] ?? null)
+            : null; // 休校
 
         // whereDate で探す（DB によって日付の保存のされ方が違っても、日付だけで比べられるように）
         $day = CalendarDay::whereDate('date', $data['date'])->first() ?? new CalendarDay(['date' => $data['date']]);
         $day->fill([
-            'day_of_week' => $data['day_of_week'] ?? null,
+            'timetable_date' => $timetableDate?->toDateString(),
             'note' => $data['note'] ?? null,
         ])->save();
 
         return redirect()->route('admin.schedules.index', ['date' => $data['date']])
             ->with('status', "{$day->date->format('n月j日')}を「{$day->label}」にしました。");
+    }
+
+    // 振替で使う時間割の日付：選んだ週の月曜日 ＋ 曜日（例：11/2 の週の火曜日 → 11/3）
+    // 登録する日と同じ年度の中の日付だけ（年度が違うと、授業もクラスも別のものになるため）
+    private function timetableDateOrFail(Carbon $date, int $dayOfWeek, ?string $week): Carbon
+    {
+        $year = AcademicYear::containing($date);
+        if ($year === null) {
+            throw ValidationException::withMessages(['date' => '授業をする日は、年度の期間の中から選んでください。']);
+        }
+
+        $timetableDate = Carbon::parse($week ?? $date->toDateString())
+            ->startOfWeek(Carbon::MONDAY)
+            ->addDays($dayOfWeek - 1);
+
+        if (! $timetableDate->between($year->start_date, $year->end_date)) {
+            $label = $timetableDate->format('n月j日').'（'.Subject::DAYS[$dayOfWeek].'）';
+            throw ValidationException::withMessages(['week' => "{$label}は{$year->label}の外です。{$year->label}の中の週を選んでください。"]);
+        }
+
+        return $timetableDate;
+    }
+
+    // 振替の「どの週か」の選択肢を作るための材料（選んだ日付の年度の週を、画面の JavaScript が並べる）
+    //   years   … 年度の期間 [{ label: '2026年度', start: '2026-04-01', end: '2027-03-31' }, ...]
+    //   offDays … 授業のない日 { '2026-11-03': '文化の日', '2026-11-20': '休校：文化祭' }（週の選択肢に添える）
+    /** @return array{years: array<int, array{label: string, start: string, end: string}>, offDays: array<string, string>} */
+    private function weekData(SchoolCalendar $calendar): array
+    {
+        $years = AcademicYear::query()->orderBy('start_date')->get();
+        if ($years->isEmpty()) {
+            return ['years' => [], 'offDays' => []];
+        }
+        $first = $years->min('start_date');
+        $last = $years->max('end_date');
+
+        // 祝日（ただし、登録で授業をすることにした祝日は除く）と、登録した休校の日
+        $offDays = $calendar->holidaysBetween($first, $last);
+        $registered = CalendarDay::whereDate('date', '>=', $first)->whereDate('date', '<=', $last)->get();
+        foreach ($registered as $day) {
+            $key = $day->date->toDateString();
+            if ($day->timetable_date === null) {
+                $offDays[$key] = $day->note ? "休校：{$day->note}" : '休校';
+            } else {
+                unset($offDays[$key]);
+            }
+        }
+
+        return [
+            'years' => $years->map(fn (AcademicYear $year) => [
+                'label' => $year->label,
+                'start' => $year->start_date->toDateString(),
+                'end' => $year->end_date->toDateString(),
+            ])->values()->all(),
+            'offDays' => $offDays,
+        ];
     }
 
     public function destroyDay(CalendarDay $calendarDay): RedirectResponse

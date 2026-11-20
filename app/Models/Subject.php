@@ -112,16 +112,18 @@ class Subject extends Model
     }
 
     // ある日の、毎週の時間割（授業がない日は null）
-    // 祝日・休校の日は null、振替の日は振替先の曜日の時間割になる（SchoolCalendar が決める）
+    // 祝日・休校の日は null、振替の日は「登録した日付の時間割」になる（SchoolCalendar が決める）
     public function scheduleOn(CarbonInterface $date): ?SubjectSchedule
     {
-        if (! $this->isInTerm($date)) {
+        $source = app(SchoolCalendar::class)->timetableDate($date);
+
+        // 授業の期間も、時間割の日付で判定する
+        // （例：前期の授業の振替を、後期に入ってから行う日も、前期の授業になる）
+        if ($source === null || ! $this->isInTerm($source)) {
             return null;
         }
 
-        $day = app(SchoolCalendar::class)->timetableDay($date);
-
-        return $day === null ? null : $this->schedules->firstWhere('day_of_week', $day);
+        return $this->schedules->firstWhere('day_of_week', $source->dayOfWeekIso);
     }
 
     // ある日の変則授業（なければ null）

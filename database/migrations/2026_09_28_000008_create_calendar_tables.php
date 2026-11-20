@@ -9,13 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         // 日付ごとの例外（祝日は自動なので、ここには学校独自の休みと振替だけを入れる）
-        //   day_of_week が null … その日は授業なし（休校・学校行事など）
-        //   day_of_week が 1〜7 … その日は「その曜日の時間割」で授業（例：火曜日に水曜日の授業 → 3）
-        //                           祝日に授業をする日も、ここに入れればその曜日の時間割で授業になる
+        //   timetable_date が null … その日は授業なし（休校・学校行事など）
+        //   timetable_date が日付 … その日は「その日付の時間割」で授業
+        //     例：11/7（土）に、11/3（火・祝日）の授業をする → date = 11/7、timetable_date = 11/3
+        //     曜日だけでなく「どの週の」まで決まるので、授業の期間（前期・後期など）もその日付で判定される
+        //     祝日に授業をする日は、timetable_date に同じ日付を入れる
         Schema::create('calendar_days', function (Blueprint $table) {
             $table->id();
             $table->date('date')->unique();
-            $table->unsignedTinyInteger('day_of_week')->nullable();
+            $table->date('timetable_date')->nullable();
             $table->string('note', 100)->nullable(); // 画面に出すメモ（例：文化祭、11/3の振替）
             $table->timestamps();
         });

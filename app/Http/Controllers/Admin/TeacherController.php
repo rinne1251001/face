@@ -24,8 +24,11 @@ class TeacherController extends Controller
 {
     use UsesAcademicYear; // findYear()（年度がまだ1つもなくても、教師は登録できるようにする）
 
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
+        if (! AcademicYear::query()->exists()) {
+            return redirect()->route('admin.years.index')->with('status', '先に「年度更新」から年度を登録してください。');
+        }
         $year = $this->findYear($request); // 受け持ち・担当を表示する年度（年度がまだなければ null）
         $yearId = $year?->id;
 

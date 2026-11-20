@@ -39,6 +39,15 @@
             padding: 20px;
             gap: 10px;
         }
+
+        /* 長い選択肢（週の一覧など）があっても、選択欄が画面の幅からはみ出さないようにする */
+        .view-content form > div {
+            min-width: 0;
+        }
+
+        .view-content select {
+            max-width: 100%;
+        }
     </style>
 @endpush
 
@@ -69,7 +78,7 @@
 
             <div class="view-content" role="tabpanel" id="panel-day" aria-labelledby="tab-day" @if ($activeTab !== 'day') hidden @endif>
                 <h2>休校・振替</h2>
-                <form method="POST" action="{{ route('admin.schedules.days.store') }}">
+                <form method="POST" action="{{ route('admin.schedules.days.store') }}" id="day-form">
                     @csrf
                     <input type="hidden" name="_tab" value="day">
 
@@ -93,6 +102,21 @@
                         </select>
                         @if ($errors->has('day_of_week'))
                             @foreach ($errors->get('day_of_week') as $message)
+                                <p>{{ $message }}</p>
+                            @endforeach
+                        @endif
+                    </div>
+
+                    {{-- 曜日を選んだときだけ出る。選択肢（日付の年度の週）は、下の JavaScript が並べる --}}
+                    <div id="day-week-field" hidden>
+                        <label for="day-week">どの週の時間割か</label>
+                        <select id="day-week" name="week" data-old="{{ old('week') }}">
+                            <option value="">先に日付を選んでください</option>
+                        </select>
+                        {{-- 例：→ 11月3日（火・文化の日）の時間割で授業します --}}
+                        <p id="day-week-preview" aria-live="polite"></p>
+                        @if ($errors->has('week'))
+                            @foreach ($errors->get('week') as $message)
                                 <p>{{ $message }}</p>
                             @endforeach
                         @endif
@@ -312,6 +336,87 @@
                 });
             });
         });
+
+        // 休校・振替：「どの週の」曜日の時間割で授業をするかを選ぶ
+        const dayForm = document.getElementById('day-form');
+        if (dayForm) {
+            const weekData = @json($weekData); // { years: [{ label, start, end }], offDays: { 日付: '文化の日' } }
+            const DAYS = ['', '月', '火', '水', '木', '金', '土', '日'];
+            const dateInput = document.getElementById('day-date');
+            const daySelect = document.getElementById('day_of_week');
+            const weekField = document.getElementById('day-week-field');
+            const weekSelect = document.getElementById('day-week');
+            const preview = document.getElementById('day-week-preview');
+
+            // 日付の計算（時差でずれないように、UTC の 0 時として扱う）
+            const parse = (text) => new Date(`${text}T00:00:00Z`);
+            const format = (date) => date.toISOString().slice(0, 10);          // '2026-11-03'
+            const addDays = (date, days) => new Date(date.getTime() + days * 86400000);
+            const mondayOf = (date) => addDays(date, -((date.getUTCDay() + 6) % 7)); // その週の月曜日
+            const md = (date) => `${date.getUTCMonth() + 1}/${date.getUTCDate()}`;  // '11/3'
+            const yearOf = (text) => weekData.years.find((year) => year.start <= text && text <= year.end) ?? null;
+
+            // 週を自分で選んだか（選んでいなければ、日付を変えたときに「この日の週」に合わせる）
+            let touched = weekSelect.dataset.old !== '';
+
+            // 選んだ日付の年度の週を、選択肢に並べる（その週の祝日・休校の日も添える）
+            const buildWeeks = () => {
+                const keep = touched ? (weekSelect.value || weekSelect.dataset.old) : '';
+                const year = yearOf(dateInput.value);
+                weekSelect.innerHTML = '';
+                if (!year) {
+                    weekSelect.add(new Option(dateInput.value ? 'この日付は、どの年度にも入っていません' : '先に日付を選んでください', ''));
+                    showPreview();
+                    return;
+                }
+
+                const own = format(mondayOf(parse(dateInput.value))); // この日の週
+                for (let monday = mondayOf(parse(year.start)); format(monday) <= year.end; monday = addDays(monday, 7)) {
+                    const notes = [];
+                    for (let i = 0; i < 7; i++) {
+                        const day = addDays(monday, i);
+                        const off = weekData.offDays[format(day)];
+                        if (off) notes.push(`${md(day)} ${off}`);
+                    }
+                    const value = format(monday);
+                    const label = `${md(monday)}〜${md(addDays(monday, 6))}の週`
+                        + (value === own ? '（この日の週）' : '')
+                        + (notes.length ? `　${notes.join('・')}` : '');
+                    weekSelect.add(new Option(label, value));
+                }
+                // 自分で選んだ週が、この年度にもあればそのまま。なければ「この日の週」
+                const options = [...weekSelect.options].map((option) => option.value);
+                weekSelect.value = options.includes(keep) ? keep : own;
+                showPreview();
+            };
+
+            // 曜日を選んだときだけ週の欄を出し、何月何日の時間割になるかを表示する
+            const showPreview = () => {
+                const day = Number(daySelect.value);
+                weekField.hidden = !day;
+                weekSelect.disabled = !day; // 授業なし（休校）のときは送らない
+                preview.textContent = '';
+                if (!day || !weekSelect.value) return;
+
+                const target = addDays(parse(weekSelect.value), day - 1);
+                const key = format(target);
+                const year = yearOf(dateInput.value);
+                const off = weekData.offDays[key];
+                const label = `${target.getUTCMonth() + 1}月${target.getUTCDate()}日（${DAYS[day]}${off ? `・${off}` : ''}）`;
+                if (year && (key < year.start || key > year.end)) {
+                    preview.textContent = `→ ${label}は${year.label}の外です。ほかの週か曜日を選んでください。`;
+                } else if (key === dateInput.value) {
+                    preview.textContent = '→ この日自身の時間割で授業します（祝日に授業をするときなど）。';
+                } else {
+                    preview.textContent = `→ ${label}の時間割で授業します。`;
+                }
+            };
+
+            dateInput.addEventListener('input', buildWeeks);
+            daySelect.addEventListener('change', showPreview);
+            weekSelect.addEventListener('change', () => { touched = true; showPreview(); });
+            buildWeeks();
+        }
 
         // クラスの授業変更：種類に合わせて入力欄を出し分け、クラスと日付からその日の授業を読み込む
         const changeForm = document.getElementById('change-form');

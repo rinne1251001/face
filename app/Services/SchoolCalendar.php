@@ -11,10 +11,10 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Yasumi\Yasumi;
 
-// 学校のカレンダー：ある日に「どの曜日の時間割で授業をするか」を決める
+// 学校のカレンダー：ある日に「どの日付の時間割で授業をするか」を決める
 //   1. 日付ごとの設定（calendar_days）があれば、それに従う（休校 または 振替）
 //   2. 祝日なら、授業なし（祝日は Yasumi というライブラリで自動的に判定する）
-//   3. それ以外は、その日の曜日の時間割
+//   3. それ以外は、その日自身の時間割
 // 変則授業（special_classes）は、これとは別に、その日付にだけ追加される
 class SchoolCalendar
 {
@@ -45,6 +45,27 @@ class SchoolCalendar
         return null;
     }
 
+    // ある期間の祝日（日付 => 祝日の名前）。振替休日・国民の休日も含む
+    /** @return array<string, string> */
+    public function holidaysBetween(CarbonInterface $from, CarbonInterface $to): array
+    {
+        $first = $from->toDateString();
+        $last = $to->toDateString();
+        $list = [];
+        for ($year = $from->year; $year <= $to->year; $year++) {
+            $holidays = $this->holidays[$year] ??= Yasumi::create('Japan', $year, 'ja_JP');
+            foreach ($holidays->getHolidays() as $holiday) {
+                $key = $holiday->format('Y-m-d');
+                if ($key >= $first && $key <= $last) {
+                    $list[$key] = $holiday->getName();
+                }
+            }
+        }
+        ksort($list);
+
+        return $list;
+    }
+
     // 日付ごとの設定（なければ null）
     public function dayOverride(CarbonInterface $date): ?CalendarDay
     {
@@ -57,15 +78,24 @@ class SchoolCalendar
         return $this->days[$key];
     }
 
-    // その日に使う時間割の曜日（1=月 … 7=日）。授業がない日（祝日・休校）は null
-    public function timetableDay(CarbonInterface $date): ?int
+    // その日に使う時間割の日付。授業がない日（祝日・休校）は null
+    //   ふつうの日はその日自身、振替の日は登録した日付（例：11/7（土）に 11/3（火）の授業 → 11/3）
+    //   授業の曜日も、授業の期間（前期・後期など）も、この日付で判定する（Subject::scheduleOn）
+    //   ※ 返した日付は読むだけにする（書き換えると、元の日付や登録の内容まで変わってしまう）
+    public function timetableDate(CarbonInterface $date): ?CarbonInterface
     {
         $override = $this->dayOverride($date);
         if ($override !== null) {
-            return $override->day_of_week; // 休校なら null、振替ならその曜日
+            return $override->timetable_date; // 休校なら null
         }
 
-        return $this->holidayName($date) === null ? $date->dayOfWeekIso : null;
+        return $this->holidayName($date) === null ? $date : null;
+    }
+
+    // その日に使う時間割の曜日（1=月 … 7=日）。授業がない日（祝日・休校）は null
+    public function timetableDay(CarbonInterface $date): ?int
+    {
+        return $this->timetableDate($date)?->dayOfWeekIso;
     }
 
     // 画面に出す、その日の説明（ふつうの日は null）
