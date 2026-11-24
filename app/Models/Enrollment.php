@@ -9,6 +9,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 // その年度の学年・クラス・出席番号を持つ。クラスと出席番号は、決まるまで null のまま
 class Enrollment extends Model
 {
+    // 出席番号を数値に変換する SQL（並べ替えに使う。例：orderByRaw(Enrollment::ATTEND_NUMBER_AS_NUMBER)）
+    //   出席番号の列は文字列なので、そのまま並べると「1, 10, 11, 2, 9」のように文字の順になってしまう
+    //   UNSIGNED INTEGER は MySQL・MariaDB・SQLite のどれでも使える書き方（MySQL は CAST(… AS INTEGER) が使えない）
+    //   数字でない出席番号（A1 など）は 0 になり、先頭に並ぶ
+    public const ATTEND_NUMBER_AS_NUMBER = 'CAST(enrollments.attend_number AS UNSIGNED INTEGER)';
+
     // 年度末の結果（DBに入る値 => 画面に出す名前）。年度更新をするまでは null
     public const RESULTS = [
         'promoted' => '進級',

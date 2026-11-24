@@ -28,15 +28,22 @@ class ScheduleController extends Controller
 {
     use UsesAcademicYear; // ensureDateEditable()（読み取り専用の年度の日付は変更させない）
 
-    // 1週間の時間割（?date=2026-11-09 でその日を含む週。省略すると今週）
+    // 1週間の時間割（?date=2026-11-09 でその日を含む週。省略すると今週）と、月のカレンダー
+    // 月のカレンダーは ?month=2026-12 でその月。省略すると ?date= の日付（なければ今日）の月
     public function index(Request $request, SchoolCalendar $calendar): View|RedirectResponse
     {
         if (! AcademicYear::query()->exists()) {
             return redirect()->route('admin.years.index')->with('status', '先に「年度更新」から年度を登録してください。');
         }
 
-        $request->validate(['date' => ['nullable', 'date_format:Y-m-d']]);
+        $request->validate([
+            'date' => ['nullable', 'date_format:Y-m-d'],
+            'month' => ['nullable', 'date_format:Y-m'],
+        ]);
         $monday = Carbon::parse($request->query('date', today()->toDateString()))->startOfWeek(Carbon::MONDAY);
+        $month = $request->filled('month')
+            ? Carbon::createFromFormat('!Y-m', (string) $request->query('month'))
+            : Carbon::parse($request->query('date', today()->toDateString()))->startOfMonth();
 
         $subjects = Subject::with(['schedules', 'students.enrollments'])->orderBy('name')->get();
 
@@ -97,6 +104,10 @@ class ScheduleController extends Controller
 
         return view('admin.schedules.index', [
             'monday' => $monday,
+            // 月のカレンダー（今年の月は「11月」、ほかの年は「2027年1月」）
+            'month' => $month,
+            'monthLabel' => $month->year === today()->year ? $month->format('n月') : $month->format('Y年n月'),
+            'monthCalendar' => $this->monthCalendar($month, $calendar),
             'isThisWeek' => $monday->isSameDay(today()->startOfWeek(Carbon::MONDAY)),
             'days' => $days,
             'grid' => $grid,
@@ -111,6 +122,63 @@ class ScheduleController extends Controller
                 ->orderBy('period_start')
                 ->get(),
         ]);
+    }
+
+    // 月のカレンダー：その月を含む週（月曜〜日曜）を、1週ずつ並べる。前後の月の日も、その週の分だけ入れる
+    /** @return array<int, array<int, array{date: Carbon, adjacent: bool, today: bool, state: string|null, note: string|null, title: string|null}>> */
+    private function monthCalendar(Carbon $month, SchoolCalendar $calendar): array
+    {
+        $first = $month->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY);
+        $last = $month->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY)->startOfDay();
+        $calendar->preload($first, $last); // 日付ごとに SQL を出さないように、まとめて読み込んでおく
+
+        $days = [];
+        for ($date = $first->copy(); $date->lte($last); $date->addDay()) {
+            $days[] = $this->calendarCell($date->copy(), $month, $calendar);
+        }
+
+        return array_chunk($days, 7);
+    }
+
+    // 月のカレンダーの1日分
+    //   state … 'closed'（授業のない日：祝日・休校・土日）／'special'（振替・変則授業の日）／null（ふつうの日）
+    //   note  … セルに出す短い説明（例：文化の日・休校・振替・変則授業）
+    //   title … マウスを乗せたときに出す、詳しい説明（例：11/3（火）の時間割（文化の日の振替））
+    /** @return array{date: Carbon, adjacent: bool, today: bool, state: string|null, note: string|null, title: string|null} */
+    private function calendarCell(Carbon $date, Carbon $month, SchoolCalendar $calendar): array
+    {
+        $override = $calendar->dayOverride($date);    // 登録した休校・振替
+        $holiday = $calendar->holidayName($date);      // 祝日の名前
+        $specials = $calendar->specialClassesOn($date); // 変則授業
+
+        [$state, $note] = match (true) {
+            // 振替（ほかの日の時間割で授業）と、祝日にその日の時間割で授業をする日
+            $override?->timetable_date !== null => ['special', $override->timetable_date->isSameDay($date) ? '授業日' : '振替'],
+            // 変則授業（休校・祝日・土日でも、変則授業があれば授業がある日）
+            $specials->isNotEmpty() => ['special', '変則授業'],
+            $override !== null => ['closed', '休校'],
+            // 祝日（「振替休日 (憲法記念日)」のような長い名前は、セルでは括弧の前まで）
+            $holiday !== null => ['closed', (string) preg_replace('/\s*\(.*\)$/u', '', $holiday)],
+            $date->isWeekend() => ['closed', null],
+            default => [null, null],
+        };
+
+        // 詳しい説明：その日の説明（祝日・休校・振替）と、変則授業の授業名・時限
+        $details = array_filter([
+            $calendar->dayNote($date),
+            ...$specials->map(fn (SpecialClass $special) => '変則授業：'.Subject::whereKey($special->subject_id)->value('name')
+                .'（'.($special->period_start === $special->period_end ? "{$special->period_start}限" : "{$special->period_start}〜{$special->period_end}限").'）')
+                ->values()->all(),
+        ]);
+
+        return [
+            'date' => $date,
+            'adjacent' => ! $date->isSameMonth($month), // 前後の月の日（薄く表示する）
+            'today' => $date->isToday(),
+            'state' => $state,
+            'note' => $note,
+            'title' => $details === [] ? null : implode(' ／ ', $details),
+        ];
     }
 
     // 登録の画面（?date= で日付を入れておける）

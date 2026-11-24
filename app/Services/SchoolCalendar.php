@@ -140,9 +140,11 @@ class SchoolCalendar
             return;
         }
 
-        $days = CalendarDay::whereBetween('date', [$first, $last])->get()->keyBy(fn (CalendarDay $day) => $day->date->toDateString());
-        $specials = SpecialClass::whereBetween('date', [$first, $last])->get()->groupBy(fn (SpecialClass $special) => $special->date->toDateString());
-        $changes = ClassLessonChange::whereBetween('date', [$first, $last])->get()->groupBy(fn (ClassLessonChange $change) => $change->date->toDateString());
+        // whereDate で比べる（whereBetween だと、日付を「2026-12-06 00:00:00」の形で保存する DB（SQLite）で最終日が漏れる）
+        $between = fn ($query) => $query->whereDate('date', '>=', $first)->whereDate('date', '<=', $last);
+        $days = $between(CalendarDay::query())->get()->keyBy(fn (CalendarDay $day) => $day->date->toDateString());
+        $specials = $between(SpecialClass::query())->get()->groupBy(fn (SpecialClass $special) => $special->date->toDateString());
+        $changes = $between(ClassLessonChange::query())->get()->groupBy(fn (ClassLessonChange $change) => $change->date->toDateString());
 
         // その期間のすべての日付を埋める（何もない日も「何もない」と覚えておけば、あとで SQL を出さずに済む）
         foreach (CarbonPeriod::create($first, $last) as $date) {

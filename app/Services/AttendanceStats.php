@@ -215,7 +215,7 @@ class AttendanceStats
     // 戻り値：['overall' => ['rate' => 64, 'warning' => true], 'months' => ['2026-11' => ['rate' => 100, 'warning' => false], ...]]
     /**
      * @param  Collection<int, array<string, mixed>>  $records
-     * @param  array<string, string>  $months  月 => 画面の表示（recentMonths() の戻り値）
+     * @param  array<string, string>  $months  月 => 画面の表示（monthsSoFar() の戻り値）
      * @return array{overall: array{rate: int|null, warning: bool}, months: array<string, array{rate: int|null, warning: bool}>}
      */
     public static function row(Collection $records, array $months): array
@@ -252,20 +252,15 @@ class AttendanceStats
         return $months;
     }
 
-    // 表に出す、最近の月（新しい順。'2026-11' => '11月', '2026-10' => '10月', '2026-09' => '9月'）
-    // 今月から数える（年度が終わっていれば、年度の最後の月から）。年度より前の月は出さない
+    // 表に出す月：今月から年度の最初の月まで（新しい順。'2026-11' => '11月', …, '2026-04' => '4月'）
+    // 年度が終わっていれば年度の最後の月から、まだ始まっていなければ最初の月だけ
     /** @return array<string, string> */
-    public static function recentMonths(AcademicYear $year, int $count = 3): array
+    public static function monthsSoFar(AcademicYear $year): array
     {
-        $month = today()->min($year->end_date)->max($year->start_date)->copy()->startOfMonth();
-        $first = $year->start_date->copy()->startOfMonth();
+        $last = today()->min($year->end_date)->max($year->start_date)->format('Y-m');
+        $months = array_filter(self::yearMonths($year), fn (string $month) => $month <= $last, ARRAY_FILTER_USE_KEY);
 
-        $months = [];
-        for ($i = 0; $i < $count && $month->gte($first); $i++, $month->subMonth()) {
-            $months[$month->format('Y-m')] = $month->month.'月';
-        }
-
-        return $months;
+        return array_reverse($months, true); // 新しい月を左に出す（キーの '2026-11' などはそのまま）
     }
 
     // 前の月（'2026-01' → '2025-12'）

@@ -106,7 +106,8 @@ class StudentController extends Controller
             'student_number' => 'student_number',
             'name'           => 'furigana',
             // 出席番号とクラス名は別のテーブル（その年度の在籍）にあるので、サブクエリで取り出して並び替える
-            'attend_number'  => Enrollment::select('attend_number')
+            // 出席番号は文字列なので、数値に変換してから並べる（9 → 11 の順になるように）
+            'attend_number'  => Enrollment::selectRaw(Enrollment::ATTEND_NUMBER_AS_NUMBER)
                 ->whereColumn('enrollments.student_id', 'students.id')
                 ->where('enrollments.academic_year_id', $year->id),
             'class'          => SchoolClass::select('school_classes.name')

@@ -2,24 +2,46 @@
 @section('title', $subject->name . 'の分析詳細')
 @push('styles')
     <style>
-        .table-container {
+        .list-table {
             overflow-x: auto;
             max-width: 100%;
         }
-        .table-container table {
-            border-collapse: collapse;
+        .list-table table {
+            border-collapse: separate;
+            border-spacing: 0;
         }
-        .table-container th {
+        .list-table th {
             background-color: var(--color-main);
             color: var(--color-bg);
             border: 1px solid var(--color-bg);
-            padding-block: 7px;
-            padding-inline: 20px;
+            padding: 7px 20px;
         }
-        .table-container td {
+        .list-table td {
             color: var(--color-main);
             border: 1px solid var(--color-main);
             padding: 10px 20px;
+        }
+
+        .list-table th,
+        .list-table td {
+            white-space: nowrap;
+            border-width: 0 1px 1px 0;
+        }
+        /* 先頭の列（名前・時限・授業名）は左に固定して、横にスクロールして前の月を見ても見えるようにする
+            折り返してよいが、1〜2文字ずつにならないように、幅は 6em 以上 */
+        .list-table tr > :first-child {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            white-space: normal;
+            min-width: 6em;
+            border-left-width: 1px;
+        }
+        .list-table td:first-child {
+            background-color: var(--color-bg); /* 下を流れる列が透けないように */
+        }
+        .list-table thead th {
+            border-top-width: 1px;
         }
     </style>
 @endpush
@@ -34,7 +56,7 @@
 
             <div>
                 <h2>時限ごとの出席率</h2>
-                <div class="table-container">
+                <div class="list-table">
                     <table>
                         <thead>
                             <tr>
@@ -63,7 +85,7 @@
             <div>
                 <h2>曜日×時限ごとの出席率</h2>
                 {{-- 年度の初めから今日までの合計。その曜日のその時限に授業がなければ「—」 --}}
-                <div class="table-container">
+                <div class="list-table">
                     <table>
                         <thead>
                             <tr>
@@ -94,7 +116,7 @@
             <div>
                 <h2>生徒の出席率一覧</h2>
                 {{-- 出席率が7割未満のセルと、先月より10ポイント以上下がった月のセルは、背景に色が付く（partials.rate-cell） --}}
-                <div class="table-container">
+                <div class="list-table">
                     <table>
                         <thead>
                             <tr>

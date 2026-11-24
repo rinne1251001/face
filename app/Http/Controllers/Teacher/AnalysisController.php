@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
+use App\Models\Enrollment;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
@@ -53,11 +54,12 @@ class AnalysisController extends Controller
         abort_unless($teacher->hasSchoolClass($class), 403, 'このクラスの受け持ちではありません。');
 
         $students = $class->students()
-            ->orderBy('attend_number')
+            ->orderByRaw(Enrollment::ATTEND_NUMBER_AS_NUMBER) // 出席番号を数値に変換して並べる（9 → 11 の順）
+            ->orderBy('attend_number')                        // 同じ数値（9 と 09 など）は文字の順
             ->orderBy('student_number')
             ->get();
         $records = $stats->forClass($class);
-        $months = AttendanceStats::recentMonths($class->academicYear);
+        $months = AttendanceStats::monthsSoFar($class->academicYear);
 
         return view('teacher.analyses.class', [
             'class' => $class,
@@ -83,7 +85,7 @@ class AnalysisController extends Controller
         $enrollment = $student->enrollments()->where('academic_year_id', $year->id)->with('schoolClass.teachers')->first();
         $subjects = $student->subjects()->where('subjects.academic_year_id', $year->id)->with('schedules')->orderBySchedule()->get();
         $records = $stats->forStudent($student, $year);
-        $months = AttendanceStats::recentMonths($year);
+        $months = AttendanceStats::monthsSoFar($year);
 
         return view('teacher.analyses.student', [
             'student' => $student,
@@ -107,7 +109,7 @@ class AnalysisController extends Controller
 
         $students = $subject->students()->orderBy('student_number')->get();
         $records = $stats->forSubject($subject);
-        $months = AttendanceStats::recentMonths($subject->academicYear);
+        $months = AttendanceStats::monthsSoFar($subject->academicYear);
 
         // 曜日×時限：時限 => [曜日 => 出席率]。曜日は月〜金と、記録がある土日
         $weekdays = [1 => '月', 2 => '火', 3 => '水', 4 => '木', 5 => '金'];

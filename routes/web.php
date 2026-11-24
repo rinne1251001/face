@@ -138,6 +138,7 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
         // 受け持ちクラスの出席状況
         Route::get('classes', [Teacher\ClassController::class, 'index'])->name('classes.index');
         Route::get('classes/{schoolClass}', [Teacher\ClassController::class, 'show'])->name('classes.show');
+        Route::put('classes/{schoolClass}/attendance', [Teacher\ClassController::class, 'update'])->name('classes.attendance.update'); // 担任による出欠の変更
 
         // 設定（パスワードの変更）
         Route::get('settings', [Teacher\SettingController::class, 'index'])->name('settings.index');

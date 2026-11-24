@@ -18,6 +18,15 @@
             gap: 20px;
         }
 
+        fieldset {
+            display: grid;
+            gap: 10px;
+            border: none;
+            margin: 0;
+            padding: 0;
+            min-width: 0;
+        }
+
         .inp-container p {
             color: var(--color-error-font);
             font-size: 0.8em;
@@ -338,187 +347,187 @@
             @endif
 
             {{-- 読み取り専用の年度では、入力欄をまとめて押せなくする --}}
-            <fieldset @disabled(! $year->isEditable()) style="border: none; margin: 0; padding: 0; min-width: 0;">
+            <fieldset @disabled(! $year->isEditable())>
 
-            <div class="inp-container">
-                <div class="inp-hov">
-                    <label for="name">授業名</label>
-                    <input id="name" name="name" value="{{ old('name', $subject->name) }}" placeholder="例：数学" required autofocus>
+                <div class="inp-container">
+                    <div class="inp-hov">
+                        <label for="name">授業名</label>
+                        <input id="name" name="name" value="{{ old('name', $subject->name) }}" placeholder="例：数学" required autofocus>
+                    </div>
+                    @if ($errors->has('name'))
+                        @foreach ($errors->get('name') as $message)
+                            <p>{{ $message }}</p>
+                        @endforeach
+                    @endif
                 </div>
-                @if ($errors->has('name'))
-                    @foreach ($errors->get('name') as $message)
+
+                <div class="inp-container">
+                    <div class="inp-hov">
+                        <label for="grade">学年</label>
+                        <select id="grade" name="grade" required>
+                            @for ($g = 1; $g <= $maxGrade; $g++)
+                                <option value="{{ $g }}" @selected((int) old('grade', $subject->grade) === $g)>{{ $g }}年</option>
+                            @endfor
+                        </select>
+                    </div>
+                    @foreach ($errors->get('grade') as $message)
                         <p>{{ $message }}</p>
                     @endforeach
-                @endif
-            </div>
-
-            <div class="inp-container">
-                <div class="inp-hov">
-                    <label for="grade">学年</label>
-                    <select id="grade" name="grade" required>
-                        @for ($g = 1; $g <= $maxGrade; $g++)
-                            <option value="{{ $g }}" @selected((int) old('grade', $subject->grade) === $g)>{{ $g }}年</option>
-                        @endfor
-                    </select>
                 </div>
-                @foreach ($errors->get('grade') as $message)
-                    <p>{{ $message }}</p>
-                @endforeach
-            </div>
 
-            {{-- 担当教師（複数可）：検索して選ぶと、下の一覧に追加される --}}
-            <div class="inp-container">
-                <div class="inp-hov">
-                    <label for="teacher-search">担当教師<span style="font-size: 0.9em;">（名前・ログインIDで検索して選ぶ。何人でも追加できます）</span></label>
-                    <div class="search-container">
-                        {{-- name を付けないので、検索の文字そのものは送信されない --}}
-                        <input type="search" id="teacher-search" placeholder="名前で検索" autocomplete="off"
-                               role="combobox" aria-controls="teacher-results" aria-expanded="false" aria-autocomplete="list">
-                        <ul id="teacher-results" role="listbox" aria-label="検索結果"></ul>
-                    </div>
+                {{-- 担当教師（複数可）：検索して選ぶと、下の一覧に追加される --}}
+                <div class="inp-container">
+                    <div class="inp-hov">
+                        <label for="teacher-search">担当教師<span style="font-size: 0.9em;">（名前・ログインIDで検索して選ぶ。何人でも追加できます）</span></label>
+                        <div class="search-container">
+                            {{-- name を付けないので、検索の文字そのものは送信されない --}}
+                            <input type="search" id="teacher-search" placeholder="名前で検索" autocomplete="off"
+                                role="combobox" aria-controls="teacher-results" aria-expanded="false" aria-autocomplete="list">
+                            <ul id="teacher-results" role="listbox" aria-label="検索結果"></ul>
+                        </div>
 
-                    {{-- 選んだ教師。中の hidden の teacher_ids[] が送信される --}}
-                    <div class="chip-list" id="teacher-chips">
-                        @foreach ($selectedTeachers as $teacher)
-                            <span class="chip" data-id="{{ $teacher->id }}">
-                                <input type="hidden" name="teacher_ids[]" value="{{ $teacher->id }}">
-                                {{ $teacher->name }} 先生
-                                <button type="button" class="chip-remove" aria-label="{{ $teacher->name }} 先生を外す">×</button>
-                            </span>
-                        @endforeach
+                        {{-- 選んだ教師。中の hidden の teacher_ids[] が送信される --}}
+                        <div class="chip-list" id="teacher-chips">
+                            @foreach ($selectedTeachers as $teacher)
+                                <span class="chip" data-id="{{ $teacher->id }}">
+                                    <input type="hidden" name="teacher_ids[]" value="{{ $teacher->id }}">
+                                    {{ $teacher->name }} 先生
+                                    <button type="button" class="chip-remove" aria-label="{{ $teacher->name }} 先生を外す">×</button>
+                                </span>
+                            @endforeach
+                        </div>
                     </div>
+                    @foreach (collect($errors->get('teacher_ids'))->merge($errors->get('teacher_ids.*'))->flatten() as $message)
+                        <p>{{ $message }}</p>
+                    @endforeach
                 </div>
-                @foreach (collect($errors->get('teacher_ids'))->merge($errors->get('teacher_ids.*'))->flatten() as $message)
-                    <p>{{ $message }}</p>
-                @endforeach
-            </div>
 
-            {{-- クラス（複数可・選ばなくてもよい）：担当教師と同じように、検索して選ぶと下の一覧に追加される --}}
-            <div class="inp-container">
-                <div class="inp-hov">
-                    <label for="class-search">クラス<span style="font-size: 0.9em;">（クラス名で検索して選ぶ。何クラスでも追加できます。選ばなくても保存できます）</span></label>
-                    <div class="search-container">
-                        {{-- name を付けないので、検索の文字そのものは送信されない --}}
-                        <input type="search" id="class-search" placeholder="クラス名で検索" autocomplete="off"
-                               role="combobox" aria-controls="class-results" aria-expanded="false" aria-autocomplete="list">
-                        <ul id="class-results" role="listbox" aria-label="検索結果"></ul>
-                    </div>
+                {{-- クラス（複数可・選ばなくてもよい）：担当教師と同じように、検索して選ぶと下の一覧に追加される --}}
+                <div class="inp-container">
+                    <div class="inp-hov">
+                        <label for="class-search">クラス<span style="font-size: 0.9em;">（クラス名で検索して選ぶ。何クラスでも追加できます。選ばなくても保存できます）</span></label>
+                        <div class="search-container">
+                            {{-- name を付けないので、検索の文字そのものは送信されない --}}
+                            <input type="search" id="class-search" placeholder="クラス名で検索" autocomplete="off"
+                                role="combobox" aria-controls="class-results" aria-expanded="false" aria-autocomplete="list">
+                            <ul id="class-results" role="listbox" aria-label="検索結果"></ul>
+                        </div>
 
-                    {{-- 選んだクラス。中の hidden の class_ids[] が送信される --}}
-                    <div class="chip-list" id="class-chips">
-                        @foreach ($selectedClasses as $class)
-                            <span class="chip" data-id="{{ $class->id }}">
-                                <input type="hidden" name="class_ids[]" value="{{ $class->id }}">
-                                {{ $class->name }}
-                                <button type="button" class="chip-remove" aria-label="{{ $class->name }}を外す">×</button>
-                            </span>
-                        @endforeach
+                        {{-- 選んだクラス。中の hidden の class_ids[] が送信される --}}
+                        <div class="chip-list" id="class-chips">
+                            @foreach ($selectedClasses as $class)
+                                <span class="chip" data-id="{{ $class->id }}">
+                                    <input type="hidden" name="class_ids[]" value="{{ $class->id }}">
+                                    {{ $class->name }}
+                                    <button type="button" class="chip-remove" aria-label="{{ $class->name }}を外す">×</button>
+                                </span>
+                            @endforeach
+                        </div>
+                        <div class="hint">選んだクラスの生徒は、保存すると全員この授業の受講生になります。クラスを外して保存すると、そのクラスの生徒は受講生からも外れます。</div>
                     </div>
-                    <div class="hint">選んだクラスの生徒は、保存すると全員この授業の受講生になります。クラスを外して保存すると、そのクラスの生徒は受講生からも外れます。</div>
+                    @foreach (collect($errors->get('class_ids'))->merge($errors->get('class_ids.*'))->flatten() as $message)
+                        <p>{{ $message }}</p>
+                    @endforeach
                 </div>
-                @foreach (collect($errors->get('class_ids'))->merge($errors->get('class_ids.*'))->flatten() as $message)
-                    <p>{{ $message }}</p>
-                @endforeach
-            </div>
 
-            @php
-                // チェックが入っている曜日（入力エラーで戻ってきたときは、さっきの状態）
-                $checkedDays = array_map('intval', old('days', $subject->schedules->pluck('day_of_week')->all()));
-            @endphp
-            <div class="inp-container">
-                <div class="inp-hov">
-                    <label>曜日と時限、教室と担当教師<span style="font-size: 0.9em;">（授業がある曜日にチェックして、時限を選ぶ。1限だけの授業は「1限〜1限」）</span></label>
+                @php
+                    // チェックが入っている曜日（入力エラーで戻ってきたときは、さっきの状態）
+                    $checkedDays = array_map('intval', old('days', $subject->schedules->pluck('day_of_week')->all()));
+                @endphp
+                <div class="inp-container">
+                    <div class="inp-hov">
+                        <label>曜日と時限、教室と担当教師<span style="font-size: 0.9em;">（授業がある曜日にチェックして、時限を選ぶ。1限だけの授業は「1限〜1限」）</span></label>
 
-                    <label class="same-periods">
-                        <input type="checkbox" id="same-periods" name="same_periods" value="1" @checked(old('same_periods'))>
-                        全ての曜日を同じ時限にする
-                    </label>
-                    <div class="hint">
-                        教室と担当教師は、クラスを選んだときはクラスごとに、選ばないときは教室ごとに決めます（どちらも「未設定」のままで保存できます）。
-                        「＋ 追加」を押すと、教室と担当教師の欄が増えます。担当教師は、上の「担当教師」で選んだ教師から選びます。
-                    </div>
+                        <label class="same-periods">
+                            <input type="checkbox" id="same-periods" name="same_periods" value="1" @checked(old('same_periods'))>
+                            全ての曜日を同じ時限にする
+                        </label>
+                        <div class="hint">
+                            教室と担当教師は、クラスを選んだときはクラスごとに、選ばないときは教室ごとに決めます（どちらも「未設定」のままで保存できます）。
+                            「＋ 追加」を押すと、教室と担当教師の欄が増えます。担当教師は、上の「担当教師」で選んだ教師から選びます。
+                        </div>
 
-                    <div class="schedule-list" id="schedule-list">
-                        @foreach (\App\Models\Subject::DAYS as $day => $label)
-                            @php($schedule = $subject->schedules->firstWhere('day_of_week', $day))
-                            <div class="schedule-row">
-                                <div class="check-container">
-                                    <input type="checkbox" id="day-{{ $day }}" name="days[]" value="{{ $day }}" @checked(in_array($day, $checkedDays, true))>
-                                    <div>
-                                        <svg><use href="#check" /></svg>
-                                        <label for="day-{{ $day }}">{{ $label }}曜日</label>
+                        <div class="schedule-list" id="schedule-list">
+                            @foreach (\App\Models\Subject::DAYS as $day => $label)
+                                @php($schedule = $subject->schedules->firstWhere('day_of_week', $day))
+                                <div class="schedule-row">
+                                    <div class="check-container">
+                                        <input type="checkbox" id="day-{{ $day }}" name="days[]" value="{{ $day }}" @checked(in_array($day, $checkedDays, true))>
+                                        <div>
+                                            <svg><use href="#check" /></svg>
+                                            <label for="day-{{ $day }}">{{ $label }}曜日</label>
+                                        </div>
+                                    </div>
+                                    <div class="schedule-detail">
+                                        <div class="schedule-periods">
+                                            <select name="schedules[{{ $day }}][period_start]" class="period-start" aria-label="{{ $label }}曜日の開始時限">
+                                                @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
+                                                    <option value="{{ $p }}" @selected(old("schedules.$day.period_start", $schedule?->period_start ?? 1) == $p)>{{ $p }}限</option>
+                                                @endfor
+                                            </select>
+                                            〜
+                                            <select name="schedules[{{ $day }}][period_end]" class="period-end" aria-label="{{ $label }}曜日の終了時限">
+                                                @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
+                                                    <option value="{{ $p }}" @selected(old("schedules.$day.period_end", $schedule?->period_end ?? 1) == $p)>{{ $p }}限</option>
+                                                @endfor
+                                            </select>
+                                        </div>
+                                        {{-- 教室と担当教師の欄（クラスごと・教室ごとに1行）。行は下の JavaScript が作る --}}
+                                        <div class="room-list" data-day="{{ $day }}" data-label="{{ $label }}曜日"></div>
+                                        <button type="button" class="room-add">＋ 追加</button>
                                     </div>
                                 </div>
-                                <div class="schedule-detail">
-                                    <div class="schedule-periods">
-                                        <select name="schedules[{{ $day }}][period_start]" class="period-start" aria-label="{{ $label }}曜日の開始時限">
-                                            @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
-                                                <option value="{{ $p }}" @selected(old("schedules.$day.period_start", $schedule?->period_start ?? 1) == $p)>{{ $p }}限</option>
-                                            @endfor
-                                        </select>
-                                        〜
-                                        <select name="schedules[{{ $day }}][period_end]" class="period-end" aria-label="{{ $label }}曜日の終了時限">
-                                            @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
-                                                <option value="{{ $p }}" @selected(old("schedules.$day.period_end", $schedule?->period_end ?? 1) == $p)>{{ $p }}限</option>
-                                            @endfor
-                                        </select>
-                                    </div>
-                                    {{-- 教室と担当教師の欄（クラスごと・教室ごとに1行）。行は下の JavaScript が作る --}}
-                                    <div class="room-list" data-day="{{ $day }}" data-label="{{ $label }}曜日"></div>
-                                    <button type="button" class="room-add">＋ 追加</button>
-                                </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
+                    {{-- 同じ文が何行分も出ないように、同じ文は1つにまとめる --}}
+                    @foreach (collect($errors->get('days'))->merge($errors->get('days.*'))->merge($errors->get('schedules.*'))->flatten()->unique() as $message)
+                        <p>{{ $message }}</p>
+                    @endforeach
                 </div>
-                {{-- 同じ文が何行分も出ないように、同じ文は1つにまとめる --}}
-                @foreach (collect($errors->get('days'))->merge($errors->get('days.*'))->merge($errors->get('schedules.*'))->flatten()->unique() as $message)
-                    <p>{{ $message }}</p>
-                @endforeach
-            </div>
 
-            {{-- 教室と担当教師の1行分のひな形（JavaScript がコピーして使う。<template> の中身は画面に出ず、送信もされない） --}}
-            <template id="room-row-template">
-                <div class="room-row">
-                    <span class="room-class"></span>
-                    <input type="hidden" data-field="school_class_id">
-                    <select data-field="classroom_id">
-                        <option value="">教室：未設定</option>
-                        @foreach ($classrooms as $classroom)
-                            <option value="{{ $classroom->id }}">{{ $classroom->name }}</option>
+                {{-- 教室と担当教師の1行分のひな形（JavaScript がコピーして使う。<template> の中身は画面に出ず、送信もされない） --}}
+                <template id="room-row-template">
+                    <div class="room-row">
+                        <span class="room-class"></span>
+                        <input type="hidden" data-field="school_class_id">
+                        <select data-field="classroom_id">
+                            <option value="">教室：未設定</option>
+                            @foreach ($classrooms as $classroom)
+                                <option value="{{ $classroom->id }}">{{ $classroom->name }}</option>
+                            @endforeach
+                        </select>
+                        <select data-field="teacher_id">
+                            <option value="">教師：未設定</option>
+                        </select>
+                        <button type="button" class="chip-remove room-remove" aria-label="この欄を削除">×</button>
+                    </div>
+                </template>
+
+                <div class="inp-container">
+                    <div class="inp-hov">
+                        <label for="start_date">授業開始日（空なら年度の初めから）</label>
+                        {{-- 年度の外の日は選べないようにする（サーバーでもチェックする） --}}
+                        <input type="date" id="start_date" name="start_date" value="{{ old('start_date', $subject->start_date?->format('Y-m-d')) }}" min="{{ $year->start_date->format('Y-m-d') }}" max="{{ $year->end_date->format('Y-m-d') }}">
+                    </div>
+                    @if ($errors->has('start_date'))
+                        @foreach ($errors->get('start_date') as $message)
+                            <p>{{ $message }}</p>
                         @endforeach
-                    </select>
-                    <select data-field="teacher_id">
-                        <option value="">教師：未設定</option>
-                    </select>
-                    <button type="button" class="chip-remove room-remove" aria-label="この欄を削除">×</button>
+                    @endif
                 </div>
-            </template>
 
-            <div class="inp-container">
-                <div class="inp-hov">
-                    <label for="start_date">授業開始日（空なら年度の初めから）</label>
-                    {{-- 年度の外の日は選べないようにする（サーバーでもチェックする） --}}
-                    <input type="date" id="start_date" name="start_date" value="{{ old('start_date', $subject->start_date?->format('Y-m-d')) }}" min="{{ $year->start_date->format('Y-m-d') }}" max="{{ $year->end_date->format('Y-m-d') }}">
+                <div class="inp-container">
+                    <div class="inp-hov">
+                        <label for="end_date">授業終了日（空なら年度の終わりまで）</label>
+                        <input type="date" id="end_date" name="end_date" value="{{ old('end_date', $subject->end_date?->format('Y-m-d')) }}" min="{{ $year->start_date->format('Y-m-d') }}" max="{{ $year->end_date->format('Y-m-d') }}">
+                    </div>
+                    @if ($errors->has('end_date'))
+                        @foreach ($errors->get('end_date') as $message)
+                            <p>{{ $message }}</p>
+                        @endforeach
+                    @endif
                 </div>
-                @if ($errors->has('start_date'))
-                    @foreach ($errors->get('start_date') as $message)
-                        <p>{{ $message }}</p>
-                    @endforeach
-                @endif
-            </div>
-
-            <div class="inp-container">
-                <div class="inp-hov">
-                    <label for="end_date">授業終了日（空なら年度の終わりまで）</label>
-                    <input type="date" id="end_date" name="end_date" value="{{ old('end_date', $subject->end_date?->format('Y-m-d')) }}" min="{{ $year->start_date->format('Y-m-d') }}" max="{{ $year->end_date->format('Y-m-d') }}">
-                </div>
-                @if ($errors->has('end_date'))
-                    @foreach ($errors->get('end_date') as $message)
-                        <p>{{ $message }}</p>
-                    @endforeach
-                @endif
-            </div>
 
             </fieldset>
 
