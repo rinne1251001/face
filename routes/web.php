@@ -67,6 +67,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('subjects', Admin\SubjectController::class)->except('show');
         Route::resource('rooms', Admin\ClassroomController::class);
         Route::resource('teachers', Admin\TeacherController::class)->except('show');
+        Route::resource('cameras', Admin\CameraController::class);
 
         // 時間割（祝日は自動。休校・振替・変則授業はここで登録する）
         Route::get('schedules', [Admin\ScheduleController::class, 'index'])->name('schedules.index');
