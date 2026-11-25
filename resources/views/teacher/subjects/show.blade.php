@@ -1,20 +1,22 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', $subject->name.' の出席')
 
 @section('content')
 <main class="main">
     <div class="content-wrapper">
-        <h1>{{ $subject->name }}（{{ $subject->schedule_label }}）{{ $period }}限の出席</h1>
+        <div class="page-header">
+            <h1>{{ $subject->name }}（{{ $subject->schedule_label }}）{{ $period }}限の出席</h1>
+        </div>
 
         {{-- 日付の切り替え --}}
-        <form method="GET" action="{{ route('teacher.subjects.show', $subject) }}">
-            <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->subWeek()->toDateString(), 'period' => $period]) }}">« 前の週</a>
+        <form class="button-group" method="GET" action="{{ route('teacher.subjects.show', $subject) }}">
+            <a class="btn-action" href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->subWeek()->toDateString(), 'period' => $period]) }}">« 前の週</a>
             <input type="date" name="date" value="{{ $date->toDateString() }}">
             <input type="hidden" name="period" value="{{ $period }}">
-            <button>表示</button>
-            <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->addWeek()->toDateString(), 'period' => $period]) }}">次の週 »</a>
+            <button class="btn">表示</button>
+            <a class="btn-action" href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->copy()->addWeek()->toDateString(), 'period' => $period]) }}">次の週 »</a>
             @unless ($isToday)
-                | <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'period' => $period]) }}">今日</a>
+                <a class="btn-action" href="{{ route('teacher.subjects.show', ['subject' => $subject, 'period' => $period]) }}">今日</a>
             @endunless
         </form>
 
@@ -26,7 +28,7 @@
                     @if ($p === $period)
                         <strong>【{{ $p }}限】</strong>
                     @else
-                        <a href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->toDateString(), 'period' => $p]) }}">{{ $p }}限</a>
+                        <a class="btn-action" href="{{ route('teacher.subjects.show', ['subject' => $subject, 'date' => $date->toDateString(), 'period' => $p]) }}">{{ $p }}限</a>
                     @endif
                 @endforeach
             </p>
@@ -45,11 +47,18 @@
         </p>
 
         @if ($isToday)
-            <p><a href="{{ route('teacher.checkin.show', [$subject, 'period' => $period]) }}">▶ 顔認証で{{ $period }}限の出席を取る（今日）</a></p>
+            <p><a class="btn" href="{{ route('teacher.checkin.show', [$subject, 'period' => $period]) }}">▶ 顔認証で{{ $period }}限の出席を取る（今日）</a></p>
         @endif
 
+        <p class="muted">
+            顔認証の受付：{{ $window->label() }}。受付が終わっても顔認証をしなかった生徒は欠席になります。公欠と、受付時間の外の出欠は、ここで手動で登録してください。
+        </p>
+
         @if ($isFuture)
-            <p class="muted">未来の日付は表示のみです（出席は登録できません）。</p>
+            <p>未来の日付は表示のみです（出席は登録できません）。</p>
+        @endif
+        @if ($readOnly)
+            <p>{{ $year->label }}は読み取り専用のため、表示のみです（出席は変更できません）。</p>
         @endif
 
         <table>
@@ -59,8 +68,8 @@
                 <tr>
                     <td>{{ $student->student_number }}</td>
                     <td>{{ $student->name }}</td>
-                    <td>{{ $student->schoolClass->name }}</td>
-                    <td>@include('partials.status-badge', ['attendance' => $attendance])</td>
+                    <td>{{ $student->enrollmentFor($year)?->schoolClass?->name ?? '未定' }}</td>
+                    <td>@include('partials.status-badge', ['attendance' => $attendance, 'absentIfMissing' => $absentIfMissing])</td>
                     <td>
                         @if ($attendance)
                             {{ $attendance->methodLabel() }}
@@ -73,7 +82,7 @@
                         @endif
                     </td>
                     <td>
-                        @unless ($isFuture)
+                        @unless ($isFuture || $readOnly)
                             <form method="POST" action="{{ route('teacher.attendances.update', [$subject, $student]) }}" class="inline">
                                 @csrf
                                 @method('PUT')
@@ -83,9 +92,9 @@
                                     @foreach (\App\Models\Attendance::STATUSES as $value => $label)
                                         <option value="{{ $value }}" @selected($attendance?->status === $value)>{{ $label }}</option>
                                     @endforeach
-                                    <option value="none" @selected(! $attendance)>未記録に戻す</option>
+                                    <option value="none" @selected(! $attendance)>{{ $absentIfMissing ? '記録を消す（欠席扱い）' : '未記録に戻す' }}</option>
                                 </select>
-                                <button>保存</button>
+                                <button class="btn-action">保存</button>
                             </form>
                         @endunless
                     </td>
@@ -99,7 +108,7 @@
             <ul class="error">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
         @endif
 
-        <p><a href="{{ route('teacher.dashboard') }}">ホームへ戻る</a></p>
+        <p><a class="btn-action" href="{{ route('teacher.dashboard') }}">ホームへ戻る</a></p>
 
     </div>
 </main>

@@ -40,6 +40,8 @@
             // サブメニュー（PC右側・スマホメニュー）
             $subMenu = [
                 ['label' => '教師',       'url' => route('admin.teachers.index')],
+                ['label' => '年度',       'url' => route('admin.years.index')],
+                ['label' => '学科',       'url' => route('admin.departments.index')],
                 ['label' => '照合テスト', 'url' => route('admin.match.show')],
             ];
  

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:site_name" content="Rollin">
+    <title>サーバー</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+    <link rel="stylesheet" href="spec.css" />
+</head>
+
+<body>
+    <header>
+        <h1>サーバー</h1>
+        <div id="hamb_btn" data-target="#acc_wrapper" data-overlay=".overlay">
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+            <span class="hamb_line"></span>
+        </div>
+        <div class="overlay"></div>
+        <div id="acc_wrapper" class="acc_wrapper">
+            <nav>
+                <ul>
+                    <li><a href="kihon.html">Laravel13の基本的な操作方法</a></li>
+                    <li><a href="install.html">インストール関係</a></li>
+                    <li><a href="naming.html">命名規則</a></li>
+                    <li><a href="folder.html">フォルダー</a></li>
+                    <li><a href="table.html">テーブル一覧</a></li>
+                    <li><a href="human.html">顔認証</a></li>
+                    <li><a href="felica.html">Felica</a></li>
+                    <li><a href="similary.html">類似製品</a></li>
+                    <li><a href="command.html">よく使うコマンド</a></li>
+                    <li><a href="directive.html">よく使うディレクティブ</a></li>
+                    <li><a href="route.html">ルーティング</a></li>
+                    <li><a href="css.html">css</a></li>
+                    <li><a href="controller.html">コントローラー</a></li>
+                    <li><a href="server.html">サーバー</a></li>
+                    <li><a href="reference.html">参考文献</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <nav>
+        <ol>
+            <li><a href="#use">利用サーバー</a></li>
+            <li><a href="#build">構築方法</a></li>
+        </ol>
+    </nav>
+
+    <main>
+        <div class="content-wrapper">
+            <h2 id="use">利用レンタルサーバー</h2>
+            <section>
+                <p>
+                    ロリポップの初期ドメイン（スタンダードプラン）<br>
+                    ※独自ドメインをゲットできたら変更予定
+                </p>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="build">構築方法</h2>
+            <section>
+                <h3>PHP設定</h3>
+                <p><a href="https://user.lolipop.jp/?mode=php">サーバーの管理設定＞PHP設定</a>でPHPのバージョンを8.5に変える</p>
+            </section>
+
+            <section>
+                <h3>データベース作成</h3>
+                <p>
+                    <a href="https://user.lolipop.jp/?mode=mysql">サーバーの管理設定＞データベース</a>を開き「データベース作成」をクリック<br>
+                    作成するサーバー：mysql401.phy.lolipop.lan、データベース名にfaceを入力
+                </p>
+            </section>
+
+            <section>
+                <h3>WinSCPに接続</h3>
+                <p>
+                    <a href="https://user.lolipop.jp/?mode=ssh">サーバーの管理設定＞SSH設定</a>を開く<br>
+                    WinSCPの接続項目に、
+                </p>
+                <table border="1">
+                    <tr>
+                        <th>転送プロトコル</th>
+                        <td>SFTP</td>
+                    </tr>
+                    <tr>
+                        <th>ポート番号</th>
+                        <td>2222</td>
+                    </tr>
+                    <tr>
+                        <th>ホスト名</th>
+                        <td>ssh.lolipop.jp</td>
+                    </tr>
+                    <tr>
+                        <th>ユーザー名</th>
+                        <td>書いてあるアカウント</td>
+                    </tr>
+                    <tr>
+                        <th>パスワード</th>
+                        <td>書いてあるSSHパスワード</td>
+                    </tr>
+                </table>
+                <p>を入力して接続</p>
+            </section>
+
+            <section>
+                <h3>アップロード方法</h3>
+                <p>軽くするためにLaravelのログを綺麗にする</p>
+                <pre><code class="language-plaintext">php artisan optimize:clear
+Remove-Item -Path "storage/logs/*.log" -Force
+php artisan optimize:clear
+Remove-Item -Recurse -Force storage/app/private/faces -ErrorAction SilentlyContinue
+php artisan cache:clear file</code></pre>
+                <p>
+                    最初の画面では/home/users/0/アカウント/webにいるので、１つ上に上がって/home/users/0/アカウントのところにfaceフォルダをアップロード<br>
+                    アップロードが終わったらpublicフォルダを全削除<br>
+                    .envの以下の項目を変える（※.envは検索しないと見られない）
+                </p>
+                <pre><code class="language-plaintext">APP_ENV=production
+APP_URL=https://（ログインするときに使うドメイン名）
+SESSION_SECURE_COOKIE=true
+DB_HOST=mysql401.phy.lolipop.lan
+DB_DATABASE=データベースのユーザー名-face
+DB_USERNAME=データベースのユーザー名
+DB_PASSWORD=データベースのパスワード</code></pre>
+                <p>
+                    １つ上に上がって「face」を「rollin」に名前を変える<br>
+                    「web」フォルダに入って「index.php」を作成
+                </p>
+                <pre><code class="php">&lt;?php
+
+use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
+
+define('LARAVEL_START', microtime(true));
+
+// Laravel 本体は、公開フォルダ（web）の外の ~/rollin に置く
+$base = __DIR__.'/../rollin';
+
+// Determine if the application is in maintenance mode...
+if (file_exists($maintenance = $base.'/storage/framework/maintenance.php')) {
+    require $maintenance;
+}
+
+// Register the Composer autoloader...
+require $base.'/vendor/autoload.php';
+
+// Bootstrap Laravel and handle the request...
+/** @var Application $app */
+$app = require_once $base.'/bootstrap/app.php';
+
+// 公開フォルダは web（このファイルがあるフォルダ）。build/manifest.json などをここから探す
+$app->usePublicPath(__DIR__);
+
+$app->handleRequest(Request::capture());</code></pre>
+                <p>buildフォルダ、modelsフォルダ、imagesフォルダ、.htaccess、robots.txtをpublicフォルダからwebフォルダにコピペ</p>
+            </section>
+
+            <section>
+                <h3>Tera Termでコマンド</h3>
+                <p>Tera Termの接続項目に↓を入力</p>
+                <table border="1">
+                    <tr>
+                        <th>ホスト</th>
+                        <td>ssh.lolipop.jp</td>
+                    </tr>
+                    <tr>
+                        <th>サービス</th>
+                        <td>SSH</td>
+                    </tr>
+                    <tr>
+                        <th>TCPポート</th>
+                        <td>2222</td>
+                    </tr>
+                    <tr>
+                        <th>SSHバージョン</th>
+                        <td>SSH2</td>
+                    </tr>
+                    <tr>
+                        <th>IPバージョン</th>
+                        <td>AUTO</td>
+                    </tr>
+                </table>
+                <p>「SHA256」、「このホストをknown hostsリストに追加する」にチェック→続行</p>
+                <table border="1">
+                    <tr>
+                        <th>ユーザー名</th>
+                        <td>SSHのアカウント名</td>
+                    </tr>
+                    <tr>
+                        <th>パスフレーズ</th>
+                        <td>SSHのパスワード</td>
+                    </tr>
+                    <tr>
+                        <th>認証方式</th>
+                        <td>プレインパスワードを使う</td>
+                    </tr>
+                </table>
+                <p>接続したら以下を入力</p>
+                <pre><code class="language-plaintext">cd ~/rollin
+curl -sS https://getcomposer.org/installer | /usr/local/bin/php8.5
+/usr/local/bin/php8.5 artisan migrate --force
+/usr/local/bin/php8.5 artisan optimize
+
+/usr/local/bin/php8.5 artisan tinker
+App\Models\Admin::create([
+    'login_id' => 'admin',
+    'password' => bcrypt('12345678'),
+]);
+exit</code></pre>
+            </section>
+
+            <section>
+                <h3>エラー確認が終わったら</h3>
+                <p>.envを変更</p>
+                <pre><code class="language-plaintext">APP_DEBUG=false
+LOG_LEVEL=error</code></pre>
+                <p>Tera Termでコマンドを打つ</p>
+                <pre><code class="language-plaintext">/usr/local/bin/php8.5 artisan config:clear
+/usr/local/bin/php8.5 artisan optimize</code></pre>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        const hamb_btn = document.getElementById('hamb_btn');
+        const overlay = document.querySelector('.overlay');
+        const menu = document.querySelector(hamb_btn.dataset.target);
+        const toggle = () => {
+            hamb_btn.classList.toggle('active');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('show');
+        };
+        hamb_btn.onclick = toggle;
+        overlay.onclick = toggle;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

@@ -1,11 +1,13 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', '設定一覧')
 @section('content')
 
     <main class="main">
         <div class="content-wrapper">
-            <h1>設定一覧</h1>
-            <a href="{{ route('teacher.settings.password.edit') }}">パスワード設定</a>
+            <div class="page-header">
+                <h1>設定一覧</h1>
+                <a class="btn" href="{{ route('teacher.settings.password.edit') }}">パスワード設定</a>
+            </div>
         </div>
     </main>
 

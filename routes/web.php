@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Teacher;
 use App\Http\Controllers\TestController;
+use App\Http\Middleware\EnsureTeacherCanLogin;
 use Illuminate\Support\Facades\Route;
 
 
@@ -42,7 +43,7 @@ Route::redirect('/', '/teacher');
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest:admin')->group(function () {
         Route::get('login', [Admin\LoginController::class, 'show'])->name('login');
-        Route::post('login', [Admin\LoginController::class, 'login'])->middleware('throttle:5,1');
+        Route::post('login', [Admin\LoginController::class, 'login'])->middleware('throttle:login');
     });
 
     Route::middleware('auth:admin')->group(function () {
@@ -60,13 +61,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('face-samples/{faceSample}/image', [Admin\FaceSampleController::class, 'image'])->name('faces.image');
         Route::delete('face-samples/{faceSample}', [Admin\FaceSampleController::class, 'destroy'])->name('faces.destroy');
 
-        // クラス・授業・教室・教師
+        // クラス・授業・教室・教師・学科
         Route::resource('classes', Admin\SchoolClassController::class)
             ->except('show')
             ->parameters(['classes' => 'schoolClass']);
         Route::resource('subjects', Admin\SubjectController::class)->except('show');
         Route::resource('rooms', Admin\ClassroomController::class);
         Route::resource('teachers', Admin\TeacherController::class)->except('show');
+        Route::resource('departments', Admin\DepartmentController::class)->except('show');  // 修業年限は、年度更新の卒業の判定に使う
         Route::resource('cameras', Admin\CameraController::class);
 
         // 時間割（祝日は自動。休校・振替・変則授業はここで登録する）
@@ -84,9 +86,22 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // 照合テスト（しきい値の調整用）
         Route::get('match', [Admin\FaceMatchController::class, 'show'])->name('match.show');
-        Route::post('match', [Admin\FaceMatchController::class, 'match'])->name('match.run')->middleware('throttle:60,1');
+        Route::post('match', [Admin\FaceMatchController::class, 'match'])->name('match.run')->middleware('throttle:face-match');
         Route::get('match/logs', [Admin\FaceMatchController::class, 'logs'])->name('match.logs');      // 照合ログの表の中身
         Route::post('match/log', [Admin\FaceMatchController::class, 'toggleLog'])->name('match.log');  // ログを取る／取らないの切り替え
+
+        Route::get('cards/match', [Admin\CardMatchController::class, 'show'])->name('cards.match.show');
+        Route::post('cards/match', [Admin\CardMatchController::class, 'touch'])->name('cards.match.touch')->middleware('throttle:card-match');
+        Route::post('cards/match/students', [Admin\CardMatchController::class, 'students'])->name('cards.match.students')->middleware('throttle:card-match');
+        Route::post('cards/match/link', [Admin\CardMatchController::class, 'link'])->name('cards.match.link')->middleware('throttle:card-match');
+
+        // 年度（一覧と年度更新）
+        Route::get('years', [Admin\AcademicYearController::class, 'index'])->name('years.index');
+        Route::get('years/create', [Admin\AcademicYearController::class, 'create'])->name('years.create');
+        Route::post('years', [Admin\AcademicYearController::class, 'store'])->name('years.store');
+        // 過去の年度の「編集を許可」と「読み取り専用に戻す」
+        Route::post('years/{academicYear}/unlock', [Admin\AcademicYearController::class, 'unlock'])->name('years.unlock');
+        Route::post('years/{academicYear}/lock', [Admin\AcademicYearController::class, 'lock'])->name('years.lock');
     });
 });
 
@@ -99,10 +114,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 Route::prefix('teacher')->name('teacher.')->group(function () {
     Route::middleware('guest:teacher')->group(function () {
         Route::get('login', [Teacher\LoginController::class, 'show'])->name('login');
-        Route::post('login', [Teacher\LoginController::class, 'login'])->middleware('throttle:5,1');
+        Route::post('login', [Teacher\LoginController::class, 'login'])->middleware('throttle:login');
     });
 
-    Route::middleware('auth:teacher')->group(function () {
+    // EnsureTeacherCanLogin … 「ログインできない」設定になった教師は、ログイン中でもログアウトさせる
+    Route::middleware(['auth:teacher', EnsureTeacherCanLogin::class])->group(function () {
         Route::get('/', [Teacher\DashboardController::class, 'index'])->name('dashboard');
         Route::post('logout', [Teacher\LoginController::class, 'logout'])->name('logout');
 
@@ -111,22 +127,26 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
         Route::put('subjects/{subject}/students/{student}/attendance', [Teacher\AttendanceController::class, 'update'])
             ->name('attendances.update');
 
-        // 顔認証での出席受付
+        // 出席受付（入校証をかざす → 顔認証）
         Route::get('subjects/{subject}/checkin', [Teacher\CheckinController::class, 'show'])->name('checkin.show');
+        Route::post('subjects/{subject}/checkin/card', [Teacher\CheckinController::class, 'card'])
+            ->name('checkin.card')
+            ->middleware('throttle:checkin');
         Route::post('subjects/{subject}/checkin', [Teacher\CheckinController::class, 'store'])
             ->name('checkin.store')
-            ->middleware('throttle:120,1');
+            ->middleware('throttle:checkin');
 
         // 受け持ちクラスの出席状況
         Route::get('classes', [Teacher\ClassController::class, 'index'])->name('classes.index');
         Route::get('classes/{schoolClass}', [Teacher\ClassController::class, 'show'])->name('classes.show');
+        Route::put('classes/{schoolClass}/attendance', [Teacher\ClassController::class, 'update'])->name('classes.attendance.update'); // 担任による出欠の変更
 
         // 設定（パスワードの変更）
         Route::get('settings', [Teacher\SettingController::class, 'index'])->name('settings.index');
         Route::get('settings/password', [Teacher\SettingController::class, 'editPassword'])->name('settings.password.edit');
         Route::put('settings/password', [Teacher\SettingController::class, 'updatePassword'])
             ->name('settings.password.update')
-            ->middleware('throttle:5,1'); // 今のパスワードを総当たりで試されないように、1分に5回まで
+            ->middleware('throttle:password'); // 今のパスワードを総当たりで試されないように、1分に5回まで
 
         // 分析
         Route::get('analyses', [Teacher\AnalysisController::class, 'index'])->name('analyses.index');

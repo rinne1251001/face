@@ -6,16 +6,17 @@ use App\Services\SchoolCalendar;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
-// 日付ごとの例外（休校・振替）。day_of_week が null なら授業なし、1〜7 ならその曜日の時間割で授業
+// 日付ごとの例外（休校・振替）
+//   timetable_date が null なら授業なし、日付ならその日付の時間割で授業（例：11/7 に 11/3（火）の授業）
 class CalendarDay extends Model
 {
-    protected $fillable = ['date', 'day_of_week', 'note'];
+    protected $fillable = ['date', 'timetable_date', 'note'];
 
     protected function casts(): array
     {
         return [
             'date' => 'date',
-            'day_of_week' => 'integer',
+            'timetable_date' => 'date',
         ];
     }
 
@@ -26,12 +27,19 @@ class CalendarDay extends Model
         static::deleted(fn () => app(SchoolCalendar::class)->flush());
     }
 
-    // 画面表示用：「休校」「水曜の時間割」
+    // 画面表示用：「休校」「11/3（火）の時間割」
+    // その日自身の時間割（祝日に授業をする日）は「火曜の時間割」
     /** @return Attribute<string, never> */
     protected function label(): Attribute
     {
-        return Attribute::make(get: fn () => $this->day_of_week === null
-            ? '休校'
-            : Subject::DAYS[$this->day_of_week].'曜の時間割');
+        return Attribute::make(get: function () {
+            $source = $this->timetable_date;
+            if ($source === null) {
+                return '休校';
+            }
+            $day = Subject::DAYS[$source->dayOfWeekIso];
+
+            return $source->isSameDay($this->date) ? "{$day}曜の時間割" : $source->format('n/j')."（{$day}）の時間割";
+        });
     }
 }

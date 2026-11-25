@@ -6,12 +6,13 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 // 授業を行う曜日と時限（例：月曜 1限、水曜 3〜5限）
 class SubjectSchedule extends Model
 {
-    protected $fillable = ['day_of_week', 'period_start', 'period_end', 'classroom_id'];
+    protected $fillable = ['day_of_week', 'period_start', 'period_end'];
 
     protected function casts(): array
     {
@@ -19,7 +20,6 @@ class SubjectSchedule extends Model
             'day_of_week' => 'integer',
             'period_start' => 'integer',
             'period_end' => 'integer',
-            'classroom_id' => 'integer',
         ];
     }
 
@@ -29,11 +29,11 @@ class SubjectSchedule extends Model
         return $this->belongsTo(Subject::class);
     }
 
-    // 授業をする教室（未設定なら null）
-    /** @return BelongsTo<Classroom, $this> */
-    public function classroom(): BelongsTo
+    // この曜日の「教室と担当教師」（クラスごと・教室ごとに1行。登録した順）
+    /** @return HasMany<SubjectScheduleRoom, $this> */
+    public function rooms(): HasMany
     {
-        return $this->belongsTo(Classroom::class);
+        return $this->hasMany(SubjectScheduleRoom::class)->orderBy('id');
     }
 
     // この曜日の時限の一覧（例：3〜5限なら [3, 4, 5]）

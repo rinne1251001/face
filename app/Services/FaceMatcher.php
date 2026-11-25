@@ -63,7 +63,7 @@ class FaceMatcher
             'id' => $student->id,
             'name' => $student->name,
             'student_number' => $student->student_number,
-            'class_name' => $student->schoolClass?->name,
+            'class_name' => $student->currentEnrollment?->schoolClass?->name,   // 今年度のクラス（クラスが未定、または今年度に在籍していなければ null）
         ];
     }
 
@@ -140,8 +140,8 @@ class FaceMatcher
             && $bestScore >= config('face.threshold')
             && ($margin === null || $margin >= config('face.margin'));
 
-        // 一回のクエリで3人分取得しidをキーにしたコレクションにする
-        $students = Student::with('schoolClass')->whereIn('id', $ids)->get()->keyBy('id');
+        // （クラスは今年度の在籍から引く）
+        $students = Student::with('currentEnrollment.schoolClass')->whereIn('id', $ids)->get()->keyBy('id');
 
         // 顔照合の結果を取りまとめた連想配列（レスポンスデータ）
         return [

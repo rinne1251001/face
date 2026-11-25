@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', '顔写真の登録')
 
-@section('test')
+@section('content')
 <main class="main">
     <div class="content-wrapper">
         <div id="face-register" data-store-url="{{ route('admin.faces.store', $student) }}">

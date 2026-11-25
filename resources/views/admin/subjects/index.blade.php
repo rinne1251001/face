@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', '授業一覧')
 @push('styles')
 <style>
@@ -234,11 +234,17 @@
     <div class="content-wrapper">
 
         <div class="page-header">
-            <h1>授業一覧</h1>
-            <div>
-                <a class="btn" href="{{ route('admin.subjects.create') }}">＋ 授業を追加</a>
-            </div>
+            <h1>授業一覧（{{ $year->label }}）</h1>
+            {{-- 読み取り専用の年度では、追加のボタンを出さない --}}
+            @if ($year->isEditable())
+                <div>
+                    <a class="btn" href="{{ route('admin.subjects.create', ['year' => $year->year]) }}">＋ 授業を追加</a>
+                </div>
+            @endif
         </div>
+
+        @include('admin.partials.year-switch', ['year' => $year])
+        @include('admin.partials.year-lock-notice', ['year' => $year])
 
         <section class="subjects-card" aria-label="授業一覧">
 
@@ -254,6 +260,7 @@
                             <th scope="col">曜日</th>
                             <th scope="col">時限</th>
                             <th scope="col">授業名</th>
+                            <th scope="col">クラス</th>
                             <th scope="col">受講生徒数</th>
                             <th scope="col">担当の教師</th>
                             <th scope="col">操作</th>
@@ -265,6 +272,7 @@
                                 <td>{{ $subject->start_date?->format('n月j日') }} - {{ $subject->end_date?->format('n月j日') }}</td>
                                 <td><span class="schedule-label">{{ $subject->schedule_label }}</span></td>
                                 <td><span class="subject-name">{{ $subject->name }}</span></td>
+                                <td>{{ $subject->schoolClasses->pluck('name')->implode('・') ?: '—' }}</td>
                                 <td><span class="student-count">{{ $subject->students_count }}人</span></td>
                                 <td>
                                     @forelse ($subject->teachers as $teacher)
@@ -275,18 +283,21 @@
                                 </td>
                                 <td>
                                     <div class="subject-actions">
-                                        <a class="subject-edit-button" href="{{ route('admin.subjects.edit', $subject) }}">編集</a>
-                                        <form method="POST" action="{{ route('admin.subjects.destroy', $subject) }}" class="inline"
-                                            onsubmit="return confirm('この授業を削除しますか？受講・担当の設定も外れます。')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="subject-delete-button">削除</button>
-                                        </form>
+                                        {{-- 読み取り専用の年度では、見るだけ（削除のボタンも出さない） --}}
+                                        <a class="subject-edit-button" href="{{ route('admin.subjects.edit', $subject) }}">{{ $year->isEditable() ? '編集' : '詳細' }}</a>
+                                        @if ($year->isEditable())
+                                            <form method="POST" action="{{ route('admin.subjects.destroy', $subject) }}" class="inline"
+                                                onsubmit="return confirm('この授業を削除しますか？受講・担当の設定も外れます。')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="subject-delete-button">削除</button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5">授業が登録されていません。</td></tr>
+                            <tr><td colspan="7">授業が登録されていません。</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -296,8 +307,8 @@
         <aside class="subjects-note">
             <span class="subjects-note-icon" aria-hidden="true">ⓘ</span>
             <p>
-                担当の教師は「教師」の画面、受講する生徒は「生徒」の画面で設定します。
-                同じ授業が週に複数回ある場合は、曜日・時限ごとに別々に登録してください。
+                授業を受けるクラス・担当の教師・曜日ごとの教室は、授業の「編集」で設定します。
+                クラスを選ぶと、そのクラスの生徒が全員受講生になります（1人ずつ変えるときは「生徒」の画面）。
             </p>
         </aside>
     </div>

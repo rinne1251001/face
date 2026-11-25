@@ -36,6 +36,7 @@
                     <li><a href="route.html">ルーティング</a></li>
                     <li><a href="css.html">css</a></li>
                     <li><a href="controller.html">コントローラー</a></li>
+                    <li><a href="server.html">サーバー</a></li>
                     <li><a href="reference.html">参考文献</a></li>
                 </ul>
             </nav>
@@ -54,11 +55,15 @@
             <li><a href="#sessions">sessions</a></li>
             <li><a href="#cache">cache</a></li>
             <li><a href="#jobs">jobs</a></li>
+            <li><a href="#academic_years">academic_years</a></li>
             <li><a href="#teachers">teachers</a></li>
             <li><a href="#admins">admins</a></li>
+            <li><a href="#classrooms">classrooms</a></li>
+            <li><a href="#cameras">cameras</a></li>
             <li><a href="#school_classes">school_classes</a></li>
             <li><a href="#students">students</a></li>
             <li><a href="#subjects">subjects</a></li>
+            <li><a href="#calendar">calendar</a></li>
             <li><a href="#face_samples">face_samples</a></li>
             <li><a href="#match_logs">match_logs</a></li>
             <li><a href="#student_cards">student_cards</a></li>
@@ -839,6 +844,64 @@ protected function termLabel(): Attribute
         </div>
 
         <div class="content-wrapper">
+            <h2 id="academic_years">academic_years</h2>
+            <p>年度処理に必要なテーブル２つ</p>
+            <section>
+                <h3>academic_years</h3>
+                <p>年度</p>
+                <table border="1">
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h3>departments</h3>
+                <p>学科</p>
+                <table border="1">
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
             <h2 id="teachers">teachers</h2>
             <section>
                 <p>先生の情報をまとめたテーブル </p>
@@ -914,6 +977,64 @@ protected function termLabel(): Attribute
 > $a1->login_id = 1
 > $a1->password = '12345678'
 > $a1->save()</code></pre>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="classrooms">classrooms</h2>
+            <section>
+                <p>教室のテーブル</p>
+                <table border="1">
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="cameras">cameras</h2>
+            <section>
+                <p>カメラのテーブル</p>
+                <table border="1">
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                </table>
             </section>
         </div>
 
@@ -1050,6 +1171,91 @@ protected function termLabel(): Attribute
                     <tr>
                         <th>updated_at</th>
                         <td>更新日</td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+
+        <div class="content-wrapper">
+            <h2 id="calendar">calendar</h2>
+            <p>日付のテーブル３つ</p>
+            <section>
+                <h3>日付ごとの例外</h3>
+                <p>calendar_days</p>
+                <table border="1">
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h3>special_classes</h3>
+                <p>変則授業（年に数回だけなど、曜日が決まっていない授業。日付と時限を1回ずつ登録する）</p>
+                <table border="1">
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h3>class_lesson_changes</h3>
+                <p>クラスごとの授業変更</p>
+                <table border="1">
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
                     </tr>
                 </table>
             </section>

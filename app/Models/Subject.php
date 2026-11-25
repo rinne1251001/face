@@ -7,6 +7,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
@@ -17,13 +18,15 @@ class Subject extends Model
     // 曜日の番号（Carbon の dayOfWeekIso と同じ：1=月 … 7=日）
     public const DAYS = [1 => '月', 2 => '火', 3 => '水', 4 => '木', 5 => '金', 6 => '土', 7 => '日'];
 
-    protected $fillable = ['name', 'start_date', 'end_date'];
+    protected $fillable = ['academic_year_id', 'name', 'grade', 'start_date', 'end_date'];
 
     protected function casts(): array
     {
         return [
             'start_date' => 'date', // Carbon（日付）として扱える
             'end_date' => 'date',
+            'academic_year_id' => 'integer',
+            'grade' => 'integer',
         ];
     }
 
@@ -34,10 +37,24 @@ class Subject extends Model
         return $this->hasMany(SubjectSchedule::class)->orderBy('day_of_week');
     }
 
+    // どの年度の授業か
+    /** @return BelongsTo<AcademicYear, $this> */
+    public function academicYear(): BelongsTo
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
+
     /** @return BelongsToMany<Student, $this> */
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class);
+    }
+
+    // 授業の画面で選んだクラス（0個以上）。選んだクラスの生徒は、保存のときに students() にも入る
+    /** @return BelongsToMany<SchoolClass, $this> */
+    public function schoolClasses(): BelongsToMany
+    {
+        return $this->belongsToMany(SchoolClass::class);
     }
 
     /** @return BelongsToMany<Teacher, $this> */
@@ -84,24 +101,29 @@ class Subject extends Model
         return $this->hasMany(SpecialClass::class)->orderBy('date');
     }
 
-    // 授業の期間（開始日〜終了日）の中の日か。開始日・終了日が未設定なら制限なし
+    // 授業の期間（開始日〜終了日）の中の日か
+    // 開始日・終了日がまだ登録されていないあいだは、年度の期間を使う（ほかの年度の日に授業が出ないように）
     public function isInTerm(CarbonInterface $date): bool
     {
-        return ($this->start_date === null || $date->gte($this->start_date))
-            && ($this->end_date === null || $date->lte($this->end_date));
+        $start = $this->start_date ?? $this->academicYear->start_date;
+        $end = $this->end_date ?? $this->academicYear->end_date;
+
+        return $date->gte($start) && $date->lte($end);
     }
 
     // ある日の、毎週の時間割（授業がない日は null）
-    // 祝日・休校の日は null、振替の日は振替先の曜日の時間割になる（SchoolCalendar が決める）
+    // 祝日・休校の日は null、振替の日は「登録した日付の時間割」になる（SchoolCalendar が決める）
     public function scheduleOn(CarbonInterface $date): ?SubjectSchedule
     {
-        if (! $this->isInTerm($date)) {
+        $source = app(SchoolCalendar::class)->timetableDate($date);
+
+        // 授業の期間も、時間割の日付で判定する
+        // （例：前期の授業の振替を、後期に入ってから行う日も、前期の授業になる）
+        if ($source === null || ! $this->isInTerm($source)) {
             return null;
         }
 
-        $day = app(SchoolCalendar::class)->timetableDay($date);
-
-        return $day === null ? null : $this->schedules->firstWhere('day_of_week', $day);
+        return $this->schedules->firstWhere('day_of_week', $source->dayOfWeekIso);
     }
 
     // ある日の変則授業（なければ null）
@@ -124,13 +146,21 @@ class Subject extends Model
     }
 
     // この授業を受けている生徒のクラス（クラスIDの一覧）
+    // 生徒のクラスは、この授業の年度の在籍で決まる。クラスが未定の生徒は数えない
     /** @return list<int> */
     public function classIds(): array
     {
-        $ids = array_values(array_unique(array_map('intval', $this->students->pluck('school_class_id')->all())));
-        sort($ids);
+        // 受講生と、その在籍を読み込む（読み込み済みなら SQL は増えない）
+        $this->loadMissing('students.enrollments');
 
-        return $ids;
+        return $this->students
+            ->map(fn (Student $student) => $student->enrollments->firstWhere('academic_year_id', $this->academic_year_id)?->school_class_id)
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
     }
 
     // ある日の、この授業に関係するクラスごとの授業変更

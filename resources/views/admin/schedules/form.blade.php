@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', '休校・振替・変則授業の登録')
 @push('styles')
     <style>
@@ -39,6 +39,15 @@
             padding: 20px;
             gap: 10px;
         }
+
+        /* 長い選択肢（週の一覧など）があっても、選択欄が画面の幅からはみ出さないようにする */
+        .view-content form > div {
+            min-width: 0;
+        }
+
+        .view-content select {
+            max-width: 100%;
+        }
     </style>
 @endpush
 
@@ -69,7 +78,7 @@
 
             <div class="view-content" role="tabpanel" id="panel-day" aria-labelledby="tab-day" @if ($activeTab !== 'day') hidden @endif>
                 <h2>休校・振替</h2>
-                <form method="POST" action="{{ route('admin.schedules.days.store') }}">
+                <form method="POST" action="{{ route('admin.schedules.days.store') }}" id="day-form">
                     @csrf
                     <input type="hidden" name="_tab" value="day">
 
@@ -98,11 +107,26 @@
                         @endif
                     </div>
 
+                    {{-- 曜日を選んだときだけ出る。選択肢（日付の年度の週）は、下の JavaScript が並べる --}}
+                    <div id="day-week-field" hidden>
+                        <label for="day-week">どの週の時間割か</label>
+                        <select id="day-week" name="week" data-old="{{ old('week') }}">
+                            <option value="">先に日付を選んでください</option>
+                        </select>
+                        {{-- 例：→ 11月3日（火・文化の日）の時間割で授業します --}}
+                        <p id="day-week-preview" aria-live="polite"></p>
+                        @if ($errors->has('week'))
+                            @foreach ($errors->get('week') as $message)
+                                <p>{{ $message }}</p>
+                            @endforeach
+                        @endif
+                    </div>
+
                     <div>
                         <label for="day-note">メモ（任意）</label>
                         <input id="day-note" name="note" value="{{ old('note') }}" maxlength="100" placeholder="例：文化祭、11/3の振替">
-                        @if ($errors->has('day_of_week'))
-                            @foreach ($errors->get('day_of_week') as $message)
+                        @if ($errors->has('note'))
+                            @foreach ($errors->get('note') as $message)
                                 <p>{{ $message }}</p>
                             @endforeach
                         @endif
@@ -125,7 +149,7 @@
                         <select id="subject_id" name="subject_id" required>
                             <option value="">選択してください</option>
                             @foreach ($subjects as $subject)
-                                <option value="{{ $subject->id }}" @selected(old('subject_id') == $subject->id)>{{ $subject->name }}</option>
+                                <option value="{{ $subject->id }}" @selected(old('subject_id') == $subject->id)>{{ $subject->name }}（{{ $subject->academicYear->label }}）</option>
                             @endforeach
                         </select>
                         @if ($errors->has('subject_id'))
@@ -146,19 +170,19 @@
                     </div>
 
                     <div>
-                        <label for="period_start">時限</label>
-                        <select name="to_period_start" id="change-to-period-start" aria-label="開始時限">
+                        <label for="special-period-start">時限</label>
+                        <select name="period_start" id="special-period-start" aria-label="開始時限">
                             @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
                                 <option value="{{ $p }}" @selected(old('period_start', 1) == $p)>{{ $p }}限</option>
                             @endfor
                         </select>
                         〜
-                        <select name="to_period_end" id="change-to-period-end" aria-label="終了時限">
+                        <select name="period_end" id="special-period-end" aria-label="終了時限">
                             @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
                                 <option value="{{ $p }}" @selected(old('period_end', 1) == $p)>{{ $p }}限</option>
                             @endfor
                         </select>
-                        @foreach (collect($errors->get('days'))->merge($errors->get('days.*'))->merge($errors->get('schedules.*'))->flatten() as $message)
+                        @foreach (collect($errors->get('period_start'))->merge($errors->get('period_end')) as $message)
                             <p>{{ $message }}</p>
                         @endforeach
                     </div>
@@ -192,7 +216,7 @@
                         <select id="change-class" name="school_class_id" required>
                             <option value="">選択してください</option>
                             @foreach ($classes as $class)
-                                <option value="{{ $class->id }}" @selected(old('school_class_id') == $class->id)>{{ $class->name }}</option>
+                                <option value="{{ $class->id }}" @selected(old('school_class_id') == $class->id)>{{ $class->name }}（{{ $class->academicYear->label }}）</option>
                             @endforeach
                         </select>
                     </div>
@@ -218,12 +242,21 @@
                         </select>
                     </div>
 
+                    {{-- 2時限以上続く授業のときだけ出る（一部の時限だけ変えるとき）。出し入れは下の JavaScript がする --}}
+                    <div data-periods-for="change-lesson" hidden
+                            data-old-start="{{ old('lesson_period_start') }}" data-old-end="{{ old('lesson_period_end') }}">
+                        <span>変更する時限</span>
+                        <select name="lesson_period_start" aria-label="変更する時限（開始）"></select>
+                        〜
+                        <select name="lesson_period_end" aria-label="変更する時限（終了）"></select>
+                    </div>
+
                     <div data-show-for="change add">
                         <label for="change-to-subject">代わりにする授業</label>
                         <select id="change-to-subject" name="to_subject_id">
                             <option value="">選択してください</option>
                             @foreach ($subjects as $subject)
-                                <option value="{{ $subject->id }}" @selected(old('to_subject_id') == $subject->id)>{{ $subject->name }}</option>
+                                <option value="{{ $subject->id }}" @selected(old('to_subject_id') == $subject->id)>{{ $subject->name }}（{{ $subject->academicYear->label }}）</option>
                             @endforeach
                         </select>
                     </div>
@@ -240,14 +273,31 @@
                         </select>
                     </div>
 
-                    <div data-periods-for="change-lesson" hidden
-                            data-old-start="{{ old('lesson_period_start') }}" data-old-end="{{ old('lesson_period_end') }}">
-                        <span>時限</span>
-                        <select name="lesson_period_start" aria-label="変更する時限（開始）"></select>
+                    {{-- 相手の授業が2時限以上続くときだけ出る（一部の時限だけ入れ替えるとき） --}}
+                    <div data-periods-for="change-to-lesson" hidden
+                            data-old-start="{{ old('to_lesson_period_start') }}" data-old-end="{{ old('to_lesson_period_end') }}">
+                        <span>入れ替える時限</span>
+                        <select name="to_lesson_period_start" aria-label="入れ替える時限（開始）"></select>
                         〜
-                        <select name="lesson_period_end" aria-label="変更する時限（終了）"></select>
+                        <select name="to_lesson_period_end" aria-label="入れ替える時限（終了）"></select>
                     </div>
                     <p id="swap-hint" class="muted" aria-live="polite"></p>
+
+                    {{-- 移動先・追加する時限（移動のときは、元の授業と同じ時限の数に自動でそろえる） --}}
+                    <div data-show-for="move add">
+                        <label for="change-to-period-start">移動先・追加する時限</label>
+                        <select name="to_period_start" id="change-to-period-start" aria-label="開始時限">
+                            @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
+                                <option value="{{ $p }}" @selected(old('to_period_start', 1) == $p)>{{ $p }}限</option>
+                            @endfor
+                        </select>
+                        〜
+                        <select name="to_period_end" id="change-to-period-end" aria-label="終了時限">
+                            @for ($p = 1; $p <= \App\Models\Subject::maxPeriod(); $p++)
+                                <option value="{{ $p }}" @selected(old('to_period_end', 1) == $p)>{{ $p }}限</option>
+                            @endfor
+                        </select>
+                    </div>
 
                     <div>
                         <label for="change-note">メモ（任意）</label>
@@ -286,6 +336,87 @@
                 });
             });
         });
+
+        // 休校・振替：「どの週の」曜日の時間割で授業をするかを選ぶ
+        const dayForm = document.getElementById('day-form');
+        if (dayForm) {
+            const weekData = @json($weekData); // { years: [{ label, start, end }], offDays: { 日付: '文化の日' } }
+            const DAYS = ['', '月', '火', '水', '木', '金', '土', '日'];
+            const dateInput = document.getElementById('day-date');
+            const daySelect = document.getElementById('day_of_week');
+            const weekField = document.getElementById('day-week-field');
+            const weekSelect = document.getElementById('day-week');
+            const preview = document.getElementById('day-week-preview');
+
+            // 日付の計算（時差でずれないように、UTC の 0 時として扱う）
+            const parse = (text) => new Date(`${text}T00:00:00Z`);
+            const format = (date) => date.toISOString().slice(0, 10);          // '2026-11-03'
+            const addDays = (date, days) => new Date(date.getTime() + days * 86400000);
+            const mondayOf = (date) => addDays(date, -((date.getUTCDay() + 6) % 7)); // その週の月曜日
+            const md = (date) => `${date.getUTCMonth() + 1}/${date.getUTCDate()}`;  // '11/3'
+            const yearOf = (text) => weekData.years.find((year) => year.start <= text && text <= year.end) ?? null;
+
+            // 週を自分で選んだか（選んでいなければ、日付を変えたときに「この日の週」に合わせる）
+            let touched = weekSelect.dataset.old !== '';
+
+            // 選んだ日付の年度の週を、選択肢に並べる（その週の祝日・休校の日も添える）
+            const buildWeeks = () => {
+                const keep = touched ? (weekSelect.value || weekSelect.dataset.old) : '';
+                const year = yearOf(dateInput.value);
+                weekSelect.innerHTML = '';
+                if (!year) {
+                    weekSelect.add(new Option(dateInput.value ? 'この日付は、どの年度にも入っていません' : '先に日付を選んでください', ''));
+                    showPreview();
+                    return;
+                }
+
+                const own = format(mondayOf(parse(dateInput.value))); // この日の週
+                for (let monday = mondayOf(parse(year.start)); format(monday) <= year.end; monday = addDays(monday, 7)) {
+                    const notes = [];
+                    for (let i = 0; i < 7; i++) {
+                        const day = addDays(monday, i);
+                        const off = weekData.offDays[format(day)];
+                        if (off) notes.push(`${md(day)} ${off}`);
+                    }
+                    const value = format(monday);
+                    const label = `${md(monday)}〜${md(addDays(monday, 6))}の週`
+                        + (value === own ? '（この日の週）' : '')
+                        + (notes.length ? `　${notes.join('・')}` : '');
+                    weekSelect.add(new Option(label, value));
+                }
+                // 自分で選んだ週が、この年度にもあればそのまま。なければ「この日の週」
+                const options = [...weekSelect.options].map((option) => option.value);
+                weekSelect.value = options.includes(keep) ? keep : own;
+                showPreview();
+            };
+
+            // 曜日を選んだときだけ週の欄を出し、何月何日の時間割になるかを表示する
+            const showPreview = () => {
+                const day = Number(daySelect.value);
+                weekField.hidden = !day;
+                weekSelect.disabled = !day; // 授業なし（休校）のときは送らない
+                preview.textContent = '';
+                if (!day || !weekSelect.value) return;
+
+                const target = addDays(parse(weekSelect.value), day - 1);
+                const key = format(target);
+                const year = yearOf(dateInput.value);
+                const off = weekData.offDays[key];
+                const label = `${target.getUTCMonth() + 1}月${target.getUTCDate()}日（${DAYS[day]}${off ? `・${off}` : ''}）`;
+                if (year && (key < year.start || key > year.end)) {
+                    preview.textContent = `→ ${label}は${year.label}の外です。ほかの週か曜日を選んでください。`;
+                } else if (key === dateInput.value) {
+                    preview.textContent = '→ この日自身の時間割で授業します（祝日に授業をするときなど）。';
+                } else {
+                    preview.textContent = `→ ${label}の時間割で授業します。`;
+                }
+            };
+
+            dateInput.addEventListener('input', buildWeeks);
+            daySelect.addEventListener('change', showPreview);
+            weekSelect.addEventListener('change', () => { touched = true; showPreview(); });
+            buildWeeks();
+        }
 
         // クラスの授業変更：種類に合わせて入力欄を出し分け、クラスと日付からその日の授業を読み込む
         const changeForm = document.getElementById('change-form');
