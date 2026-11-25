@@ -89,6 +89,7 @@
                 <h1>教室一覧</h1>
                 <div>
                     <a class="btn" href="{{ route('admin.rooms.create') }}">教室追加</a>
+                    <a class="btn" href="{{ route('admin.cameras.index') }}">カメラ確認</a>
                 </div>
                 
             </div>

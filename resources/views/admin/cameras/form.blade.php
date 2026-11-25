@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', $camera->exists ? 'カメラの編集' : 'カメラの追加')
 @section('content')
 
