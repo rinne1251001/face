@@ -2,12 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-<<<<<<< HEAD
-use App\Models\Classroom;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-=======
 // 必要なクラスや機能をインポートする
 use App\Http\Controllers\Concerns\SortsList;
 use App\Http\Controllers\Controller;
@@ -17,10 +11,10 @@ use App\Models\SchoolClass;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
->>>>>>> efda66f3265bfc578b32516060992e0e75aa75bb
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+// クラス宣言
 class ClassroomController extends Controller
 {
     use SortsList;
@@ -28,10 +22,6 @@ class ClassroomController extends Controller
     // 一覧画面
     public function index(Request $request): Response
     {
-<<<<<<< HEAD
-        $rooms = Classroom::all();
-        return view('admin.rooms.index', compact('rooms'));
-=======
         // 検索の文字（空のときや、URL をいじって文字以外が送られてきたときは絞り込まない）
         $input = $request->query('q');
         $q = is_string($input) ? trim($input) : '';
@@ -92,12 +82,13 @@ class ClassroomController extends Controller
             ->view($view, compact('rooms', 'q', 'floor', 'floors', 'classFilter', 'filtering', 'sort', 'direction'))
             // 同じ URL で「ページ全体」と「表だけ」を返し分けるので、ブラウザのキャッシュで混ざらないようにする
             ->header('Vary', 'X-Requested-With');
->>>>>>> efda66f3265bfc578b32516060992e0e75aa75bb
     }
 
-    // 新規作成画面（← これが消えていたためエラーになっていました）
+    // 新規作成画面
     public function create(): View
     {
+        // まだデータベースに保存されていない中身が空のSubjectオブジェクトを生成
+        // old('入力項目名')だけでなく、old('入力項目名', $subject->カラム名)と書くことができるのでcreateとeditを同じ画面にまとめられる
         return view('admin.rooms.form', ['room' => new Classroom()]);
     }
 
@@ -108,7 +99,6 @@ class ClassroomController extends Controller
 
         return redirect()->route('admin.rooms.index')->with('status', '教室を追加しました。');
     }
-
     // 詳細画面
     public function show(Classroom $room): View
     {
@@ -120,13 +110,12 @@ class ClassroomController extends Controller
     {
         return view('admin.rooms.form', compact('room'));
     }
-
     // 編集保存処理
     public function update(Request $request, Classroom $room): RedirectResponse
     {
         $room->update($this->validated($request, $room));
 
-        return redirect()->route('admin.rooms.index');
+        return redirect()->route('admin.rooms.index')->with('status', '保存しました。');
     }
 
     // 削除処理
@@ -134,25 +123,9 @@ class ClassroomController extends Controller
     {
         $room->delete();
 
-        return redirect()->route('admin.rooms.index');
+        return redirect()->route('admin.rooms.index')->with('status', '教室を削除しました。');
     }
 
-<<<<<<< HEAD
-    // バリデーション処理
-    private function validated(Request $request, ?Classroom $room = null): array
-    {
-        return $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:100',
-                Rule::unique('classrooms', 'name')->ignore($room?->id),
-            ],
-            'floor' => ['required', 'integer'],
-        ], [], [
-            'name'  => '教室名',
-            'floor' => '階数',
-=======
     // 入力のチェック（$room … 編集のときの教室。同じ名前のチェックで自分自身を除くため）
     /** @return array<string, mixed> */
     private function validated(Request $request, ?Classroom $room = null): array
@@ -165,7 +138,6 @@ class ClassroomController extends Controller
         ], [], [
             'name' => '教室名',
             'floor' => '階',
->>>>>>> efda66f3265bfc578b32516060992e0e75aa75bb
         ]);
     }
 

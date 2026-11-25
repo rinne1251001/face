@@ -1,12 +1,39 @@
 @extends('layouts.app')
 @section('title', '年度')
-
+    <style>
+        .table-container {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+        .table-container table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .table-container th {
+            background-color: var(--color-main);
+            color: var(--color-bg);
+            border: 1px solid var(--color-bg);
+            padding-block: 7px;
+            padding-inline: 20px;
+        }
+        .table-container td {
+            border: 1px solid var(--color-main);
+            padding: 10px 20px;
+        }
+        .small {
+            color: var(--color-font-light);
+            font-size: 0.8em;
+        }
+    </style>
 @section('content')
 
     <main class="main">
         <div class="content-wrapper">
             <div class="page-header">
                 <h1>年度</h1>
+                <div>
+                    <a class="btn" href="{{ route('admin.years.create') }}">年度更新</a>
+                </div>
             </div>
 
             @if ($selected)
@@ -22,47 +49,54 @@
                     <noscript><button>表示</button></noscript>
                 </form>
 
-                <dl>
-                    <dt>期間</dt>
-                    <dd>{{ $selected->start_date->format('Y/m/d') }}～{{ $selected->end_date->format('Y/m/d') }}</dd>
-                    <dt>在籍している生徒</dt>
-                    <dd>
-                        {{ $selected->enrollments_count }}人
-                        <a href="{{ route('admin.students.index', ['year' => $selected->year]) }}">生徒一覧を見る</a>
-                    </dd>
-                    <dt>クラス</dt>
-                    <dd>{{ $selected->school_classes_count }}件</dd>
-                    <dt>授業</dt>
-                    <dd>{{ $selected->subjects_count }}件</dd>
-                    <dt>編集</dt>
-                    <dd>
-                        @if (! $selected->isPast())
-                            編集できます
-                        @elseif ($selected->isEditable())
-                            {{-- 過去の年度で、編集を許可しているとき --}}
-                            編集を許可しています（{{ $selected->unlocked_at->format('Y/m/d H:i') }}から）
-                            <form method="POST" action="{{ route('admin.years.lock', $selected) }}" style="display: inline">
-                                @csrf
-                                <button>読み取り専用に戻す</button>
-                            </form>
-                        @else
-                            {{-- 過去の年度は読み取り専用。押すときに確認を出す --}}
-                            読み取り専用（過去の年度）
-                            <form method="POST" action="{{ route('admin.years.unlock', $selected) }}" style="display: inline"
-                                onsubmit="return confirm('{{ $selected->label }}の生徒・クラス・授業を変更できるようにします。よろしいですか？')">
-                                @csrf
-                                <button>編集を許可する</button>
-                            </form>
-                        @endif
-                    </dd>
-                </dl>
+                <div class="table-container">
+                    <table>
+                        <tr>
+                            <th>期間</th>
+                            <td>{{ $selected->start_date->format('Y/m/d') }}～{{ $selected->end_date->format('Y/m/d') }}</td>
+                        </tr>
+                        <tr>
+                            <th>在籍生徒数</th>
+                            <td>{{ $selected->enrollments_count }}人</td>
+                        </tr>
+                        <tr>
+                            <th>クラス数</th>
+                            <td>{{ $selected->school_classes_count }}件</td>
+                        </tr>
+                        <tr>
+                            <th>授業数</th>
+                            <td>{{ $selected->subjects_count }}件</td>
+                        </tr>
+                        <tr>
+                            <th>編集</th>
+                            <td>
+                                @if (! $selected->isPast())
+                                    編集可
+                                @elseif ($selected->isEditable())
+                                    <div>
+                                        <div>編集を許可中<span class="small">（{{ $selected->unlocked_at->format('Y/m/d H:i') }}から）</span></div>
+                                        <form method="POST" action="{{ route('admin.years.lock', $selected) }}" style="display: inline">
+                                            @csrf
+                                            <button>読み取り専用に戻す</button>
+                                        </form>
+                                    </div>
+                                @else
+                                    <div>
+                                        <div>読み取り専用</div>
+                                        <form method="POST" action="{{ route('admin.years.unlock', $selected) }}" style="display: inline"
+                                            onsubmit="return confirm('{{ $selected->label }}の生徒・クラス・授業を変更できるようにします。よろしいですか？')">
+                                            @csrf
+                                            <button>編集許可</button>
+                                        </form>
+                                    </div>
+                                @endif
+                            </td>
+                        </tr>
+                    </table>
+                </div>
             @else
                 <p>年度がまだ登録されていません。「年度更新」から最初の年度を作成してください。</p>
             @endif
-
-            <div>
-                <a href="{{ route('admin.years.create') }}">年度更新</a>
-            </div>
 
         </div>
     </main>
