@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', '生徒一覧')
 @push('styles')
 <style>

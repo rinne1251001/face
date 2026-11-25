@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', $subject->name.' の出席')
 
 @section('content')

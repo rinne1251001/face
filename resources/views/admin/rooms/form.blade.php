@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', $room->exists ? '教室の編集' : '教室の追加')
 @section('content')
 

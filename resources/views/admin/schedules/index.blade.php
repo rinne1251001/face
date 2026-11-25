@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', 'スケジュール確認')
 @push('styles')
     <style>

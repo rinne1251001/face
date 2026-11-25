@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', ($subject->exists ? '授業の編集' : '授業の追加').'（'.$year->label.'）')
 @push('styles')
     <style>

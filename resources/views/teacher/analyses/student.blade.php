@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', $student->name . 'の分析詳細')
 @push('styles')
     <style>

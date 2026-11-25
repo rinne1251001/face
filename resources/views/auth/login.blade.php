@@ -1,5 +1,5 @@
 {{-- 管理者・教師で共通のログイン画面（$title と $action はコントローラーから渡す） --}}
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', $title)
 
 @section('content')

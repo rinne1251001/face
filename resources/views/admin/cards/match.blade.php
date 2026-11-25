@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', '入校証の照合・登録')
 @push('styles')
     <style>

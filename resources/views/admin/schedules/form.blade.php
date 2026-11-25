@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', '休校・振替・変則授業の登録')
 @push('styles')
     <style>

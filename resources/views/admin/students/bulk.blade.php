@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', '生徒を一斉に追加（'.$year->label.'）')
 @push('styles')
 <style>

@@ -1,4 +1,4 @@
-@extends('layouts.test')
+@extends('layouts.app')
 @section('title', $schoolClass->name.' の出席状況')
 
 @push('styles')
