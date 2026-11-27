@@ -8,7 +8,6 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
-                'resources/css/test.css',
                 'resources/js/app.js',
                 'resources/js/face-register.js',
                 'resources/js/face-match.js',

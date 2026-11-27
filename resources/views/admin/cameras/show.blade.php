@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', '教室追加')
+@section('title', 'カメラの詳細')
 @section('content')
     <main class="main">
         <div class="content-wrapper">

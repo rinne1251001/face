@@ -279,7 +279,6 @@
                         <tr>
                             <th colspan="7">
                                 <div class="month-container">
-                                    {{-- 月を変えても、上の週の時間割はそのまま --}}
                                     <a href="{{ route('admin.schedules.index', array_filter(['date' => request('date'), 'month' => $month->copy()->subMonth()->format('Y-m')])) }}" aria-label="前の月">◀</a>
                                     <div>{{ $monthLabel }}</div>
                                     <a href="{{ route('admin.schedules.index', array_filter(['date' => request('date'), 'month' => $month->copy()->addMonth()->format('Y-m')])) }}" aria-label="次の月">▶</a>
@@ -296,7 +295,7 @@
                         @foreach ($monthCalendar as $week)
                             <tr>
                                 @foreach ($week as $cell)
-                                    <td @class(['closed' => $cell['state'] === 'closed', 'special' => $cell['state'] === 'special', 'today' => $cell['today']]) @if ($cell['title']) title="{{ $cell['title'] }}" @endif>
+                                    <td @class(['closed' => $cell['state'] === 'closed', 'special' => $cell['state'] === 'special']) @if ($cell['title']) title="{{ $cell['title'] }}" @endif>
                                         <div @class(['adjacent' => $cell['adjacent']])>{{ $cell['date']->day }}</div>
                                         @if ($cell['note'])
                                             <div>{{ $cell['note'] }}</div>

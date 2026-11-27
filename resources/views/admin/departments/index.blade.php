@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', '学科')
+@push('styles')
     <style>
         .table-container {
             overflow-x: auto;
@@ -24,6 +25,7 @@
             background-color: color-mix(in srgb, var(--color-main), transparent 95%);
         }
     </style>
+@endpush
 @section('content')
 <main class="main">
     <div class="content-wrapper">

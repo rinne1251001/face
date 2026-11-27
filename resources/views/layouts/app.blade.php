@@ -10,7 +10,7 @@
     <meta property="og:image" content="{{ asset('images/ogp.png') }}">
     <link rel="icon" href="{{ asset('images/favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
-    @vite(['resources/css/test.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
 <body>

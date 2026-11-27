@@ -15,15 +15,15 @@ class CameraController extends Controller
     // 一覧画面
     public function index(): View
     {
-        $cameras = Camera::all();
+        $cameras = Camera::with('classroom')->get(); // 教室名も一緒に読み込む（1台ごとに SQL が増えないように）
         return view('admin.cameras.index', compact('cameras'));
     }
 
     // 新規作成画面
     public function create(): View
     {
-        $rooms = Classroom::all();
-        $rooms = Classroom::doesntHave('camera')->get();
+        // まだカメラがない教室だけ（1つの教室に1台）
+        $rooms = Classroom::doesntHave('camera')->orderBy('name')->get();
         return view('admin.cameras.form', ['camera' => new Camera(), 'rooms' => $rooms]);
     }
 
@@ -46,9 +46,10 @@ class CameraController extends Controller
     // 編集画面
     public function edit(Camera $camera): View
     {
-        $rooms = Classroom::all(); // 共通フォームで $rooms を使うため追加
+        // カメラがない教室と、このカメラの今の教室
         $rooms = Classroom::doesntHave('camera')
             ->orWhere('id', $camera->classroom_id)
+            ->orderBy('name')
             ->get();
         return view('admin.cameras.form', compact('camera', 'rooms'));
     }
@@ -71,12 +72,16 @@ class CameraController extends Controller
     }
 
     // バリデーション処理
+    /** @return array<string, mixed> */
     private function validated(Request $request, ?Camera $camera = null): array // Camara → Camera に修正
     {
         $data = $request->validate([
-            'classroom_id' => ['required', 'exists:classrooms,id'],
+            // 1つの教室に1台（編集のときは、このカメラ自身を除いて確かめる）
+            'classroom_id' => ['required', 'exists:classrooms,id', Rule::unique('cameras', 'classroom_id')->ignore($camera)],
             'password'     => [$camera ? 'nullable' : 'required', 'string', 'min:8', 'max:100'],
-        ], [], [
+        ], [
+            'classroom_id.unique' => 'この教室には、もうカメラがあります。',
+        ], [
             'classroom_id' => '教室名',
             'password'     => 'パスワード',
         ]);

@@ -48,6 +48,7 @@
 
         .room-search-container {
             display: flex;
+            flex-wrap: wrap; /* スマホの幅では、絞り込みの欄を次の行に回す（横にはみ出さないように） */
             gap: 5px;
             color: var(--color-main);
         }

@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', '年度')
+@push('styles')
     <style>
         .table-container {
             overflow-x: auto;
@@ -25,6 +26,7 @@
             font-size: 0.8em;
         }
     </style>
+@endpush
 @section('content')
 
     <main class="main">
